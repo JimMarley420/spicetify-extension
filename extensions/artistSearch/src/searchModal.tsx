@@ -160,14 +160,11 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     : tracks;
 
   const playTrack = (trackUri: string) => {
-    Spicetify.Player.play({
-      contextUri: trackUri.split(":").slice(0, 2).join(":"),
-      index: { uri: trackUri },
-    });
+    Spicetify.Platform.PlayerAPI.play({ uri: trackUri }, {});
   };
 
   const addToQueue = async (trackUri: string) => {
-    await Spicetify.Queue.add({ uri: trackUri });
+    await Spicetify.Platform.PlayerAPI.addToQueue([{ uri: trackUri }]);
   };
 
   return (
