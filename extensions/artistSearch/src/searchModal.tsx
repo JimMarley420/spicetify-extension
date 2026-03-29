@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Icons } from "../../../shared/components/icons.tsx";
 
 interface Track {
@@ -30,6 +30,8 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
+  const [currentPlayingUri, setCurrentPlayingUri] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(true);
 
   const searchTimeoutRef = useRef<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -160,12 +162,35 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     : tracks;
 
   const playTrack = (trackUri: string) => {
-    Spicetify.Platform.PlayerAPI.play({ uri: trackUri }, {});
+    if (currentPlayingUri === trackUri && !isPaused) {
+      Spicetify.Platform.PlayerAPI.pause({});
+    } else {
+      Spicetify.Platform.PlayerAPI.play({ uri: trackUri }, {});
+    }
   };
 
   const addToQueue = async (trackUri: string) => {
     await Spicetify.Platform.PlayerAPI.addToQueue([{ uri: trackUri }]);
   };
+
+  const updatePlayerState = useCallback(() => {
+    const state = Spicetify.Platform.PlayerAPI._state;
+    if (state?.item?.uri) {
+      setCurrentPlayingUri(state.item.uri);
+      setIsPaused(state.isPaused);
+    } else {
+      setCurrentPlayingUri(null);
+      setIsPaused(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    updatePlayerState();
+    Spicetify.Platform.PlayerAPI._events.addListener("update", updatePlayerState, {});
+    return () => {
+      Spicetify.Platform.PlayerAPI._events.removeListener("update", updatePlayerState, {});
+    };
+  }, [updatePlayerState]);
 
   return (
     <div className="artist-search-modal">
@@ -240,9 +265,13 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                         e.stopPropagation();
                         playTrack(track.uri);
                       }}
-                      title="Play"
+                      title={currentPlayingUri === track.uri && !isPaused ? "Pause" : "Play"}
                     >
-                      <Icons.React.play size={16} />
+                      {currentPlayingUri === track.uri && !isPaused ? (
+                        <Icons.React.pause size={16} />
+                      ) : (
+                        <Icons.React.play size={16} />
+                      )}
                     </button>
                     <button
                       className="artist-search-action-button"
