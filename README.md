@@ -1,83 +1,118 @@
-# Artist Search - Spicetify Extension
+# 🎵 Artist Search
 
-Search for songs directly from an artist's page.
+A Spicetify extension that lets you search through any artist's entire discography directly from Spotify.
 
-## Features
+![Artist Search Extension](https://i.imgur.com/example.png)
 
-- Adds a search button on artist pages
-- Searches through all tracks visible on the artist's discography
-- Displays results with track name, album, and duration
-- Click on any track to play it
+## ✨ Features
 
-## Installation
+- **Instant Search** - Browse all tracks from an artist's discography in seconds
+- **Lazy Loading** - Tracks appear as they load, no waiting around
+- **Playback Controls** - Play, pause, and seek through any track
+- **Queue Support** - Add tracks to your queue with one click
+- **Now Playing Indicator** - Green dot shows what's currently playing
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- [Spicetify CLI](https://spicetify.app/docs/advanced-usage/spicetify-cli)
-- [Deno](https://deno.land/)
+- [Spicetify CLI](https://spicetify.app/docs/advanced-usage/spicetify-cli) installed
+- [Deno](https://deno.land/) runtime
 
-### Build
+### Installation
 
 ```bash
 # Build the extension
 deno task build
-
-# Build and deploy to Spotify (dev mode - restarts Spotify)
-deno task dev-build
 ```
 
-### Manual Installation
+Then copy `dist/artistSearch.mjs` to your Spicetify extensions folder:
 
-1. Build the extension: `deno task build`
-2. Copy `dist/artistSearch.mjs` to your Spicetify extensions folder:
-   - Windows: `%APPDATA%\spicetify\Extensions\`
-   - macOS: `~/.config/spicetify/Extensions/`
-   - Linux: `~/.config/spicetify/Extensions/`
+| OS | Path |
+|---|---|
+| Windows | `%APPDATA%\spicetify\Extensions\` |
+| macOS / Linux | `~/.config/spicetify/Extensions/` |
 
-3. Enable the extension:
-   ```bash
-   spicetify config custom_apps artist-search
-   spicetify apply
-   ```
-
-## Usage
-
-1. Navigate to any artist's page on Spotify
-2. Click the "Search tracks" button at the top
-3. Type to filter through the artist's discography
-4. Click on a track to play it
-
-## Project Structure
-
-```
-artist-search/
-├── extensions/
-│   └── artistSearch/
-│       ├── src/
-│       │   ├── app.ts      # Main extension entry
-│       │   └── styles.css  # Extension styles
-│       └── README.md
-├── shared/                  # Shared utilities
-│   ├── api/
-│   ├── components/
-│   ├── styles/
-│   └── utils/
-├── tasks/                   # Build scripts
-├── dist/                    # Built extensions
-├── manifest.json
-└── deno.json
-```
-
-## Development
+Enable the extension:
 
 ```bash
-# Watch for changes and rebuild
+spicetify config custom_apps artist-search
+spicetify apply
+```
+
+## 📖 Usage
+
+1. **Right-click** on any artist in Spotify
+2. Select **"Search Artist Tracks"** from the context menu
+3. Browse their entire discography
+4. **Click** a track to play, **double-click** to add to queue
+
+### Controls
+
+| Action | How |
+|---|---|
+| Play/Pause | Click the ▶/⏸ button |
+| Seek | Drag the progress slider |
+| Add to Queue | Click the + button |
+| Search | Type in the search bar |
+
+## 🛠️ Development
+
+```bash
+# Build
+deno task build
+
+# Watch mode (rebuilds on changes)
 deno task watch
 
-# Watch and deploy to Spotify
+# Dev build (auto-deploys to Spotify)
+deno task dev-build
 deno task dev-watch
 ```
 
-## License
+## 📁 Project Structure
 
-MIT
+```
+artist-search/
+├── extensions/artistSearch/
+│   └── src/
+│       ├── app.tsx         # Context menu entry point
+│       ├── searchModal.tsx # Main UI component
+│       └── styles.css      # Component styles
+├── shared/                 # Shared utilities
+│   ├── components/         # Reusable UI components
+│   ├── hooks/             # Custom React hooks
+│   └── styles/            # Shared CSS
+├── tasks/                 # Build scripts
+└── dist/                  # Built extension
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+### Reporting Issues
+
+Found a bug or have a feature request? [Open an issue](https://github.com/JimMarley420/artistsSearch/issues) and let me know.
+
+### Pull Requests
+
+Want to contribute code? Here's how:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a [Pull Request](https://github.com/JimMarley420/artistsSearch/pulls)
+
+### Suggestions
+
+Have ideas for improvements? Check the [existing issues](https://github.com/JimMarley420/artistsSearch/issues) or start a new discussion.
+
+## 📜 License
+
+MIT License - feel free to use, modify, and distribute as you please.
+
+---
+
+Made with 🎵 and ☕ by [JimMarley420](https://github.com/JimMarley420)

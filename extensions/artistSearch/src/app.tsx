@@ -31,16 +31,16 @@ try {
       }
 
       const artistUri = uri;
-      let artistName = parsed.name as string;
+      let artistName = (parsed.name as string) || "";
 
-      if (!artistName) {
+      if (!artistName || artistName.trim() === "") {
         try {
           const metadata = await Spicetify.CosmosAsync.get(
             `sp://core/v1/entity/${encodeURIComponent(artistUri)}`,
           );
-          artistName = metadata?.name || "Unknown Artist";
+          artistName = metadata?.name || "";
         } catch {
-          artistName = "Unknown Artist";
+          artistName = "";
         }
       }
 

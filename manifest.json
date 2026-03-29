@@ -1,8 +1,14 @@
 {
-  "name": "artist-search",
-  "id": "artist-search",
-  "description": "Search within an artist's discography directly from their page",
-  "authors": [{ "name": "You" }],
-  "version": "1.0.0",
-  "tags": ["search", "artist", "utility"]
+  "name": "Artist Search",
+  "description": "Search through any artist's entire discography directly from Spotify. Browse, play, and queue tracks with ease.",
+  "preview": "preview.png",
+  "main": "dist/artistSearch.mjs",
+  "readme": "README.md",
+  "authors": [
+    {
+      "name": "JimMarley420",
+      "url": "https://github.com/JimMarley420"
+    }
+  ],
+  "tags": ["search", "discography", "artist", "utility"]
 }
