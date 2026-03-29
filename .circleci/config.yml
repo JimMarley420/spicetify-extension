@@ -1,34 +1,18 @@
 version: 2.1
 
 jobs:
-  test:
+  build:
     docker:
-      - image: cimg/base:current
+      - image: denoland/deno:latest
 
     steps:
       - checkout
 
-      # Installer Deno
       - run:
-          name: Install Deno
-          command: |
-            curl -fsSL https://deno.land/install.sh | sh
-            echo 'export DENO_INSTALL="$HOME/.deno"' >> $BASH_ENV
-            echo 'export PATH="$DENO_INSTALL/bin:$PATH"' >> $BASH_ENV
-            source $BASH_ENV
-            deno --version
-
-      # Lint
-      - run:
-          name: Run linter
-          command: deno lint
-
-      # Tests
-      - run:
-          name: Run tests
-          command: deno test -A
+          name: Run build task
+          command: deno task build
 
 workflows:
-  test-workflow:
+  build-workflow:
     jobs:
-      - test
+      - build
