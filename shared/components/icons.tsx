@@ -70,9 +70,10 @@ interface IconCollection {
 
 const { raw, react, html } = (Object.keys(iconData) as IconName[]).reduce<IconCollection>(
   (acc, name) => {
+    const size = iconData[name].size;
     acc.raw[name] = iconData[name].path;
     acc.react[name] = createReactComponent(name);
-    acc.html[name] = `<path d="${iconData[name].path}"/>`;
+    acc.html[name] = `<svg class="artist-search-icon" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="currentColor"><path d="${iconData[name].path}"/></svg>`;
     return acc;
   },
   {
