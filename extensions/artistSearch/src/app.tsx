@@ -1,4 +1,3 @@
-import { Icons } from "../../../shared/components/icons.tsx";
 import { PopupModal } from "../../../shared/components/popupModal.tsx";
 import { ArtistSearchModal } from "./searchModal.tsx";
 import styles from "./styles.css" with { type: "css" };
@@ -7,7 +6,7 @@ document.adoptedStyleSheets.push(styles);
 
 const searchArtistMenuItem = new Spicetify.ContextMenuV2.Item({
   children: "Search Artist Tracks",
-  leadingIcon: Icons.HTML.search,
+  leadingIcon: Spicetify.SVGIcons.search,
   onClick: (_context: any, _item: any, _event: any) => {
     const uri = _context?.props?.uri;
     if (!uri) return;
