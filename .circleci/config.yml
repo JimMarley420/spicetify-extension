@@ -7,9 +7,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Cache dependencies
-          command: deno cache --reload .
-      - run:
           name: Run linter
           command: deno task check
 
@@ -18,9 +15,6 @@ jobs:
       - image: denoland/deno:latest
     steps:
       - checkout
-      - run:
-          name: Cache dependencies
-          command: deno cache --reload .
       - run:
           name: Build extension
           command: deno task build
