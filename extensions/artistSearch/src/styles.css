@@ -141,7 +141,7 @@
 
 .artist-search-track {
   display: grid;
-  grid-template-columns: 32px 48px 1fr auto auto 120px auto;
+  grid-template-columns: 32px 48px 1fr auto 200px;
   gap: 12px;
   align-items: center;
   padding: 8px;
@@ -268,10 +268,13 @@
 
 .artist-search-playback-controls {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
-  padding: 12px 8px;
-  border-top: 1px solid rgba(var(--spice-rgb-stroke), 0.3);
+  width: 100%;
+}
+
+.artist-search-track-playback .artist-search-playback-controls {
+  padding: 0;
 }
 
 .artist-search-playback-button {
