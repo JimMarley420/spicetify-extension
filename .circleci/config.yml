@@ -1,18 +1,28 @@
 version: 2.1
 
 jobs:
+  lint:
+    docker:
+      - image: denoland/deno:latest
+    steps:
+      - checkout
+      - run:
+          name: Run linter
+          command: deno task check
+
   build:
     docker:
       - image: denoland/deno:latest
-
     steps:
       - checkout
-
       - run:
-          name: Run build task
+          name: Build extension
           command: deno task build
 
 workflows:
-  build-workflow:
+  ci:
     jobs:
-      - build
+      - lint
+      - build:
+          requires:
+            - lint
