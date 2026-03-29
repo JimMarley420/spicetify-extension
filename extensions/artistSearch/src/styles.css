@@ -4,15 +4,9 @@
   padding: 0 16px;
 }
 
-.main-contextMenu-menuItem {
+.artist-search-icon {
   display: flex;
   align-items: center;
-}
-
-.main-contextMenu-menuItem span {
-  display: flex;
-  align-items: center;
-  line-height: 1;
 }
 
 .artist-search-button {
