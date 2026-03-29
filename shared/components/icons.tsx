@@ -45,6 +45,7 @@ const createReactComponent = (name: IconName): ReactIconComponent => {
   const { path, size: defaultSize } = iconData[name];
   const Component: ReactIconComponent = ({ size = defaultSize, fill = "currentColor" }) => (
     <svg
+      aria-label={name}
       fill={fill}
       height={size}
       role="img"

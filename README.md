@@ -4,11 +4,8 @@ A Spicetify extension that lets you search through any artist's entire discograp
 
 <table>
   <tr>
-    <td align="center">
-      <img width="400" alt="Artist Search" src="https://github.com/user-attachments/assets/e9e8b7b1-876f-4a24-a183-22c887ef0ed6" />
-      <br/>
-      <sub>Search through discography</sub>
-    </td>
+    <td><img width="500" src="https://github.com/user-attachments/assets/700755a3-69b2-457d-a883-6c993051b5ac" /></td>
+    <td><img width="350" src="https://github.com/user-attachments/assets/6ebb9b8c-a2c2-429d-af5e-f7b5702268a8" /></td>
   </tr>
 </table>
 
