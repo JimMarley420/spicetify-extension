@@ -35,11 +35,18 @@ try {
 
       if (!artistName || artistName.trim() === "") {
         try {
-          const metadata = await Spicetify.CosmosAsync.get(
-            `sp://core/v1/entity/${encodeURIComponent(artistUri)}`,
+          const response = await Spicetify.Platform.GraphQLLoader(
+            Spicetify.GraphQL.Definitions.queryArtistDiscographyAll,
+            {
+              uri: artistUri,
+              locale: Spicetify.Locale.getLocale(),
+              offset: 0,
+              limit: 1,
+            },
           );
-          artistName = metadata?.name || "";
-        } catch {
+          artistName = response?.data?.artistUnion?.profile?.name || "";
+        } catch (err) {
+          console.error("[Artist Search] Error fetching artist name:", err);
           artistName = "";
         }
       }
