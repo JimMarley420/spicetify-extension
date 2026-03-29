@@ -236,13 +236,14 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
               {filteredTracks.length} track{filteredTracks.length !== 1 ? "s" : ""} found
             </div>
             <div className="artist-search-track-list">
-              {filteredTracks.map((track) => (
+              {filteredTracks.map((track, index) => (
                 <div
-                  className={`artist-search-track ${selectedTrack === track.uri ? "selected" : ""}`}
+                  className={`artist-search-track ${selectedTrack === track.uri ? "selected" : ""} ${currentPlayingUri === track.uri ? "playing" : ""}`}
                   key={track.uri}
                   onClick={() => setSelectedTrack(track.uri)}
                   onDoubleClick={() => playTrack(track.uri)}
                 >
+                  <span className="artist-search-track-number">{index + 1}</span>
                   <img
                     alt={track.album.name}
                     className="artist-search-track-image"
