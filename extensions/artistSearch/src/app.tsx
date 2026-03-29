@@ -19,17 +19,19 @@ const searchArtistMenuItem = new Spicetify.ContextMenuV2.Item({
     }
 
     const artistUri = uri;
-    let artistName = (parsed.name as string) || (parsed.title as string) || "";
+    let artistName = (parsed.name as string) 
+      || (parsed.title as string) 
+      || (parsed.headerTitle as string)
+      || (parsed.subtitle as string)
+      || "";
 
     if (!artistName || artistName.trim() === "") {
       try {
         const response = await Spicetify.Platform.GraphQLLoader(
-          Spicetify.GraphQL.Definitions.queryArtistDiscographyAll,
+          Spicetify.GraphQL.Definitions.browseArtist,
           {
             uri: artistUri,
             locale: Spicetify.Locale.getLocale(),
-            offset: 0,
-            limit: 1,
           },
         );
         artistName = response?.data?.artistUnion?.profile?.name || "";
