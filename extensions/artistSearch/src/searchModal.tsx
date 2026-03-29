@@ -26,12 +26,6 @@ const formatDuration = (ms: number): string => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-const formatTime = (ms: number | undefined) => {
-  if (ms == null || ms < 0) return "--:--";
-  const s = Math.floor(ms / 1000);
-  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-};
-
 const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number }) => {
   const {
     position,
@@ -165,17 +159,37 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     }
   }, []);
 
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   useEffect(() => {
+    setTracks([]);
+    setLoading(true);
+    setError(null);
+    setIsLoadingMore(false);
+    
+    let cancelled = false;
+    
     const loadTracks = async () => {
-      setLoading(true);
-      setError(null);
-      setTracks([]);
-      await fetchArtistTracks((newTracks) => {
-        setTracks((prev) => [...prev, ...newTracks]);
-      });
-      setLoading(false);
+      try {
+        await fetchArtistTracks((newTracks) => {
+          if (cancelled) return;
+          setTracks((prev) => [...prev, ...newTracks]);
+        });
+        if (cancelled) return;
+        setIsLoadingMore(true);
+      } catch (err) {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+      } finally {
+        if (cancelled) return;
+        setLoading(false);
+        setIsLoadingMore(false);
+      }
     };
     loadTracks();
+    
+    return () => { cancelled = true; };
   }, [artistUri]);
 
   useEffect(() => {
@@ -256,7 +270,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
       </div>
 
       <div className="artist-search-results">
-        {loading ? (
+        {loading && filteredTracks.length === 0 ? (
           <div className="artist-search-loading">
             <div className="artist-search-spinner" />
             <span>Loading tracks...</span>
@@ -310,6 +324,12 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                 </div>
               ))}
             </div>
+            {isLoadingMore && (
+              <div className="artist-search-loading-more">
+                <div className="artist-search-spinner" />
+                <span>Loading more...</span>
+              </div>
+            )}
           </>
         )}
       </div>
