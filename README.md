@@ -115,4 +115,4 @@ MIT License - feel free to use, modify, and distribute as you please.
 
 ---
 
-Made with 🎵 and ☕ by [JimMarley420](https://github.com/JimMarley420)
+Made by [JimMarley420](https://github.com/JimMarley420)
