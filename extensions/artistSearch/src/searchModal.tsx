@@ -296,21 +296,10 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                   <span className="artist-search-track-duration">
                     {formatDuration(track.duration_ms)}
                   </span>
+                  <div className="artist-search-track-playback">
+                    <TrackPlaybackControl uri={track.uri} duration={track.duration_ms} />
+                  </div>
                   <div className="artist-search-track-actions">
-                    <button
-                      className="artist-search-action-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        playTrack(track.uri);
-                      }}
-                      title={currentPlayingUri === track.uri && !isPaused ? "Pause" : "Play"}
-                    >
-                      {currentPlayingUri === track.uri && !isPaused ? (
-                        <Icons.React.pause size={16} />
-                      ) : (
-                        <Icons.React.play size={16} />
-                      )}
-                    </button>
                     <button
                       className="artist-search-action-button"
                       onClick={(e) => {
@@ -329,12 +318,6 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                 </div>
               ))}
             </div>
-            {currentPlayingUri && (
-              <TrackPlaybackControl
-                uri={currentPlayingUri}
-                duration={tracks.find((t) => t.uri === currentPlayingUri)?.duration_ms || 0}
-              />
-            )}
           </>
         )}
       </div>

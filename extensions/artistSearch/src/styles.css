@@ -141,7 +141,7 @@
 
 .artist-search-track {
   display: grid;
-  grid-template-columns: 32px 48px 1fr auto auto auto;
+  grid-template-columns: 32px 48px 1fr auto auto 120px auto;
   gap: 12px;
   align-items: center;
   padding: 8px;
