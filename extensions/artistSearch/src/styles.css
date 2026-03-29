@@ -151,7 +151,7 @@
 }
 
 .artist-search-track:hover {
-  background: var(--spice-card);
+  background: transparent;
 }
 
 .artist-search-track.selected {
