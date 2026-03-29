@@ -237,7 +237,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
         <input
           className="artist-search-input"
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={`Search in ${artistName}'s tracks...`}
+          placeholder={`Search in ${artistName || "this artist"}'s tracks...`}
           ref={inputRef}
           type="text"
           value={query}
