@@ -1,7 +1,7 @@
 {
-  "name": "Artist Search",
-  "description": "Search through any artist's entire discography directly from Spotify. Browse, play, and queue tracks with ease.",
-  "preview": "https://github.com/JimMarley420/artistsSearch/raw/master/preview.png",
+  "name": "Search Artist Tracks",
+  "description": "Search through any artist's entire discography directly from Spotify artist page or artist context menu. Browse, play, and queue tracks with ease.",
+  "preview": "preview.png",
   "main": "dist/artistSearch.mjs",
   "readme": "README.md",
   "authors": [
