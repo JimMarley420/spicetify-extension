@@ -293,27 +293,8 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                     </span>
                   </div>
                   <span className="artist-search-track-album">{track.album.name}</span>
-                  <span className="artist-search-track-duration">
-                    {formatDuration(track.duration_ms)}
-                  </span>
                   <div className="artist-search-track-playback">
                     <TrackPlaybackControl uri={track.uri} duration={track.duration_ms} />
-                  </div>
-                  <div className="artist-search-track-actions">
-                    <button
-                      className="artist-search-action-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToQueue(track.uri);
-                        Spicetify.showNotification("Added to queue");
-                      }}
-                      title="Add to queue"
-                    >
-                      <svg fill="currentColor" height="16" viewBox="0 0 16 16" width="16">
-                        <path d="M8 1a.5.5 0 01.5.5v11.793l3.146-3.147a.5.5 0 01.708.708l-4 4a.5.5 0 01-.708 0l-4-4a.5.5 0 01.708-.708L7.5 13.293V1.5A.5.5 0 018 1z" />
-                        <path d="M2 3.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z" />
-                      </svg>
-                    </button>
                   </div>
                 </div>
               ))}
