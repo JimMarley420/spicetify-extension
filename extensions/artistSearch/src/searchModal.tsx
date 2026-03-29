@@ -118,8 +118,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
         });
       }
       return results;
-    } catch (err) {
-      console.error("[Artist Search] Error fetching album tracks:", albumUri, err);
+    } catch {
       return [];
     }
   };
@@ -156,8 +155,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
           }
         }
       }
-    } catch (err) {
-      console.error("[Artist Search] Error fetching artist tracks:", err);
+    } catch {
     }
   };
 
