@@ -147,6 +147,7 @@
   padding: 8px;
   cursor: pointer;
   border-radius: 6px;
+  border-bottom: 1px solid rgba(var(--spice-rgb-stroke), 0.3);
   transition: background 0.15s ease;
 }
 
