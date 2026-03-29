@@ -1,5 +1,5 @@
 {
-  "name": "Artist Search",
+  "name": "Search Artist Tracks",
   "description": "Search through any artist's entire discography directly from Spotify. Browse, play, and queue tracks with ease.",
   "preview": "preview.png",
   "main": "dist/artistSearch.mjs",
