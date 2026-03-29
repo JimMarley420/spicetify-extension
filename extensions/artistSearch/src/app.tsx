@@ -31,7 +31,7 @@ try {
       }
 
       const artistUri = uri;
-      let artistName = (parsed.name as string) || "";
+      let artistName = (parsed.name as string) || (parsed.title as string) || "";
 
       if (!artistName || artistName.trim() === "") {
         try {
@@ -45,10 +45,10 @@ try {
       }
 
       PopupModal({
-        title: `Search: ${artistName}`,
-        content: <ArtistSearchModal artistName={artistName} artistUri={artistUri} />,
+        title: `Search: ${artistName || "Artist"}`,
+        content: <ArtistSearchModal artistName={artistName || "Artist"} artistUri={artistUri} />,
         isLarge: true,
-        template: false,
+        template: true,
       });
     },
     shouldAdd: (props: any, _trigger: any, _target: any) => {

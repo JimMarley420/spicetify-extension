@@ -42,6 +42,14 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
     handleSliderRelease,
   } = usePlayer(uri, duration);
 
+  const displayDuration = playerDuration || duration || 0;
+
+  const formatTime = (ms: number | undefined) => {
+    if (ms == null || ms < 0) return "--:--";
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  };
+
   return (
     <div className="artist-search-playback-controls">
       <button className="artist-search-playback-button" onClick={togglePlay}>
@@ -49,14 +57,14 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
       </button>
       <span className="artist-search-slider-time">{formatTime(position)}</span>
       <Slider
-        max={playerDuration || 0}
+        max={displayDuration}
         min={0}
         onChange={handleSliderChange}
         onRelease={handleSliderRelease}
         step={1}
         value={position || 0}
       />
-      <span className="artist-search-slider-time">{formatTime(playerDuration)}</span>
+      <span className="artist-search-slider-time">{formatTime(displayDuration)}</span>
     </div>
   );
 };
@@ -237,7 +245,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
         <input
           className="artist-search-input"
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={`Search in ${artistName || "this artist"}'s tracks...`}
+          placeholder={`Search in ${artistName}'s tracks...`}
           ref={inputRef}
           type="text"
           value={query}
