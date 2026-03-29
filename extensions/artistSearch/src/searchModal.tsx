@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Icons } from "../../../shared/components/icons.tsx";
+import { Slider } from "../../../shared/components/slider.tsx";
+import { usePlayer } from "../../../shared/hooks/usePlayer.ts";
 
 interface Track {
   uri: string;
@@ -22,6 +24,41 @@ const formatDuration = (ms: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+};
+
+const formatTime = (ms: number | undefined) => {
+  if (ms == null || ms < 0) return "--:--";
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+};
+
+const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number }) => {
+  const {
+    position,
+    duration: playerDuration,
+    isCurrentlyPlayingThisTrack,
+    togglePlay,
+    handleSliderChange,
+    handleSliderRelease,
+  } = usePlayer(uri, duration);
+
+  return (
+    <div className="artist-search-playback-controls">
+      <button className="artist-search-playback-button" onClick={togglePlay}>
+        {isCurrentlyPlayingThisTrack ? <Icons.React.pause size={16} /> : <Icons.React.play size={16} />}
+      </button>
+      <span className="artist-search-slider-time">{formatTime(position)}</span>
+      <Slider
+        max={playerDuration || 0}
+        min={0}
+        onChange={handleSliderChange}
+        onRelease={handleSliderRelease}
+        step={1}
+        value={position || 0}
+      />
+      <span className="artist-search-slider-time">{formatTime(playerDuration)}</span>
+    </div>
+  );
 };
 
 export function ArtistSearchModal({ artistUri, artistName }: Props) {
@@ -292,6 +329,12 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                 </div>
               ))}
             </div>
+            {currentPlayingUri && (
+              <TrackPlaybackControl
+                uri={currentPlayingUri}
+                duration={tracks.find((t) => t.uri === currentPlayingUri)?.duration_ms || 0}
+              />
+            )}
           </>
         )}
       </div>
