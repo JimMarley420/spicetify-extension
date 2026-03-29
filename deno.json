@@ -26,6 +26,6 @@
   },
   "nodeModulesDir": "auto",
   "lint": {
-    "exclude": ["**/*"]
+    "exclude": ["dist/"]
   }
 }
