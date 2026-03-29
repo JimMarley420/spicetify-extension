@@ -61,6 +61,24 @@ spicetify apply
 | Add to Queue | Click the + button |
 | Search | Type in the search bar |
 
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+### Reporting Issues
+
+Found a bug or have a feature request? [Open an issue](https://github.com/JimMarley420/artistsSearch/issues) and let me know.
+
+### Pull Requests
+
+Want to contribute code? Here's how:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a [Pull Request](https://github.com/JimMarley420/artistsSearch/pulls)
+
 ## 🛠️ Development
 
 ```bash
@@ -91,24 +109,6 @@ artist-search/
 ├── tasks/                 # Build scripts
 └── dist/                  # Built extension
 ```
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-### Reporting Issues
-
-Found a bug or have a feature request? [Open an issue](https://github.com/JimMarley420/artistsSearch/issues) and let me know.
-
-### Pull Requests
-
-Want to contribute code? Here's how:
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a [Pull Request](https://github.com/JimMarley420/artistsSearch/pulls)
 
 ### Suggestions
 
