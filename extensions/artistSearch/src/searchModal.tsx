@@ -26,12 +26,6 @@ const formatDuration = (ms: number): string => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-const formatTime = (ms: number | undefined) => {
-  if (ms == null || ms < 0) return "--:--";
-  const s = Math.floor(ms / 1000);
-  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-};
-
 const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number }) => {
   const {
     position,
@@ -276,7 +270,12 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
       </div>
 
       <div className="artist-search-results">
-        {error ? (
+        {loading && filteredTracks.length === 0 ? (
+          <div className="artist-search-loading">
+            <div className="artist-search-spinner" />
+            <span>Loading tracks...</span>
+          </div>
+        ) : error ? (
           <div className="artist-search-error">{error}</div>
         ) : !query.trim() && filteredTracks.length === 0 ? (
           <div className="artist-search-hint">
