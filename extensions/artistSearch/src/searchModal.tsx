@@ -165,17 +165,30 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     }
   }, []);
 
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   useEffect(() => {
+    setTracks([]);
+    setLoading(true);
+    setError(null);
+    setIsLoadingMore(false);
+    
+    let cancelled = false;
+    
     const loadTracks = async () => {
-      setLoading(true);
-      setError(null);
-      setTracks([]);
       await fetchArtistTracks((newTracks) => {
+        if (cancelled) return;
         setTracks((prev) => [...prev, ...newTracks]);
+        setLoading(false);
+        setIsLoadingMore(true);
       });
-      setLoading(false);
+      if (!cancelled) {
+        setIsLoadingMore(false);
+      }
     };
     loadTracks();
+    
+    return () => { cancelled = true; };
   }, [artistUri]);
 
   useEffect(() => {
@@ -256,12 +269,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
       </div>
 
       <div className="artist-search-results">
-        {loading ? (
-          <div className="artist-search-loading">
-            <div className="artist-search-spinner" />
-            <span>Loading tracks...</span>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="artist-search-error">{error}</div>
         ) : !query.trim() && filteredTracks.length === 0 ? (
           <div className="artist-search-hint">
@@ -310,6 +318,12 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                 </div>
               ))}
             </div>
+            {isLoadingMore && (
+              <div className="artist-search-loading-more">
+                <div className="artist-search-spinner" />
+                <span>Loading more...</span>
+              </div>
+            )}
           </>
         )}
       </div>
