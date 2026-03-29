@@ -1,0 +1,8 @@
+{
+  "name": "artist-search",
+  "id": "artist-search",
+  "description": "Search within an artist's discography directly from their page",
+  "authors": [{ "name": "You" }],
+  "version": "1.0.0",
+  "tags": ["search", "artist", "utility"]
+}
