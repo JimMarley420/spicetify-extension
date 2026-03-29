@@ -116,7 +116,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     }
   };
 
-  const fetchArtistTracks = async (): Promise<Track[]> => {
+  const fetchArtistTracks = async (onTrackAdd: (tracks: Track[]) => void) => {
     try {
       const response = (await Spicetify.Platform.GraphQLLoader(
         Spicetify.GraphQL.Definitions.queryArtistDiscographyAll,
@@ -129,9 +129,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
       )) as { data: any };
 
       const discography = response?.data?.artistUnion?.discography;
-      if (!discography?.all?.items) return [];
-
-      const allTracks: Track[] = [];
+      if (!discography?.all?.items) return;
 
       for (const item of discography.all.items) {
         const releases = item?.releases?.items;
@@ -145,14 +143,13 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
           const coverArt = release.coverArt?.sources || [];
 
           const albumTracks = await fetchAlbumTracks(albumUri, albumName, coverArt);
-          allTracks.push(...albumTracks);
+          if (albumTracks.length > 0) {
+            onTrackAdd(albumTracks);
+          }
         }
       }
-
-      return allTracks;
     } catch (err) {
       console.error("[Artist Search] Error fetching artist tracks:", err);
-      return [];
     }
   };
 
@@ -166,8 +163,10 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     const loadTracks = async () => {
       setLoading(true);
       setError(null);
-      const fetchedTracks = await fetchArtistTracks();
-      setTracks(fetchedTracks);
+      setTracks([]);
+      await fetchArtistTracks((newTracks) => {
+        setTracks((prev) => [...prev, ...newTracks]);
+      });
       setLoading(false);
     };
     loadTracks();
