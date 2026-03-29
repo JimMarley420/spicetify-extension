@@ -152,11 +152,11 @@
 }
 
 .artist-search-track:hover {
-  background: rgba(var(--spice-rgb-card), 0.6);
+  background: transparent;
 }
 
 .artist-search-track.selected {
-  background: var(--spice-selected-row);
+  background: rgba(var(--spice-rgb-card), 0.6);
 }
 
 .artist-search-track-image {
