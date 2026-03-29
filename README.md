@@ -2,9 +2,12 @@
 
 A Spicetify extension that lets you search through any artist's entire discography directly from Spotify.
 
-<img width="590" height="559" alt="image" src="https://github.com/user-attachments/assets/700755a3-69b2-457d-a883-6c993051b5ac" />
-
-<img width="376" height="680" alt="image" src="https://github.com/user-attachments/assets/6ebb9b8c-a2c2-429d-af5e-f7b5702268a8" />
+<table>
+  <tr>
+    <td><img width="300" src="https://github.com/user-attachments/assets/700755a3-69b2-457d-a883-6c993051b5ac" /></td>
+    <td><img width="250" src="https://github.com/user-attachments/assets/6ebb9b8c-a2c2-429d-af5e-f7b5702268a8" /></td>
+  </tr>
+</table>
 
 ## ✨ Features
 
