@@ -19,7 +19,7 @@ body {
   flex-direction: column;
   width: 500px;
   max-height: 500px;
-  background-color: rgba(var(--spice-rgb-main), 0.9);
+  background-color: rgba(var(--spice-rgb-card), 0.95);
   border-radius: 6px;
   box-shadow: 0 0 20px rgba(var(--spice-rgb-shadow), 0.5);
   backdrop-filter: blur(20px) saturate(1.4) brightness(1.2);
