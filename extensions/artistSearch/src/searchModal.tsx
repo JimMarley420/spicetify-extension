@@ -275,12 +275,18 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
             <div className="artist-search-track-list">
               {filteredTracks.map((track, index) => (
                 <div
-                  className={`artist-search-track ${selectedTrack === track.uri ? "selected" : ""} ${currentPlayingUri === track.uri ? "playing" : ""}`}
+                  className={`artist-search-track ${selectedTrack === track.uri ? "selected" : ""}`}
                   key={track.uri}
                   onClick={() => setSelectedTrack(track.uri)}
                   onDoubleClick={() => playTrack(track.uri)}
                 >
-                  <span className="artist-search-track-number">{index + 1}</span>
+                  <span className="artist-search-track-number">
+                    {currentPlayingUri === track.uri ? (
+                      <span className="artist-search-playing-indicator" />
+                    ) : (
+                      index + 1
+                    )}
+                  </span>
                   <img
                     alt={track.album.name}
                     className="artist-search-track-image"
