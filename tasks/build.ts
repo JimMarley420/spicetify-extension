@@ -59,7 +59,12 @@ async function buildExtension(folderName: string, folderPath: string): Promise<v
     },
   });
 
-  await Deno.copyFile(OUT, join(SPICETIFY_OUT, `${folderName}.mjs`));
+  try {
+    await Deno.mkdir(SPICETIFY_OUT, { recursive: true });
+    await Deno.copyFile(OUT, join(SPICETIFY_OUT, `${folderName}.mjs`));
+  } catch {
+    // CI environment - skip copying to local Spicetify folder
+  }
 }
 
 async function buildFolders(): Promise<void> {
