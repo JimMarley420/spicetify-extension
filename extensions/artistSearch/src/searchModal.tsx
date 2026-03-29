@@ -176,13 +176,20 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     let cancelled = false;
     
     const loadTracks = async () => {
-      await fetchArtistTracks((newTracks) => {
+      try {
+        await fetchArtistTracks((newTracks) => {
+          if (cancelled) return;
+          setTracks((prev) => [...prev, ...newTracks]);
+        });
         if (cancelled) return;
-        setTracks((prev) => [...prev, ...newTracks]);
-        setLoading(false);
         setIsLoadingMore(true);
-      });
-      if (!cancelled) {
+      } catch (err) {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+      } finally {
+        if (cancelled) return;
+        setLoading(false);
         setIsLoadingMore(false);
       }
     };
