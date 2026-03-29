@@ -1,0 +1,260 @@
+.artist-search-container {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.artist-search-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--spice-text);
+  cursor: pointer;
+  background: var(--spice-button);
+  border: none;
+  border-radius: 20px;
+  transition: background 0.15s ease;
+}
+
+.artist-search-button:hover {
+  background: var(--spice-button-active);
+}
+
+.artist-search-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 500px;
+}
+
+.artist-search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.artist-search-icon {
+  position: absolute;
+  left: 12px;
+  display: flex;
+  color: var(--spice-subtext);
+  pointer-events: none;
+}
+
+.artist-search-input {
+  width: 100%;
+  padding: 12px 40px;
+  font-size: 14px;
+  color: var(--spice-text);
+  outline: none;
+  background: var(--spice-input);
+  border: 1px solid var(--spice-stroke);
+  border-radius: 20px;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.artist-search-input:focus {
+  background: var(--spice-main);
+  border-color: var(--spice-highlight);
+}
+
+.artist-search-input::placeholder {
+  color: var(--spice-subtext);
+}
+
+.artist-search-clear {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  padding: 4px;
+  color: var(--spice-subtext);
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.artist-search-clear:hover {
+  color: var(--spice-text);
+  background: var(--spice-card);
+}
+
+.artist-search-results {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.artist-search-loading,
+.artist-search-hint,
+.artist-search-no-results,
+.artist-search-error {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 14px;
+  color: var(--spice-subtext);
+  text-align: center;
+}
+
+.artist-search-error {
+  color: var(--spice-error);
+}
+
+.artist-search-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--spice-stroke);
+  border-top-color: var(--spice-highlight);
+  border-radius: 50%;
+  animation: artist-search-spin 0.8s linear infinite;
+}
+
+@keyframes artist-search-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.artist-search-count {
+  padding: 0 4px 8px;
+  font-size: 12px;
+  color: var(--spice-subtext);
+}
+
+.artist-search-track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.artist-search-track {
+  display: grid;
+  grid-template-columns: 48px 1fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.artist-search-track:hover {
+  background: var(--spice-card);
+}
+
+.artist-search-track.selected {
+  background: var(--spice-selected-row);
+}
+
+.artist-search-track-image {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.artist-search-track-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.artist-search-track-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--spice-text);
+  white-space: nowrap;
+}
+
+.artist-search-track-artists {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--spice-subtext);
+  white-space: nowrap;
+}
+
+.artist-search-track-album {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--spice-subtext);
+  white-space: nowrap;
+}
+
+.artist-search-track-duration {
+  min-width: 40px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--spice-subtext);
+  text-align: right;
+}
+
+.artist-search-track-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.artist-search-track:hover .artist-search-track-actions {
+  opacity: 1;
+}
+
+.artist-search-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: var(--spice-subtext);
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.artist-search-action-button:hover {
+  color: var(--spice-text);
+  background: var(--spice-card-highlight);
+}
+
+.artist-search-load-more {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--spice-text);
+  cursor: pointer;
+  background: var(--spice-card);
+  border: none;
+  border-radius: 20px;
+  transition: background 0.15s ease;
+}
+
+.artist-search-load-more:hover:not(:disabled) {
+  background: var(--spice-card-highlight);
+}
+
+.artist-search-load-more:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

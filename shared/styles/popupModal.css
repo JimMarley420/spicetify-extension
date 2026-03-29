@@ -1,0 +1,86 @@
+body {
+  overflow: hidden !important;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(var(--spice-rgb-shadow), 0.5);
+}
+
+.modal__container {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  max-height: 500px;
+  background-color: rgba(var(--spice-rgb-main), 0.9);
+  border-radius: 6px;
+  box-shadow: 0 0 20px rgba(var(--spice-rgb-shadow), 0.5);
+  backdrop-filter: blur(20px) saturate(1.4) brightness(1.2);
+}
+
+.modal__container--large {
+  width: clamp(550px, 60vw, 650px);
+  max-height: 80vh;
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  padding: 32px 32px 8px;
+  border-bottom: 1px solid rgba(var(--spice-rgb-selected-row), 0.1);
+}
+
+.modal__titleContainer {
+  display: flex;
+  gap: 8px;
+}
+
+.modal__icon {
+  display: flex;
+  align-items: center;
+}
+
+.modal__title {
+  display: flex;
+}
+
+.modal__buttonContainer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.modal__buttonContainer .modal__button {
+  height: 32px;
+  padding: 8px;
+  cursor: pointer;
+  background-color: var(--spice-highlight);
+  border: 0;
+  border-radius: 8px;
+}
+
+.modal__buttonContainer .modal__button:hover {
+  transform: scale(1.1);
+}
+
+.modal__buttonContainer .modal__button:active {
+  transform: scale(0.9);
+}
+
+.modal__content {
+  display: flex;
+  padding: 16px 24px;
+  overflow: auto;
+  scrollbar-gutter: stable both-edges;
+}
+
+.modal__content > * {
+  width: 100%;
+}
