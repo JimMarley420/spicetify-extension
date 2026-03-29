@@ -73,7 +73,7 @@ const { raw, react, html } = (Object.keys(iconData) as IconName[]).reduce<IconCo
     const size = iconData[name].size;
     acc.raw[name] = iconData[name].path;
     acc.react[name] = createReactComponent(name);
-    acc.html[name] = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="currentColor"><path d="${iconData[name].path}"/></svg>`;
+    acc.html[name] = `<svg class="artist-search-icon" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="currentColor"><path d="${iconData[name].path}"/></svg>`;
     return acc;
   },
   {
