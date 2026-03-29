@@ -160,9 +160,19 @@
 }
 
 .artist-search-track-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--spice-subtext);
   font-size: 14px;
   text-align: center;
+}
+
+.artist-search-playing-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: #1ed760;
+  border-radius: 50%;
 }
 
 .artist-search-track-image {
