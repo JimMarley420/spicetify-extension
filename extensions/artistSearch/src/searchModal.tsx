@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Icons } from "../../../shared/components/icons.tsx";
 import { Slider } from "../../../shared/components/slider.tsx";
 import { usePlayer } from "../../../shared/hooks/usePlayer.ts";
+import { fetchMetadataForTracks } from "../../../shared/api/fetchMetadataForTracks.ts";
 
 interface Track {
   uri: string;
@@ -36,10 +37,10 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
     handleSliderRelease,
   } = usePlayer(uri, duration);
 
-  const displayDuration = playerDuration || duration || 0;
+  const displayDuration = duration > 0 ? duration : playerDuration;
 
   const formatTime = (ms: number | undefined) => {
-    if (ms == null || ms < 0) return "--:--";
+    if (ms == null || ms <= 0) return "0:00";
     const s = Math.floor(ms / 1000);
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   };
@@ -51,7 +52,7 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
       </button>
       <span className="artist-search-slider-time">{formatTime(position)}</span>
       <Slider
-        max={displayDuration}
+        max={displayDuration > 0 ? displayDuration : 1}
         min={0}
         onChange={handleSliderChange}
         onRelease={handleSliderRelease}
@@ -172,10 +173,35 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
     
     const loadTracks = async () => {
       try {
+        const allTracks: Track[] = [];
+        
         await fetchArtistTracks((newTracks) => {
           if (cancelled) return;
-          setTracks((prev) => [...prev, ...newTracks]);
+          allTracks.push(...newTracks);
+          setTracks([...allTracks]);
         });
+        
+        if (cancelled) return;
+        
+        const uris = allTracks.map(t => t.uri).filter(Boolean);
+        if (uris.length > 0) {
+          try {
+            const metadata = await fetchMetadataForTracks(uris);
+            const updatedTracks = allTracks.map(track => {
+              const meta = metadata.get(track.uri);
+              const fetchedDuration = meta?.duration;
+              return fetchedDuration 
+                ? { ...track, duration_ms: fetchedDuration }
+                : track;
+            });
+            if (!cancelled) {
+              setTracks(updatedTracks);
+            }
+          } catch (e) {
+            console.error("Failed to fetch metadata:", e);
+          }
+        }
+        
         if (cancelled) return;
         setIsLoadingMore(true);
       } catch (err) {
