@@ -308,7 +308,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                   onClick={() => setSelectedTrack(track.uri)}
                   onDoubleClick={() => playTrack(track.uri)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
+                    if (e.currentTarget === e.target && (e.key === "Enter" || e.key === " ")) {
                       e.preventDefault();
                       setSelectedTrack(track.uri);
                     }
