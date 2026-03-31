@@ -37,7 +37,22 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
     handleSliderRelease,
   } = usePlayer(uri, duration);
 
-  const displayDuration = duration > 0 ? duration : playerDuration;
+  const effectiveDuration = duration > 0 ? duration : playerDuration;
+
+  const handleTogglePlay = async () => {
+    if (effectiveDuration === 0) {
+      try {
+        const metadata = await fetchMetadataForTracks([uri]);
+        const meta = metadata.get(uri);
+        if (meta?.duration) {
+          Spicetify.Platform.PlayerAPI.seekTo(0);
+        }
+      } catch (e) {
+        console.error("Failed to fetch duration:", e);
+      }
+    }
+    togglePlay();
+  };
 
   const formatTime = (ms: number | undefined) => {
     if (ms == null || ms <= 0) return "0:00";
@@ -47,19 +62,19 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
 
   return (
     <div className="artist-search-playback-controls">
-      <button className="artist-search-playback-button" onClick={togglePlay}>
+      <button className="artist-search-playback-button" onClick={handleTogglePlay}>
         {isCurrentlyPlayingThisTrack ? <Icons.React.pause size={16} /> : <Icons.React.play size={16} />}
       </button>
       <span className="artist-search-slider-time">{formatTime(position)}</span>
       <Slider
-        max={displayDuration > 0 ? displayDuration : 1}
+        max={effectiveDuration > 0 ? effectiveDuration : 1}
         min={0}
         onChange={handleSliderChange}
         onRelease={handleSliderRelease}
         step={1}
         value={position || 0}
       />
-      <span className="artist-search-slider-time">{formatTime(displayDuration)}</span>
+      <span className="artist-search-slider-time">{formatTime(effectiveDuration)}</span>
     </div>
   );
 };
@@ -183,22 +198,42 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
         
         if (cancelled) return;
         
-        const uris = allTracks.map(t => t.uri).filter(Boolean);
-        if (uris.length > 0) {
+        const batchSize = 50;
+        for (let i = 0; i < allTracks.length; i += batchSize) {
+          if (cancelled) break;
+          const batch = allTracks.slice(i, i + batchSize);
+          const uris = batch.filter(t => t.uri && t.duration_ms === 0).map(t => t.uri);
+          
+          if (uris.length === 0) continue;
+          
           try {
             const metadata = await fetchMetadataForTracks(uris);
-            const updatedTracks = allTracks.map(track => {
-              const meta = metadata.get(track.uri);
-              const fetchedDuration = meta?.duration;
-              return fetchedDuration 
-                ? { ...track, duration_ms: fetchedDuration }
-                : track;
+            const updatedBatch = allTracks.slice(i, i + batchSize).map(track => {
+              if (track.duration_ms === 0) {
+                const meta = metadata.get(track.uri);
+                if (meta?.duration) {
+                  return { ...track, duration_ms: meta.duration };
+                }
+              }
+              return track;
             });
+            
             if (!cancelled) {
-              setTracks(updatedTracks);
+              setTracks(prev => {
+                const newTracks = [...prev];
+                for (let j = 0; j < updatedBatch.length; j++) {
+                  const originalIndex = i + j;
+                  if (newTracks[originalIndex]) {
+                    newTracks[originalIndex] = updatedBatch[j];
+                  }
+                }
+                return newTracks;
+              });
             }
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
           } catch (e) {
-            console.error("Failed to fetch metadata:", e);
+            console.error("Failed to fetch batch metadata:", e);
           }
         }
         

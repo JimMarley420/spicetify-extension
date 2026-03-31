@@ -224,4 +224,34 @@ export const metadataSchema: MetadataSchema = {
   "spotify.metadata.VideoFile": {
     fields: { 1: { name: "file_id", type: "bytes" } },
   },
+  "spotify.metadata.Licensor": {
+    fields: {
+      1: { name: "licensor_id", type: "string" },
+    },
+  },
+  "spotify.metadata.ContentAuthorizationAttributes": {
+    fields: {
+      1: { name: "cat_id", type: "string" },
+      2: { name: "content_rights", type: "string" },
+      3: { name: "rights_owner_id", type: "string" },
+    },
+  },
+  "spotify.metadata.ImplementationDetails": {
+    fields: {
+      1: { name: "impl_id", type: "string" },
+      2: { name: "description", type: "string" },
+    },
+  },
+  "spotify.metadata.PrereleaseConfig": {
+    fields: {
+      1: { name: "is_premium_only", type: "bool" },
+      2: { name: "release_date", type: "int64" },
+    },
+  },
+  "spotify.metadata.TestCategory": {
+    fields: {
+      1: { name: "category", type: "string" },
+      2: { name: "is_enabled", type: "bool" },
+    },
+  },
 };
