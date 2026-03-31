@@ -41,7 +41,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 600px;
+  height: auto;
+  max-height: min(90vh, 600px);
+  overflow-y: auto;
 }
 
 .artist-search-input-container {
@@ -126,6 +128,14 @@
   color: var(--spice-text);
   background: var(--spice-card);
   transform: scale(1.1);
+}
+
+.artist-search-github:focus-visible {
+  color: var(--spice-text);
+  background: var(--spice-card);
+  transform: scale(1.1);
+  outline: 2px solid var(--spice-accent);
+  outline-offset: 2px;
 }
 
 .artist-search-results {
