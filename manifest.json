@@ -4,11 +4,12 @@
   "preview": "preview.png",
   "main": "dist/artistSearch.mjs",
   "readme": "README.md",
+  "branch": "main",
   "authors": [
     {
       "name": "JimMarley420",
       "url": "https://github.com/JimMarley420"
     }
   ],
-  "tags": ["search", "discography", "artist", "utility"]
+  "tags": ["context-menu", "search", "discography", "artist", "tracks", "utility"]
 }
