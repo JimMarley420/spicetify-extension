@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Icons } from "../../../shared/components/icons.tsx";
 import { Slider } from "../../../shared/components/slider.tsx";
 import { usePlayer } from "../../../shared/hooks/usePlayer.ts";
@@ -71,6 +71,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [currentPlayingUri, setCurrentPlayingUri] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(true);
+  const [viewMode, setViewMode] = useState<"tracks" | "albums">("tracks");
 
   const searchTimeoutRef = useRef<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -217,6 +218,18 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
       )
     : tracks;
 
+  const albumsView = useMemo(() => {
+    const albumMap = new Map<string, { album: Track["album"]; tracks: Track[] }>();
+    for (const track of filteredTracks) {
+      const albumName = track.album.name;
+      if (!albumMap.has(albumName)) {
+        albumMap.set(albumName, { album: track.album, tracks: [] });
+      }
+      albumMap.get(albumName)!.tracks.push(track);
+    }
+    return Array.from(albumMap.values()).sort((a, b) => a.album.name.localeCompare(b.album.name));
+  }, [filteredTracks]);
+
   const playTrack = (trackUri: string) => {
     if (currentPlayingUri === trackUri && !isPaused) {
       Spicetify.Platform.PlayerAPI.pause({});
@@ -278,6 +291,21 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
         )}
       </div>
 
+      <div className="artist-search-view-toggle">
+        <button
+          className={`artist-search-view-btn ${viewMode === "tracks" ? "active" : ""}`}
+          onClick={() => setViewMode("tracks")}
+        >
+          Tracks
+        </button>
+        <button
+          className={`artist-search-view-btn ${viewMode === "albums" ? "active" : ""}`}
+          onClick={() => setViewMode("albums")}
+        >
+          Albums
+        </button>
+      </div>
+
       <div className="artist-search-results">
         {loading && filteredTracks.length === 0 ? (
           <div className="artist-search-loading">
@@ -298,8 +326,12 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
         ) : (
           <>
             <div className="artist-search-count">
-              {filteredTracks.length} track{filteredTracks.length !== 1 ? "s" : ""} found
+              {viewMode === "tracks" 
+                ? `${filteredTracks.length} track${filteredTracks.length !== 1 ? "s" : ""} found`
+                : `${albumsView.length} album${albumsView.length !== 1 ? "s" : ""} found`
+              }
             </div>
+            {viewMode === "tracks" ? (
               <div className="artist-search-track-list">
               {filteredTracks.map((track, index) => (
                 <div
@@ -341,7 +373,66 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            ) : (
+              <div className="artist-search-album-list">
+                {albumsView.map((albumGroup) => (
+                  <div className="artist-search-album-group" key={albumGroup.album.name}>
+                    <div className="artist-search-album-header">
+                      <img
+                        alt={albumGroup.album.name}
+                        className="artist-search-album-image"
+                        src={albumGroup.album.images[2]?.url || albumGroup.album.images[0]?.url || ""}
+                      />
+                      <span className="artist-search-album-name">{albumGroup.album.name}</span>
+                      <span className="artist-search-album-track-count">
+                        {albumGroup.tracks.length} track{albumGroup.tracks.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="artist-search-album-tracks">
+                      {albumGroup.tracks.map((track, index) => (
+                        <div
+                          className={`artist-search-track ${selectedTrack === track.uri ? "selected" : ""}`}
+                          key={track.uri}
+                          onClick={() => setSelectedTrack(track.uri)}
+                          onDoubleClick={() => playTrack(track.uri)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedTrack(track.uri);
+                            }
+                          }}
+                          tabIndex={0}
+                          role="button"
+                        >
+                          <span className="artist-search-track-number">
+                            {currentPlayingUri === track.uri ? (
+                              <span className="artist-search-playing-indicator" />
+                            ) : (
+                              index + 1
+                            )}
+                          </span>
+                          <img
+                            alt={track.album.name}
+                            className="artist-search-track-image"
+                            src={track.album.images[2]?.url || track.album.images[0]?.url || ""}
+                          />
+                          <div className="artist-search-track-info">
+                            <span className="artist-search-track-name">{track.name}</span>
+                            <span className="artist-search-track-artists">
+                              {track.artists.map((a) => a.name).join(", ")}
+                            </span>
+                          </div>
+                          <div className="artist-search-track-playback">
+                            <TrackPlaybackControl uri={track.uri} duration={track.duration_ms} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             {isLoadingMore && (
               <div className="artist-search-loading-more">
                 <div className="artist-search-spinner" />
