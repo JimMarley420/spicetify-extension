@@ -262,6 +262,15 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
           type="text"
           value={query}
         />
+        <a
+          href="https://github.com/JimMarley420/artistsSearch"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="artist-search-github"
+          aria-label="Open GitHub repository"
+        >
+          <Icons.React.github size={18} />
+        </a>
         {query && (
           <button className="artist-search-clear" onClick={() => setQuery("")}>
             <Icons.React.close size={16} />
