@@ -107,6 +107,29 @@
   transform: scale(1.1);
 }
 
+.artist-search-github {
+  right: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  color: var(--spice-subtext);
+  text-decoration: none;
+  border-radius: 50%;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.artist-search-github:hover {
+  color: var(--spice-text);
+  background: var(--spice-card);
+  transform: scale(1.1);
+}
+
 .artist-search-results {
   flex: 1;
   overflow-y: auto;
