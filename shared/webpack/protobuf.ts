@@ -1,7 +1,10 @@
 import { metadataSchema } from "./schema.ts";
 
 function warn(reason: string, ctx: Record<string, any>) {
-  console.warn(reason, ctx);
+  // Only log critical errors, skip unknown fields/wire types which are expected
+  if (reason.includes("Decode error") || reason.includes("Schema not found")) {
+    console.warn("[Protobuf]", reason, ctx);
+  }
 }
 
 export class ProtobufReader {
