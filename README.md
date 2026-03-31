@@ -1,6 +1,6 @@
 # 🎵 Artist Search
 
-A Spicetify extension that lets you search through any artist's entire discography directly from Spotify.
+Access an artist's entire discography instantly from a single menu. Browse, play, and queue all tracks without navigating albums.
 
 <table>
   <tr>
