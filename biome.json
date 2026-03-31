@@ -7,8 +7,14 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["extensions", "shared", "tasks"],
-    "experimentalScannerIgnores": ["dist", "**/shims"]
+    "includes": [
+      "extensions",
+      "shared",
+      "tasks",
+
+      "!!**/dist",
+      "!!**/shims"
+    ]
   },
   "javascript": {
     "formatter": {
