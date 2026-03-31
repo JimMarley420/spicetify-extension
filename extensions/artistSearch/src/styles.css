@@ -13,26 +13,37 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 10px 18px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--spice-text);
   cursor: pointer;
-  background: var(--spice-button);
+  background: linear-gradient(135deg, var(--spice-button) 0%, var(--spice-button-active) 100%);
   border: none;
-  border-radius: 20px;
-  transition: background 0.15s ease;
+  border-radius: 24px;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .artist-search-button:hover {
-  background: var(--spice-button-active);
+  background: linear-gradient(135deg, var(--spice-button-active) 0%, var(--spice-button) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.artist-search-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .artist-search-modal {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 500px;
+  height: 600px;
 }
 
 .artist-search-input-container {
@@ -56,16 +67,18 @@
   color: var(--spice-text);
   outline: none;
   background: var(--spice-input);
-  border: 1px solid var(--spice-stroke);
-  border-radius: 20px;
+  border: 1px solid transparent;
+  border-radius: 24px;
   transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .artist-search-input:focus {
   background: var(--spice-main);
   border-color: var(--spice-highlight);
+  box-shadow: 0 0 0 3px rgba(var(--spice-rgb-highlight), 0.2);
 }
 
 .artist-search-input::placeholder {
@@ -76,20 +89,22 @@
   position: absolute;
   right: 12px;
   display: flex;
-  padding: 4px;
+  padding: 6px;
   color: var(--spice-subtext);
   cursor: pointer;
   background: none;
   border: none;
   border-radius: 50%;
   transition:
-    background 0.15s ease,
-    color 0.15s ease;
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .artist-search-clear:hover {
   color: var(--spice-text);
   background: var(--spice-card);
+  transform: scale(1.1);
 }
 
 .artist-search-results {
@@ -161,17 +176,43 @@
   align-items: center;
   padding: 8px;
   cursor: pointer;
-  border-radius: 6px;
-  border-bottom: 1px solid rgba(var(--spice-rgb-stroke), 0.3);
-  transition: background 0.15s ease;
+  border-radius: 8px;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+  position: relative;
+}
+
+.artist-search-track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
 }
 
 .artist-search-track:hover {
-  background: transparent;
+  background: rgba(var(--spice-rgb-card), 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.artist-search-track:hover::before {
+  opacity: 1;
+}
+
+.artist-search-track:focus-visible {
+  outline: 2px solid var(--spice-highlight);
+  outline-offset: 2px;
 }
 
 .artist-search-track.selected {
-  background: rgba(var(--spice-rgb-card), 0.6);
+  background: rgba(var(--spice-rgb-card), 0.8);
+  box-shadow: 0 0 0 1px var(--spice-highlight);
 }
 
 .artist-search-track-number {
@@ -179,15 +220,34 @@
   align-items: center;
   justify-content: center;
   color: var(--spice-subtext);
-  font-size: 14px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   text-align: center;
+  transition: color 0.2s ease;
+}
+
+.artist-search-track:hover .artist-search-track-number {
+  color: var(--spice-text);
 }
 
 .artist-search-playing-indicator {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   background-color: #1ed760;
   border-radius: 50%;
+  box-shadow: 0 0 8px #1ed760;
+  animation: artist-search-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes artist-search-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }
 
 .artist-search-track-image {
@@ -195,6 +255,12 @@
   height: 48px;
   object-fit: cover;
   border-radius: 4px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.artist-search-track:hover .artist-search-track-image {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .artist-search-track-info {
@@ -240,13 +306,15 @@
 
 .artist-search-track-actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transform: translateX(-8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .artist-search-track:hover .artist-search-track-actions {
   opacity: 1;
+  transform: translateX(0);
 }
 
 .artist-search-action-button {
@@ -314,10 +382,16 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: 50%;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
 }
 
 .artist-search-playback-button:hover {
-  background: rgba(var(--spice-rgb-selected-row), 0.1);
+  background: rgba(var(--spice-rgb-selected-row), 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .artist-search-slider-time {

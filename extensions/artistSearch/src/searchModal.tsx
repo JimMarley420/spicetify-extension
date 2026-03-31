@@ -291,13 +291,22 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
             <div className="artist-search-count">
               {filteredTracks.length} track{filteredTracks.length !== 1 ? "s" : ""} found
             </div>
-            <div className="artist-search-track-list">
+              <div className="artist-search-track-list">
               {filteredTracks.map((track, index) => (
                 <div
                   className={`artist-search-track ${selectedTrack === track.uri ? "selected" : ""}`}
                   key={track.uri}
                   onClick={() => setSelectedTrack(track.uri)}
                   onDoubleClick={() => playTrack(track.uri)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedTrack(track.uri);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${track.name} by ${track.artists.map((a) => a.name).join(", ")}${currentPlayingUri === track.uri ? " - now playing" : ""}`}
                 >
                   <span className="artist-search-track-number">
                     {currentPlayingUri === track.uri ? (
