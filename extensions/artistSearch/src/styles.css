@@ -20,23 +20,21 @@
   cursor: pointer;
   background: linear-gradient(135deg, var(--spice-button) 0%, var(--spice-button-active) 100%);
   border: none;
-  border-radius: 24px;
+  border-radius: 500px;
   transition:
     transform 0.15s ease,
     box-shadow 0.2s ease,
-    background 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    filter 0.2s ease;
 }
 
 .artist-search-button:hover {
-  background: linear-gradient(135deg, var(--spice-button-active) 0%, var(--spice-button) 100%);
-  transform: translateY(-1px);
+  transform: scale(1.04);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.1);
 }
 
 .artist-search-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(0.98);
 }
 
 .artist-search-modal {
