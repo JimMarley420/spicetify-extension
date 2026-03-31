@@ -42,8 +42,7 @@
   flex-direction: column;
   gap: 16px;
   height: auto;
-  max-height: min(90vh, 600px);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .artist-search-input-container {
@@ -62,7 +61,7 @@
 
 .artist-search-input {
   width: 100%;
-  padding: 12px 40px;
+  padding: 12px 80px;
   font-size: 14px;
   color: var(--spice-text);
   outline: none;
@@ -142,6 +141,7 @@
   flex: 1;
   overflow-y: auto;
   scrollbar-gutter: stable;
+  max-height: min(90vh, 600px);
 }
 
 .artist-search-loading,
@@ -278,6 +278,13 @@
   50% {
     transform: scale(1.1);
     opacity: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artist-search-playing-indicator {
+    animation: none;
+    transform: none;
   }
 }
 
