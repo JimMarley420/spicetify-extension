@@ -1,4 +1,4 @@
-# 🎵 Artist Search
+# 🎵 Artist Search - Spicetify extension
 
 Access an artist's entire discography instantly from a single menu. Browse, play, and queue all tracks without navigating albums.
 
