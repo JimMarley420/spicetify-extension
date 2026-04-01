@@ -51,6 +51,38 @@
   align-items: center;
 }
 
+.artist-search-view-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--spice-card);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.artist-search-view-btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--spice-subtext);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.artist-search-view-btn:hover {
+  color: var(--spice-text);
+}
+
+.artist-search-view-btn.active {
+  color: var(--spice-text);
+  background: var(--spice-highlight);
+}
+
 .artist-search-icon {
   position: absolute;
   left: 12px;
@@ -305,7 +337,6 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
 }
 
 .artist-search-track-name {
@@ -315,6 +346,7 @@
   font-weight: 500;
   color: var(--spice-text);
   white-space: nowrap;
+  max-width: 196px;
 }
 
 .artist-search-track-artists {
@@ -326,7 +358,6 @@
 }
 
 .artist-search-track-album {
-  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 12px;
@@ -438,4 +469,64 @@
   font-variant-numeric: tabular-nums;
   color: var(--spice-subtext);
   text-align: center;
+}
+
+.artist-search-album-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.artist-search-album-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.artist-search-album-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(var(--spice-rgb-card), 0.4);
+  border-radius: 8px;
+}
+
+.artist-search-album-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.artist-search-album-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--spice-text);
+}
+
+.artist-search-album-track-count {
+  font-size: 12px;
+  color: var(--spice-subtext);
+}
+
+.artist-search-album-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+}
+
+.artist-search-album-tracks .artist-search-track {
+  display: grid;
+  grid-template-columns: 32px 48px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+}
+
+.artist-search-album-tracks .artist-search-track-playback {
+  display: flex;
+  width: 200px;
 }
