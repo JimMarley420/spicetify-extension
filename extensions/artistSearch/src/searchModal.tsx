@@ -37,7 +37,9 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
     handleSliderRelease,
   } = usePlayer(uri, duration);
 
-  const effectiveDuration = duration > 0 ? duration : playerDuration;
+  const [fetchedDuration, setFetchedDuration] = useState<number>(0);
+
+  const effectiveDuration = duration > 0 ? duration : playerDuration > 0 ? playerDuration : fetchedDuration;
 
   const handleTogglePlay = async () => {
     if (effectiveDuration === 0) {
@@ -45,6 +47,7 @@ const TrackPlaybackControl = ({ uri, duration }: { uri: string; duration: number
         const metadata = await fetchMetadataForTracks([uri]);
         const meta = metadata.get(uri);
         if (meta?.duration) {
+          setFetchedDuration(meta.duration);
           Spicetify.Platform.PlayerAPI.seekTo(0);
         }
       } catch (e) {
@@ -282,11 +285,12 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
   const albumsView = useMemo(() => {
     const albumMap = new Map<string, { album: Track["album"]; tracks: Track[] }>();
     for (const track of filteredTracks) {
-      const albumName = track.album.name;
-      if (!albumMap.has(albumName)) {
-        albumMap.set(albumName, { album: track.album, tracks: [] });
+      const album = track.album as any;
+      const albumKey = album.albumUri || album.uri || album.name;
+      if (!albumMap.has(albumKey)) {
+        albumMap.set(albumKey, { album: track.album, tracks: [] });
       }
-      albumMap.get(albumName)!.tracks.push(track);
+      albumMap.get(albumKey)!.tracks.push(track);
     }
     return Array.from(albumMap.values()).sort((a, b) => a.album.name.localeCompare(b.album.name));
   }, [filteredTracks]);
@@ -458,6 +462,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                           onClick={() => setSelectedTrack(track.uri)}
                           onDoubleClick={() => playTrack(track.uri)}
                           onKeyDown={(e) => {
+                            if (e.currentTarget !== e.target) return;
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
                               setSelectedTrack(track.uri);

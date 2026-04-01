@@ -1,8 +1,8 @@
 import { metadataSchema } from "./schema.ts";
 
-function warn(reason: string, ctx: Record<string, any>) {
-  // Only log critical errors, skip unknown fields/wire types which are expected
+function warn(reason: string, ctxOrThunk: Record<string, any> | (() => Record<string, any>)) {
   if (reason.includes("Decode error") || reason.includes("Schema not found")) {
+    const ctx = typeof ctxOrThunk === "function" ? ctxOrThunk() : ctxOrThunk;
     console.warn("[Protobuf]", reason, ctx);
   }
 }
@@ -116,7 +116,7 @@ export class ProtobufReader {
           const len = Number(this.readVarint() ?? 0n);
           const raw = this.readBytes(len);
 
-          warn("Unknown field", {
+          warn("Unknown field", () => ({
             schema: schemaName,
             fieldNumber,
             wireType,
@@ -125,7 +125,7 @@ export class ProtobufReader {
               .map((b) => b.toString(16).padStart(2, "0"))
               .join(" "),
             ascii: new TextDecoder().decode(raw).replace(/[^\x20-\x7E]/g, "."),
-          });
+          }));
         } else {
           warn("Unknown field", {
             schema: schemaName,
@@ -233,7 +233,7 @@ export class ProtobufReader {
   }
 }
 
-export function decodeProtobuf(data: any, schemaName: string): any[] {
+export function decodeProtobuf(data: any, schemaName: string): any {
   const result = new ProtobufReader(data).decode(schemaName);
   return result;
 }
