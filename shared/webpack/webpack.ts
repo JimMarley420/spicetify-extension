@@ -29,30 +29,49 @@ export const SpotifyWebpack = {
       return shared.modules;
     }
 
-    const exportedModules = currentKeys
-      .map((id) => {
-        try {
-          return shared.require(id);
-        } catch {
-          return null;
+    shared.modules = currentKeys.map((id) => () => {
+      try {
+        const module = shared.require(id);
+        if (typeof module === "object" && module !== null) {
+          try {
+            return Object.values(module);
+          } catch {
+            return [module];
+          }
         }
-      })
-      .filter(Boolean);
-
-    shared.modules = exportedModules.flatMap((module) => {
-      if (typeof module === "object" && module !== null) {
-        try {
-          return Object.values(module);
-        } catch {
-          return [];
-        }
+        return [module];
+      } catch {
+        return [];
       }
-      return [module];
     });
 
     shared.lastModuleCount = currentKeys.length;
 
-    return shared.modules ?? [];
+    return shared.modules;
+  },
+
+  getModuleById(id: string) {
+    if (!shared.modules) return null;
+    const index = Number(id);
+    if (!isNaN(index) && shared.modules[index]) {
+      return shared.modules[index]();
+    }
+    if (!shared.require) {
+      SpotifyWebpack.getModules();
+    }
+    try {
+      const module = shared.require?.(id);
+      if (typeof module === "object" && module !== null) {
+        try {
+          return Object.values(module);
+        } catch {
+          return [module];
+        }
+      }
+      return [module];
+    } catch {
+      return null;
+    }
   },
 
   findModuleByContent(keywords: string[]) {
@@ -62,11 +81,17 @@ export const SpotifyWebpack = {
     }
 
     if (!shared.require || !shared.require.m) {
-      SpotifyWebpack.getModules();
+      try {
+        SpotifyWebpack.getModules();
+      } catch {
+        shared.searchCache.set(cacheKey, null);
+        return null;
+      }
     }
 
+    if (!shared.require?.m) return null;
+
     const modules = shared.require.m;
-    if (!modules) return null;
 
     for (const id in modules) {
       const moduleFactory = modules[id];
@@ -97,8 +122,15 @@ export const SpotifyWebpack = {
     }
 
     if (!shared.require || !shared.require.m) {
-      SpotifyWebpack.getModules();
+      try {
+        SpotifyWebpack.getModules();
+      } catch {
+        shared.componentCache.set(cacheKey, null);
+        return null;
+      }
     }
+
+    if (!shared.require?.m) return null;
 
     const modules = shared.require.m;
     let foundModuleId = null;
@@ -118,7 +150,13 @@ export const SpotifyWebpack = {
 
     if (!foundModuleId) return null;
 
-    const exports = shared.require(foundModuleId);
+    let exports: any;
+    try {
+      exports = shared.require(foundModuleId);
+    } catch {
+      shared.componentCache.set(cacheKey, null);
+      return null;
+    }
 
     const isLikelyComponent = (value: any) => {
       if (!value) return false;
@@ -149,10 +187,14 @@ export const SpotifyWebpack = {
   findService(serviceName: string) {
     const modules = SpotifyWebpack.getModules();
 
-    for (const m of modules) {
-      if (!m || (typeof m !== "object" && typeof m !== "function")) continue;
-
-      if (m.SERVICE_ID === serviceName) return m;
+    for (const moduleGetter of modules) {
+      if (!moduleGetter || typeof moduleGetter !== "function") continue;
+      const module = moduleGetter();
+      if (!module) continue;
+      const exports = Array.isArray(module) ? module : [module];
+      for (const m of exports) {
+        if (m && typeof m === "function" && m.SERVICE_ID === serviceName) return m;
+      }
     }
 
     return null;
@@ -167,8 +209,17 @@ export const SpotifyWebpack = {
       throw new Error(`Spotify Service not found: ${serviceName}`);
     }
 
-    const transport = Spicetify.Platform.Registry.resolve(Symbol.for("EsperantoTransport"));
-    const client = new ServiceClass(transport);
+    let client: any;
+    if (typeof ServiceClass === "function") {
+      const transport = (globalThis as any).Spicetify?.Platform?.Registry?.resolve(Symbol.for("EsperantoTransport"));
+      if (transport) {
+        client = new ServiceClass(transport);
+      } else {
+        throw new Error("EsperantoTransport not available");
+      }
+    } else {
+      client = ServiceClass;
+    }
 
     shared.serviceCache.set(serviceName, client);
     return client;

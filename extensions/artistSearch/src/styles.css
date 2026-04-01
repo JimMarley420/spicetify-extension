@@ -337,7 +337,6 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 205px;
 }
 
 .artist-search-track-name {
@@ -347,6 +346,7 @@
   font-weight: 500;
   color: var(--spice-text);
   white-space: nowrap;
+  max-width: 196px;
 }
 
 .artist-search-track-artists {
@@ -358,7 +358,6 @@
 }
 
 .artist-search-track-album {
-  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 12px;
@@ -521,7 +520,7 @@
 
 .artist-search-album-tracks .artist-search-track {
   display: grid;
-  grid-template-columns: 32px 48px 1fr auto 200px;
+  grid-template-columns: 32px 48px 1fr auto auto;
   gap: 12px;
   align-items: center;
   padding: 8px;
