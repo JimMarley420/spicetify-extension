@@ -346,7 +346,7 @@
   font-weight: 500;
   color: var(--spice-text);
   white-space: nowrap;
-  max-width: 196px;
+  max-width: 144px;
 }
 
 .artist-search-track-artists {
