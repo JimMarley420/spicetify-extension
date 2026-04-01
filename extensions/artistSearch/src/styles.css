@@ -41,7 +41,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 600px;
+  height: auto;
+  overflow: hidden;
 }
 
 .artist-search-input-container {
@@ -92,7 +93,7 @@
 
 .artist-search-input {
   width: 100%;
-  padding: 12px 40px;
+  padding: 12px 80px;
   font-size: 14px;
   color: var(--spice-text);
   outline: none;
@@ -160,10 +161,19 @@
   transform: scale(1.1);
 }
 
+.artist-search-github:focus-visible {
+  color: var(--spice-text);
+  background: var(--spice-card);
+  transform: scale(1.1);
+  outline: 2px solid var(--spice-accent);
+  outline-offset: 2px;
+}
+
 .artist-search-results {
   flex: 1;
   overflow-y: auto;
   scrollbar-gutter: stable;
+  max-height: min(90vh, 600px);
 }
 
 .artist-search-loading,
@@ -300,6 +310,13 @@
   50% {
     transform: scale(1.1);
     opacity: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artist-search-playing-indicator {
+    animation: none;
+    transform: none;
   }
 }
 

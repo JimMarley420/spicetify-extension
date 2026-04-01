@@ -4,7 +4,7 @@
   "preview": "preview.png",
   "main": "dist/artistSearch.mjs",
   "readme": "README.md",
-  "branch": "main",
+  "branch": "master",
   "authors": [
     {
       "name": "JimMarley420",
