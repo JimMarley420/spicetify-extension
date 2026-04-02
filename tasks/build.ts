@@ -42,20 +42,12 @@ async function buildExtension(folderName: string, folderPath: string): Promise<v
     sourcemap: "inline",
     minify: false,
     jsx: "automatic",
-external: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react-compiler-runtime"],
+    external: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react-compiler-runtime"],
     plugins: [
       spicetifyShims(),
       inlineCSSPlugin({
         minify: false,
       }),
-      {
-        name: "resolve-react-compiler-runtime",
-        setup(build) {
-          build.onResolve({ filter: /^react-compiler-runtime$/ }, () => {
-            return { path: "npm:react-compiler-runtime", external: true };
-          });
-        },
-      },
       ...denoPlugins({
         initialPluginData: {
           runtimePackage: "./deno.json",
