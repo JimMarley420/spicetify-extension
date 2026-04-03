@@ -23,7 +23,8 @@
 	"babel-plugin-react-compiler": "npm:babel-plugin-react-compiler@latest",
 	"@babel/preset-typescript": "npm:@babel/preset-typescript@latest",
 	"@babel/preset-react": "npm:@babel/preset-react@latest",
-	"react-compiler-runtime": "npm:react-compiler-runtime@latest"
+	"react-compiler-runtime": "npm:react-compiler-runtime@latest",
+    "@babel/core": "npm:@babel/core@latest"
 },
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable", "dom.asynciterable", "deno.ns", "deno.unstable"],
