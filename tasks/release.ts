@@ -21,6 +21,54 @@ const getEntryFile = async (folderPath: string): Promise<string | null> => {
   return null;
 };
 
+const resolveReactCompilerRuntime = (): esbuild.Plugin => ({
+  name: "resolve-react-compiler-runtime",
+  setup(build) {
+    build.onResolve({ filter: /^react-compiler-runtime$/ }, (args) => {
+      return {
+        path: "react-compiler-runtime-stub",
+        namespace: "react-compiler-runtime-ns",
+      };
+    });
+    build.onLoad({ filter: /./, namespace: "react-compiler-runtime-ns" }, () => {
+      return {
+        contents: `
+import * as React from "react";
+import { useMemo } from "react";
+
+const $empty = Symbol.for("react.memo_cache_sentinel");
+
+export const c = typeof React.__COMPILER_RUNTIME?.c === "function"
+  ? React.__COMPILER_RUNTIME.c
+  : function c(size) {
+      return useMemo(() => {
+        const $ = new Array(size);
+        for (let ii = 0; ii < size; ii++) {
+          $[ii] = $empty;
+        }
+        $[$empty] = true;
+        return $;
+      }, []);
+    };
+
+export function $reset($) {
+  for (let ii = 0; ii < $.length; ii++) {
+    $[ii] = $empty;
+  }
+}
+
+export function $makeReadOnly() {
+  throw new Error("TODO: implement $makeReadOnly");
+}
+
+export function $structuralCheck() {}
+`,
+        loader: "js",
+      };
+    });
+  },
+});
+
 const buildExtension = async (folderName: string, folderPath: string): Promise<void> => {
   const SRC = await getEntryFile(folderPath);
   if (!SRC) return;
@@ -36,21 +84,14 @@ const buildExtension = async (folderName: string, folderPath: string): Promise<v
     sourcemap: false,
     minify: true,
     jsx: "automatic",
-    external: ["react", "react-dom/client", "react/jsx-runtime", "react-compiler-runtime"],
+    external: ["react", "react-dom/client", "react/jsx-runtime"],
     legalComments: "external",
     plugins: [
+      resolveReactCompilerRuntime(),
       spicetifyShims(),
       inlineCSSPlugin({
         minify: true,
       }),
-      {
-        name: "resolve-react-compiler-runtime",
-        setup(build) {
-          build.onResolve({ filter: /^react-compiler-runtime$/ }, () => {
-            return { path: "npm:react-compiler-runtime", external: true };
-          });
-        },
-      },
       ...denoPlugins({
         initialPluginData: {
           runtimePackage: "./deno.json",
