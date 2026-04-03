@@ -27,6 +27,54 @@ async function getEntryFile(folderPath: string): Promise<string | null> {
   return null;
 }
 
+const resolveReactCompilerRuntime = (): Plugin => ({
+  name: "resolve-react-compiler-runtime",
+  setup(build) {
+    build.onResolve({ filter: /^react-compiler-runtime$/ }, () => {
+      return {
+        path: "react-compiler-runtime-stub",
+        namespace: "react-compiler-runtime-ns",
+      };
+    });
+    build.onLoad({ filter: /./, namespace: "react-compiler-runtime-ns" }, () => {
+      return {
+        contents: `
+import * as React from "react";
+import { useMemo } from "react";
+
+const $empty = Symbol.for("react.memo_cache_sentinel");
+
+export const c = typeof React.__COMPILER_RUNTIME?.c === "function"
+  ? React.__COMPILER_RUNTIME.c
+  : function c(size) {
+      return useMemo(() => {
+        const $ = new Array(size);
+        for (let ii = 0; ii < size; ii++) {
+          $[ii] = $empty;
+        }
+        $[$empty] = true;
+        return $;
+      }, []);
+    };
+
+export function $reset($) {
+  for (let ii = 0; ii < $.length; ii++) {
+    $[ii] = $empty;
+  }
+}
+
+export function $makeReadOnly() {
+  throw new Error("TODO: implement $makeReadOnly");
+}
+
+export function $structuralCheck() {}
+`,
+        loader: "js",
+      };
+    });
+  },
+});
+
 async function buildExtension(folderName: string, folderPath: string): Promise<void> {
   const SRC = await getEntryFile(folderPath);
   if (!SRC) return;
@@ -44,6 +92,7 @@ async function buildExtension(folderName: string, folderPath: string): Promise<v
     jsx: "automatic",
     external: ["react", "react-dom", "react-dom/client", "react/jsx-runtime"],
     plugins: [
+      resolveReactCompilerRuntime(),
       spicetifyShims(),
       inlineCSSPlugin({
         minify: false,
