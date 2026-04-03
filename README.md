@@ -116,7 +116,25 @@ Have ideas for improvements? Check the [existing issues](https://github.com/JimM
 
 ## 📜 License
 
-MIT License - feel free to use, modify, and distribute as you please.
+Custom License (based on MIT)
+
+Copyright (c) 2026 JimMarley420
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software to use, copy, modify, and distribute it, subject to the following conditions:
+
+1. The original author (JimMarley420) must be credited in all copies or substantial portions of the Software.
+
+2. You are NOT allowed to:
+   - Republish this extension under a different name
+   - Distribute modified versions to spicetify marketplace
+   - Claim authorship of the original work
+
+3. Forking and modifying the project is allowed, but it must:
+   - Clearly reference the original repository
+   - Not be presented as a separate original project
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 
 ---
 
