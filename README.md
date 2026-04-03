@@ -4,7 +4,7 @@ Access an artist's entire discography instantly from a single menu. Browse, play
 
 <table>
   <tr>
-    <td><img width="500" src="https://github.com/user-attachments/assets/700755a3-69b2-457d-a883-6c993051b5ac" /></td>
+    <td><img width="500" src="https://github.com/user-attachments/assets/3aa9a759-47e1-4727-9780-eeaa03be65e1" /></td>
     <td><img width="350" src="https://github.com/user-attachments/assets/6ebb9b8c-a2c2-429d-af5e-f7b5702268a8" /></td>
   </tr>
 </table>
