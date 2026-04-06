@@ -56,6 +56,10 @@ async function addTracksToPlaylists(playlistUris: string[], trackUris: string[])
 }
 
 function createModal(trackUris: string[]) {
+  let allPlaylists: Playlist[] = [];
+  let filteredPlaylists: Playlist[] = [];
+  const selectedSet = new Set<string>();
+  
   const modal = document.createElement("div");
   modal.className = "add-to-playlist-modal";
   
@@ -66,6 +70,24 @@ function createModal(trackUris: string[]) {
   header.className = "add-to-playlist-header";
   header.textContent = "Add to Multiple Playlists";
   
+  const searchContainer = document.createElement("div");
+  searchContainer.className = "add-to-playlist-search";
+  
+  const searchWrapper = document.createElement("div");
+  searchWrapper.className = "add-to-playlist-search-wrapper";
+  
+  const searchIcon = document.createElement("div");
+  searchIcon.className = "add-to-playlist-search-icon";
+  searchIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`;
+  
+  const searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.placeholder = "Search playlists...";
+  
+  searchWrapper.appendChild(searchIcon);
+  searchWrapper.appendChild(searchInput);
+  searchContainer.appendChild(searchWrapper);
+  
   const trackCount = document.createElement("div");
   trackCount.className = "add-to-playlist-track-count";
   trackCount.textContent = `${trackUris.length} track(s) selected`;
@@ -73,46 +95,125 @@ function createModal(trackUris: string[]) {
   const playlistList = document.createElement("div");
   playlistList.className = "add-to-playlist-list";
   
-  const selectedSet = new Set<string>();
+  const emptyState = document.createElement("div");
+  emptyState.className = "add-to-playlist-empty";
+  emptyState.textContent = "Loading playlists...";
+  playlistList.appendChild(emptyState);
+  
+  function renderPlaylists(playlists: Playlist[]) {
+    playlistList.innerHTML = "";
+    
+    if (playlists.length === 0) {
+      emptyState.textContent = searchInput.value ? "No playlists found" : "No playlists available";
+      playlistList.appendChild(emptyState);
+      return;
+    }
+    
+    for (const playlist of playlists) {
+      const item = document.createElement("label");
+      item.className = "add-to-playlist-item" + (selectedSet.has(playlist.uri) ? " selected" : "");
+      
+      const checkboxWrapper = document.createElement("div");
+      checkboxWrapper.className = "add-to-playlist-checkbox-wrapper";
+      
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "add-to-playlist-checkbox";
+      checkbox.checked = selectedSet.has(playlist.uri);
+      
+      const customCheckbox = document.createElement("div");
+      customCheckbox.className = "add-to-playlist-checkbox-custom";
+      
+      checkboxWrapper.appendChild(checkbox);
+      checkboxWrapper.appendChild(customCheckbox);
+      
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          selectedSet.add(playlist.uri);
+          item.classList.add("selected");
+        } else {
+          selectedSet.delete(playlist.uri);
+          item.classList.remove("selected");
+        }
+        updateButtonState();
+      });
+      
+      const name = document.createElement("span");
+      name.className = "add-to-playlist-name";
+      name.textContent = playlist.name;
+      
+      item.appendChild(checkboxWrapper);
+      item.appendChild(name);
+      playlistList.appendChild(item);
+    }
+  }
+  
+  function filterPlaylists() {
+    const query = searchInput.value.toLowerCase();
+    filteredPlaylists = allPlaylists.filter(p => p.name.toLowerCase().includes(query));
+    renderPlaylists(filteredPlaylists);
+    updateButtonState();
+  }
+  
+  function updateButtonState() {
+    const selectedCount = selectedSet.size;
+    trackCount.textContent = `${trackUris.length} track(s) selected • ${selectedCount} playlist(s)`;
+    confirmBtn.disabled = selectedCount === 0;
+    
+    if (selectedCount === 0) {
+      selectAllBtn.textContent = "Select All";
+    } else if (selectedCount === filteredPlaylists.length) {
+      selectAllBtn.textContent = "Deselect All";
+    } else {
+      selectAllBtn.textContent = "Select All";
+    }
+  }
   
   async function loadPlaylists() {
     try {
-      const playlists = await fetchPlaylists();
-      
-      for (const playlist of playlists) {
-        const item = document.createElement("label");
-        item.className = "add-to-playlist-item";
-        
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "add-to-playlist-checkbox";
-        
-        checkbox.addEventListener("change", () => {
-          if (checkbox.checked) {
-            selectedSet.add(playlist.uri);
-          } else {
-            selectedSet.delete(playlist.uri);
-          }
-          confirmBtn.disabled = selectedSet.size === 0;
-        });
-        
-        const name = document.createElement("span");
-        name.className = "add-to-playlist-name";
-        name.textContent = playlist.name;
-        
-        item.appendChild(checkbox);
-        item.appendChild(name);
-        playlistList.appendChild(item);
-      }
+      allPlaylists = await fetchPlaylists();
+      filteredPlaylists = [...allPlaylists];
+      renderPlaylists(filteredPlaylists);
+      updateButtonState();
     } catch (e) {
-      playlistList.textContent = "Failed to load playlists";
+      emptyState.textContent = "Failed to load playlists";
+      playlistList.appendChild(emptyState);
     }
   }
   
   loadPlaylists();
   
+  searchInput.addEventListener("input", filterPlaylists);
+  
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "add-to-playlist-buttons";
+  
+  const buttonsLeft = document.createElement("div");
+  buttonsLeft.className = "add-to-playlist-buttons-left";
+  
+  const selectAllBtn = document.createElement("button");
+  selectAllBtn.className = "add-to-playlist-select-all";
+  selectAllBtn.textContent = "Select All";
+  selectAllBtn.addEventListener("click", () => {
+    if (selectedSet.size === filteredPlaylists.length) {
+      selectedSet.clear();
+      playlistList.querySelectorAll(".add-to-playlist-item").forEach(item => {
+        item.classList.remove("selected");
+        const checkbox = item.querySelector(".add-to-playlist-checkbox") as HTMLInputElement;
+        if (checkbox) checkbox.checked = false;
+      });
+    } else {
+      filteredPlaylists.forEach(p => selectedSet.add(p.uri));
+      playlistList.querySelectorAll(".add-to-playlist-item").forEach(item => {
+        item.classList.add("selected");
+        const checkbox = item.querySelector(".add-to-playlist-checkbox") as HTMLInputElement;
+        if (checkbox) checkbox.checked = true;
+      });
+    }
+    updateButtonState();
+  });
+  
+  buttonsLeft.appendChild(selectAllBtn);
   
   const cancelBtn = document.createElement("button");
   cancelBtn.className = "add-to-playlist-btn cancel";
@@ -140,10 +241,12 @@ function createModal(trackUris: string[]) {
     }
   });
   
+  buttonContainer.appendChild(buttonsLeft);
   buttonContainer.appendChild(cancelBtn);
   buttonContainer.appendChild(confirmBtn);
   
   content.appendChild(header);
+  content.appendChild(searchContainer);
   content.appendChild(trackCount);
   content.appendChild(playlistList);
   content.appendChild(buttonContainer);
@@ -157,6 +260,8 @@ function createModal(trackUris: string[]) {
       modal.remove();
     }
   });
+  
+  searchInput.focus();
 }
 
 async function handleMenuClick(uris: string[]) {
