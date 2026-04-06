@@ -17,7 +17,6 @@
   {
     "name": "Add to Multiple Playlists",
     "description": "Select multiple playlists and add tracks to all of them at once from the context menu.",
-    "preview": "extensions/addToPlaylistMulti/assets/preview.png",
     "main": "dist/addToPlaylistMulti.mjs",
     "readme": "extensions/addToPlaylistMulti/README.md",
     "branch": "master",
