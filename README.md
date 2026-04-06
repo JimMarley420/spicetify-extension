@@ -61,6 +61,35 @@ deno task check
 deno task format
 ```
 
+## Contributing
+
+Contributions are welcome! Here's how you can help:
+
+### Issues
+
+Found a bug or have a feature request? Open an issue:
+1. Go to [Issues](https://github.com/JimMarley420/spicetify-extension/issues)
+2. Click "New issue"
+3. Describe the problem or feature
+
+### Pull Requests
+
+Want to contribute code? Follow these steps:
+
+1. **Fork** the repository
+2. **Create** a new branch (`git checkout -b my-feature`)
+3. **Make** your changes
+4. **Push** to your fork (`git push origin my-feature`)
+5. **Create** a Pull Request
+
+### Development
+
+- Follow the existing code style
+- Run `deno task check` and `deno task format` before submitting
+- Test your changes locally with `deno task dev-build`
+
+---
+
 ## Project Structure
 
 ```

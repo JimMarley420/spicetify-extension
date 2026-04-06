@@ -2,11 +2,19 @@
 
 Add tracks to multiple playlists at once from the context menu.
 
+<table>
+  <tr>
+    <td><img src="assets/preview.png" width="400" /></td>
+    <td><img src="assets/modal.png" width="400" /></td>
+  </tr>
+</table>
+
 ## Features
 
 - **Multiple Selection** - Select multiple playlists and add tracks to all of them at once
 - **Appears in "Add to Playlist"** - Integrates into the existing context menu under "Add to Playlist"
 - **"Select Multiple..."** - Opens a modal to select multiple playlists at once
+- **Duplicate Detection** - Warns if tracks are already in selected playlists
 
 ## Usage
 
@@ -21,18 +29,6 @@ Or directly click on a playlist name to add tracks to that single playlist.
 ## Development
 
 ```bash
-# Build
-deno task build
-
-# Watch mode (rebuilds on changes)
-deno task watch
-
-# Dev build (auto-deploys to Spotify)
-deno task dev-build
-deno task dev-watch
-```
-
-## License
 # Build
 deno task build
 
