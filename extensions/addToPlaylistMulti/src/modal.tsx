@@ -205,7 +205,7 @@ export function createModal(trackUris: string[]) {
   
   const githubLink = document.createElement("a");
   githubLink.className = "add-to-playlist-github";
-  githubLink.href = "https://github.com/JimMarley420/artistSearch";
+  githubLink.href = "https://github.com/JimMarley420/spicetify-extension";
   githubLink.target = "_blank";
   githubLink.rel = "noopener noreferrer";
   githubLink.setAttribute("aria-label", "Open GitHub repository");
