@@ -28,6 +28,34 @@
   border-bottom: 1px solid #282828;
   font-size: 18px;
   font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-to-playlist-github {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.add-to-playlist-github:hover {
+  background: #282828;
+}
+
+.add-to-playlist-github svg {
+  width: 20px;
+  height: 20px;
+  fill: #b3b3b3;
+  transition: fill 0.15s;
+}
+
+.add-to-playlist-github:hover svg {
+  fill: #fff;
 }
 
 .add-to-playlist-search {
