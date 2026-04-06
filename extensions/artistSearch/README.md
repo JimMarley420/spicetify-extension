@@ -51,4 +51,16 @@ deno task dev-watch
 
 ## License
 
-Custom License (based on MIT) - See main README for details.
+MIT License - Copyright (c) 2026 JimMarley420
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software to use, copy, modify, and distribute it, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+**You are NOT allowed to:**
+- Republish or redistribute this extension on Spicetify Marketplace
+- Claim authorship of the original work
+
+Forking and modifying for personal use is allowed, but it must not be redistributed.
