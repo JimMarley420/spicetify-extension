@@ -102,4 +102,4 @@ Forking and modifying for personal use is allowed, but it must not be redistribu
 
 ---
 
-Made by [JimMarley420](https://github.com/JimMarley420)
+Made by [JimMarley420](https://github.com/JimMarley420/spicetify-extension)
