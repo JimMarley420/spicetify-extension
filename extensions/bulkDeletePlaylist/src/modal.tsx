@@ -58,26 +58,10 @@ function formatTime(ms: number | undefined): string {
   return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 }
 
-function createTrackImage(url: string): HTMLElement {
-  const imgContainer = document.createElement("div");
-  imgContainer.className = "bulk-delete-track-image-container";
-  
-  const img = document.createElement("img");
-  img.className = "bulk-delete-track-image";
-  img.src = url || "";
-  img.loading = "lazy";
-  
-  img.onerror = () => {
-    img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23282828' d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/%3E%3C/svg%3E";
-  };
-  
-  imgContainer.appendChild(img);
-  return imgContainer;
-}
-
 function createPlaybackControl(uri: string, duration: number): HTMLElement {
   const container = document.createElement("div");
   container.className = "bulk-delete-playback-controls";
+  container.dataset.uri = uri;
   
   const playBtn = document.createElement("button");
   playBtn.className = "bulk-delete-playback-button";
@@ -115,7 +99,7 @@ function createPlaybackControl(uri: string, duration: number): HTMLElement {
   slider.type = "range";
   slider.className = "bulk-delete-slider";
   slider.min = "0";
-  slider.max = duration > 0 ? duration.toString() : "1";
+  slider.max = duration > 0 ? duration.toString() : "1000";
   slider.value = "0";
   slider.step = "1000";
   
@@ -133,12 +117,31 @@ function createPlaybackControl(uri: string, duration: number): HTMLElement {
     } catch (e) {}
   });
   
+  sliderContainer.appendChild(currentTime);
+  sliderContainer.appendChild(slider);
+  sliderContainer.appendChild(totalTime);
+  
   container.appendChild(playBtn);
-  container.appendChild(currentTime);
-  container.appendChild(slider);
-  container.appendChild(totalTime);
+  container.appendChild(sliderContainer);
   
   return container;
+}
+
+function createTrackImage(url: string): HTMLElement {
+  const imgContainer = document.createElement("div");
+  imgContainer.className = "bulk-delete-track-image-container";
+  
+  const img = document.createElement("img");
+  img.className = "bulk-delete-track-image";
+  img.src = url || "";
+  img.loading = "lazy";
+  
+  img.onerror = () => {
+    img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23282828' d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/%3E%3C/svg%3E";
+  };
+  
+  imgContainer.appendChild(img);
+  return imgContainer;
 }
 
 function createPlayingIndicator(): HTMLElement {
@@ -328,11 +331,6 @@ export function createModal(trackUris: string[]) {
   const playlistSelect = document.createElement("select");
   playlistSelect.className = "bulk-delete-playlist-select";
   
-  const defaultOption = document.createElement("option");
-  defaultOption.value = "";
-  defaultOption.textContent = "Choose a playlist...";
-  playlistSelect.appendChild(defaultOption);
-  
   playlistSelector.appendChild(playlistLabel);
   playlistSelector.appendChild(playlistSelect);
   
@@ -503,11 +501,6 @@ export function createModal(trackUris: string[]) {
       allPlaylists = await fetchPlaylistsWithDeletePermission();
       
       allPlaylists.sort((a, b) => a.name.localeCompare(b.name));
-      
-      const defaultOpt = document.createElement("option");
-      defaultOpt.value = "";
-      defaultOpt.textContent = "Select a playlist";
-      playlistSelect.appendChild(defaultOpt);
       
       for (const playlist of allPlaylists) {
         const option = document.createElement("option");
@@ -680,6 +673,66 @@ export function createModal(trackUris: string[]) {
       modal.remove();
     }
   });
+  
+  let updateInterval: number | null = null;
+  
+  const updatePlaybackState = () => {
+    const player = (Spicetify as any).Player;
+    if (!player?.data?.item) {
+      return;
+    }
+    
+    const currentUri = player.data.item.uri;
+    const isPlaying = player.isPlaying();
+    const position = player.getProgress();
+    const duration = player.getDuration() || player.data.item.duration?.totalMs || 0;
+    
+    trackList.querySelectorAll(".bulk-delete-playback-controls").forEach((ctrl: any) => {
+      const playBtn = ctrl.querySelector(".bulk-delete-playback-button");
+      const slider = ctrl.querySelector(".bulk-delete-slider") as HTMLInputElement;
+      const currentTime = ctrl.querySelector(".bulk-delete-slider-time");
+      
+      if (ctrl.dataset.uri === currentUri) {
+        if (isPlaying) {
+          playBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>`;
+        } else {
+          playBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>`;
+        }
+        if (slider) {
+          slider.value = position.toString();
+          slider.max = duration.toString();
+        }
+        if (currentTime) currentTime.textContent = formatTime(position);
+      }
+    });
+    
+    trackList.querySelectorAll(".bulk-delete-item").forEach((item: any) => {
+      const trackNumber = item.querySelector(".bulk-delete-track-number");
+      if (!trackNumber) return;
+      
+      const playbacks = item.querySelectorAll(".bulk-delete-playback-controls");
+      let itemUri = "";
+      playbacks.forEach((pb: any) => {
+        if (pb.dataset.uri === currentUri) {
+          itemUri = currentUri;
+        }
+      });
+      
+      if (itemUri === currentUri) {
+        trackNumber.innerHTML = `<div class="bulk-delete-playing-indicator"></div>`;
+      } else if (!trackNumber.querySelector(".bulk-delete-playing-indicator")) {
+        const idx = Array.from(trackList.querySelectorAll(".bulk-delete-item")).indexOf(item) + 1;
+        trackNumber.textContent = idx.toString();
+      }
+    });
+  };
+  
+  const startPlaybackUpdates = () => {
+    if (updateInterval) return;
+    updateInterval = window.setInterval(updatePlaybackState, 1000);
+  };
+  
+  startPlaybackUpdates();
   
   playlistSelect.focus();
 }
