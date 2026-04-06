@@ -320,9 +320,11 @@ export function createModal(trackUris: string[]) {
     trackCount.textContent = `${trackUris.length} track(s) selected • ${selectedCount} playlist(s)`;
     confirmBtn.disabled = selectedCount === 0;
     
-    if (selectedCount === 0) {
+    const selectedWithinFiltered = filteredPlaylists.filter(p => selectedSet.has(p.uri)).length;
+    
+    if (selectedWithinFiltered === 0) {
       selectAllBtn.textContent = "Select All";
-    } else if (selectedCount === filteredPlaylists.length) {
+    } else if (selectedWithinFiltered === filteredPlaylists.length) {
       selectAllBtn.textContent = "Deselect All";
     } else {
       selectAllBtn.textContent = "Select All";
@@ -356,8 +358,11 @@ export function createModal(trackUris: string[]) {
   selectAllBtn.className = "add-to-playlist-select-all";
   selectAllBtn.textContent = "Select All";
   selectAllBtn.addEventListener("click", () => {
-    if (selectedSet.size === filteredPlaylists.length) {
-      selectedSet.clear();
+    const selectedWithinFiltered = filteredPlaylists.filter(p => selectedSet.has(p.uri)).length;
+    const allFilteredSelected = selectedWithinFiltered === filteredPlaylists.length;
+    
+    if (allFilteredSelected) {
+      filteredPlaylists.forEach(p => selectedSet.delete(p.uri));
       playlistList.querySelectorAll(".add-to-playlist-item").forEach(item => {
         item.classList.remove("selected");
         const checkbox = item.querySelector(".add-to-playlist-checkbox") as HTMLInputElement;
