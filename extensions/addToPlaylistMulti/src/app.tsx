@@ -200,6 +200,9 @@ function createModal(trackUris: string[]) {
   
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "add-to-playlist-buttons";
+  buttonContainer.style.display = "flex";
+  buttonContainer.style.justifyContent = "space-between";
+  buttonContainer.style.alignItems = "center";
   
   const selectAllBtn = document.createElement("button");
   selectAllBtn.className = "add-to-playlist-select-all";
@@ -226,6 +229,7 @@ function createModal(trackUris: string[]) {
   const buttonGroup = document.createElement("div");
   buttonGroup.style.display = "flex";
   buttonGroup.style.gap = "12px";
+  buttonGroup.style.marginLeft = "auto";
   
   const cancelBtn = document.createElement("button");
   cancelBtn.className = "add-to-playlist-btn cancel";
