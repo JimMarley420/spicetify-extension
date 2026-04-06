@@ -1,0 +1,340 @@
+.add-to-playlist-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.add-to-playlist-content {
+  background: #181818;
+  border-radius: 8px;
+  width: 420px;
+  max-height: 550px;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  font-family: var(--font-family, spotify), sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.add-to-playlist-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #282828;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-to-playlist-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-to-playlist-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.add-to-playlist-close:hover {
+  background: #282828;
+}
+
+.add-to-playlist-close svg {
+  width: 18px;
+  height: 18px;
+  fill: #b3b3b3;
+  transition: fill 0.15s;
+}
+
+.add-to-playlist-close:hover svg {
+  fill: #fff;
+}
+
+.add-to-playlist-github {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.add-to-playlist-github:hover {
+  background: #282828;
+}
+
+.add-to-playlist-github svg {
+  width: 18px;
+  height: 18px;
+  fill: #b3b3b3;
+  transition: fill 0.15s;
+}
+
+.add-to-playlist-github:hover svg {
+  fill: #fff;
+}
+
+.add-to-playlist-search {
+  padding: 16px 20px;
+  border-bottom: 1px solid #282828;
+}
+
+.add-to-playlist-search-wrapper {
+  display: flex;
+  align-items: center;
+  background: #282828;
+  border-radius: 4px;
+  padding: 0 12px;
+}
+
+.add-to-playlist-search-icon {
+  color: #b3b3b3;
+  display: flex;
+  align-items: center;
+}
+
+.add-to-playlist-search-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.add-to-playlist-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  padding: 12px;
+  outline: none;
+}
+
+.add-to-playlist-search input::placeholder {
+  color: #b3b3b3;
+}
+
+.add-to-playlist-track-count {
+  padding: 12px 20px;
+  color: #b3b3b3;
+  font-size: 13px;
+}
+
+.add-to-playlist-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.add-to-playlist-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  color: #b3b3b3;
+  font-size: 14px;
+}
+
+.add-to-playlist-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.add-to-playlist-item:hover {
+  background: #282828;
+}
+
+.add-to-playlist-item.selected {
+  background: rgba(29, 185, 84, 0.1);
+}
+
+.add-to-playlist-checkbox-wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-to-playlist-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.add-to-playlist-checkbox-custom {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #b3b3b3;
+  border-radius: 3px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-to-playlist-checkbox:checked + .add-to-playlist-checkbox-custom {
+  background: #1db954;
+  border-color: #1db954;
+}
+
+.add-to-playlist-checkbox:checked + .add-to-playlist-checkbox-custom::after {
+  content: "";
+  width: 6px;
+  height: 10px;
+  border: solid #000;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.add-to-playlist-name {
+  color: #fff;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.add-to-playlist-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid #282828;
+}
+
+.add-to-playlist-select-all {
+  background: transparent;
+  border: none;
+  color: #1db954;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: color 0.2s;
+}
+
+.add-to-playlist-select-all:hover {
+  color: #1ed760;
+}
+
+.add-to-playlist-btn {
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-to-playlist-btn.cancel {
+  background: transparent;
+  border: 1px solid #727272;
+  color: #fff;
+}
+
+.add-to-playlist-btn.cancel:hover {
+  border-color: #fff;
+}
+
+.add-to-playlist-btn.confirm {
+  background: #1db954;
+  border: none;
+  color: #000;
+}
+
+.add-to-playlist-btn.confirm:hover:not(:disabled) {
+  background: #1ed760;
+}
+
+.add-to-playlist-btn.confirm:disabled {
+  background: #535353;
+  color: #181818;
+  cursor: not-allowed;
+}
+
+.add-to-playlist-confirm-content {
+  background: #181818;
+  border-radius: 8px;
+  width: 380px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.add-to-playlist-confirm-header {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.add-to-playlist-confirm-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.add-to-playlist-confirm-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #282828;
+}
+
+.add-to-playlist-confirm-item .track-name {
+  color: #fff;
+  font-size: 14px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.add-to-playlist-confirm-item .playlist-name {
+  color: #b3b3b3;
+  font-size: 12px;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.add-to-playlist-confirm-more {
+  color: #b3b3b3;
+  font-size: 12px;
+  padding: 8px 0;
+}
+
+.add-to-playlist-confirm-info {
+  color: #b3b3b3;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.add-to-playlist-confirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
