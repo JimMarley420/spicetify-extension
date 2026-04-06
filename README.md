@@ -6,7 +6,7 @@ Collection of Spicetify extensions for Spotify.
 
 | Extension | Description | Marketplace | Status |
 |-----------|-------------|-------------|--------|
-| [Artist Search](extensions/artistSearch/README.md) | Browse an artist's entire discography from context menu | [Spicetify Marketplace](https://github.com/JimMarley420/artistsSearch) | ✅ Active |
+| [Artist Search](extensions/artistSearch/README.md) | Browse an artist's entire discography from context menu | [Spicetify Marketplace](https://github.com/spicetify/marketplace) | ✅ Active |
 
 ---
 
