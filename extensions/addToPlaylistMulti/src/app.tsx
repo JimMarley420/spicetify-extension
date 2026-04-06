@@ -282,7 +282,13 @@ async function handleMenuClick(uris: string[]) {
 const addToMultiplePlaylistsMenuItem = new Spicetify.ContextMenu.Item(
   "Add to Multiple Playlists",
   handleMenuClick,
-  (uris: string[]) => uris.length > 0,
+  (uris: string[]) => {
+    const hasTrack = uris.some((uri: string) => {
+      const uriObj = Spicetify.URI.from(uri);
+      return uriObj && (uriObj as any).type === "track";
+    });
+    return hasTrack;
+  },
   "plus-alt" as Spicetify.Icon
 );
 
