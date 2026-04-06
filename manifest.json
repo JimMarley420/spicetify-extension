@@ -28,5 +28,19 @@
       }
     ],
     "tags": ["context-menu", "playlist", "bulk-add", "multi", "utility"]
+  },
+  {
+    "name": "Bulk Delete from Playlist",
+    "description": "Select and delete multiple tracks from a playlist at once via context menu.",
+    "main": "dist/bulkDeletePlaylist.mjs",
+    "readme": "extensions/bulkDeletePlaylist/README.md",
+    "branch": "master",
+    "authors": [
+      {
+        "name": "JimMarley420",
+        "url": "https://github.com/JimMarley420/spicetify-extension"
+      }
+    ],
+    "tags": ["context-menu", "playlist", "bulk-delete", "multi", "utility"]
   }
 ]

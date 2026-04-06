@@ -8,7 +8,7 @@ declare namespace Spicetify {
     | "playlist-folder" | "plus-alt" | "plus2px" | "queue" | "repeat"
     | "repeat-once" | "search" | "search-active" | "shuffle" | "skip-back"
     | "skip-back15" | "skip-forward" | "skip-forward15" | "speaker" | "spotify"
-    | "subtitles" | "volume" | "volume-off" | "volume-one-wave" | "volume-two-wave"
+    | "subtitles" | "trash" | "trashbin" | "volume" | "volume-off" | "volume-one-wave" | "volume-two-wave"
     | "x";
 
   const SVGIcons: Record<Icon, string>;
