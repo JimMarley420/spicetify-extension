@@ -63,4 +63,4 @@ copies or substantial portions of the Software.
 - Republish or redistribute this extension on Spicetify Marketplace
 - Claim authorship of the original work
 
-Forking and modifying for personal use is allowed, but it must not be redistributed.
+Forking and modifying for contribute is allowed, but it must not be redistributed.
