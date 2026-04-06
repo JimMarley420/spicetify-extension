@@ -39,20 +39,26 @@ async function fetchPlaylists(): Promise<Playlist[]> {
   }
 }
 
-async function addTracksToPlaylists(playlistUris: string[], trackUris: string[]): Promise<void> {
+async function addTracksToPlaylists(playlistUris: string[], trackUris: string[]): Promise<{ success: string[]; failed: string[] }> {
   const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
   
   if (!PlaylistAPI) {
     throw new Error("No PlaylistAPI");
   }
   
+  const success: string[] = [];
+  const failed: string[] = [];
+  
   for (const playlistUri of playlistUris) {
     try {
       await PlaylistAPI.add(playlistUri, trackUris, []);
+      success.push(playlistUri);
     } catch (e) {
-      throw e;
+      failed.push(playlistUri);
     }
   }
+  
+  return { success, failed };
 }
 
 function createModal(trackUris: string[]) {
@@ -247,8 +253,16 @@ function createModal(trackUris: string[]) {
     confirmBtn.textContent = "Adding...";
     
     try {
-      await addTracksToPlaylists(playlistUris, trackUris);
-      Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${playlistUris.length} playlist(s)`);
+      const result = await addTracksToPlaylists(playlistUris, trackUris);
+      
+      if (result.failed.length === 0) {
+        Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${result.success.length} playlist(s)`);
+      } else if (result.success.length === 0) {
+        Spicetify.showNotification("Failed to add tracks - they may already be in the playlists", true);
+      } else {
+        Spicetify.showNotification(`Added to ${result.success.length} playlist(s). ${result.failed.length} already contained the track(s).`, true);
+      }
+      
       modal.remove();
     } catch (e) {
       Spicetify.showNotification("Failed to add tracks", true);
