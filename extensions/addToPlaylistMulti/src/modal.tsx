@@ -1,13 +1,16 @@
-import styles from "./styles.css" with { type: "css" };
-
-document.adoptedStyleSheets.push(styles);
-
 interface Playlist {
   name: string;
   uri: string;
 }
 
-async function fetchPlaylists(): Promise<Playlist[]> {
+interface DuplicateCheck {
+  playlistUri: string;
+  playlistName: string;
+  trackUri: string;
+  trackName: string;
+}
+
+export async function fetchPlaylists(): Promise<Playlist[]> {
   const LibraryAPI = (Spicetify as any).Platform?.LibraryAPI;
   
   if (!LibraryAPI) {
@@ -39,36 +42,45 @@ async function fetchPlaylists(): Promise<Playlist[]> {
   }
 }
 
-async function getPlaylistTracks(playlistUri: string): Promise<Set<string>> {
+export async function getPlaylistTracks(playlistUri: string): Promise<Set<string>> {
   const trackUris = new Set<string>();
   
   try {
-    const response = await Spicetify.CosmosAsync.get(
-      `sp://playlist/v1/tracks?uri=${encodeURIComponent(playlistUri)}`
-    );
+    const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
     
-    if (response?.tracks) {
-      for (const track of response.tracks) {
-        if (track?.uri) {
-          trackUris.add(track.uri);
+    if (!PlaylistAPI) {
+      return trackUris;
+    }
+    
+    const response = await PlaylistAPI.getContents(playlistUri, {
+      offset: 0,
+      limit: -1,
+    });
+    
+    if (response?.items) {
+      for (const item of response.items) {
+        if (item?.track?.uri) {
+          trackUris.add(item.track.uri);
         }
       }
     }
   } catch (e) {
+    console.error("Failed to get playlist tracks:", e);
     return trackUris;
   }
   
   return trackUris;
 }
 
-interface DuplicateCheck {
-  playlistUri: string;
-  playlistName: string;
-  trackUri: string;
-  trackName: string;
+export function getTrackName(uri: string): string {
+  try {
+    return decodeURIComponent(uri.split(":").pop() || "Unknown track");
+  } catch {
+    return "Unknown track";
+  }
 }
 
-function createConfirmModal(
+export function createConfirmModal(
   duplicates: DuplicateCheck[],
   trackCount: number,
   onConfirm: () => void,
@@ -122,7 +134,7 @@ function createConfirmModal(
   
   const confirmBtn = document.createElement("button");
   confirmBtn.className = "add-to-playlist-btn confirm";
-  confirmBtn.textContent = duplicates.length === trackCount ? "Add Anyway" : "Add Anyway";
+  confirmBtn.textContent = "Add Anyway";
   confirmBtn.addEventListener("click", () => {
     modal.remove();
     onConfirm();
@@ -148,62 +160,32 @@ function createConfirmModal(
   });
 }
 
-async function addTracksToPlaylists(
+export async function addTracksToPlaylists(
   playlistUris: string[],
-  trackUris: string[],
-  onDuplicateFound: (duplicates: DuplicateCheck[]) => Promise<boolean>
-): Promise<{ success: string[]; failed: string[]; duplicates: DuplicateCheck[] }> {
+  trackUris: string[]
+): Promise<{ success: string[]; failed: string[] }> {
   const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
   
   if (!PlaylistAPI) {
     throw new Error("No PlaylistAPI");
   }
   
-  const allDuplicates: DuplicateCheck[] = [];
   const success: string[] = [];
   const failed: string[] = [];
   
   for (const playlistUri of playlistUris) {
-    let playlistTracks: Set<string> | null = null;
-    
-    for (const trackUri of trackUris) {
-      if (playlistTracks === null) {
-        playlistTracks = await getPlaylistTracks(playlistUri);
-      }
-      
-      if (playlistTracks.has(trackUri)) {
-        const playlist = playlistUris.find(p => p === playlistUri);
-        const playlistName = "Playlist";
-        allDuplicates.push({
-          playlistUri,
-          playlistName: playlistName || "Unknown",
-          trackUri,
-          trackName: "Track",
-        });
-        continue;
-      }
-      
-      try {
-        await PlaylistAPI.add(playlistUri, [trackUri], []);
-        success.push(playlistUri);
-      } catch (e) {
-        failed.push(playlistUri);
-      }
+    try {
+      await PlaylistAPI.add(playlistUri, trackUris, []);
+      success.push(playlistUri);
+    } catch (e) {
+      failed.push(playlistUri);
     }
   }
   
-  return { success, failed, duplicates: allDuplicates };
+  return { success, failed };
 }
 
-function getTrackName(uri: string): string {
-  try {
-    return decodeURIComponent(uri.split(":").pop() || "Unknown track");
-  } catch {
-    return "Unknown track";
-  }
-}
-
-function createModal(trackUris: string[]) {
+export function createModal(trackUris: string[]) {
   let allPlaylists: Playlist[] = [];
   let filteredPlaylists: Playlist[] = [];
   const selectedSet = new Set<string>();
@@ -421,7 +403,7 @@ function createModal(trackUris: string[]) {
           duplicates,
           trackUris.length,
           async () => {
-            const result = await addTracksToPlaylists(playlistUris, trackUris, async () => false);
+            const result = await addTracksToPlaylists(playlistUris, trackUris);
             
             if (result.success.length > 0) {
               Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${result.success.length} playlist(s)`);
@@ -490,32 +472,3 @@ function createModal(trackUris: string[]) {
   
   searchInput.focus();
 }
-
-async function handleMenuClick(uris: string[]) {
-  const trackUris = uris.filter((uri: string) => {
-    const uriObj = Spicetify.URI.from(uri);
-    return uriObj && (uriObj as any).type === "track";
-  });
-  
-  if (trackUris.length === 0) {
-    Spicetify.showNotification("No tracks selected", true);
-    return;
-  }
-  
-  createModal(trackUris);
-}
-
-const addToMultiplePlaylistsMenuItem = new Spicetify.ContextMenu.Item(
-  "Add to Multiple Playlists",
-  handleMenuClick,
-  (uris: string[]) => {
-    const hasTrack = uris.some((uri: string) => {
-      const uriObj = Spicetify.URI.from(uri);
-      return uriObj && (uriObj as any).type === "track";
-    });
-    return hasTrack;
-  },
-  "plus-alt" as Spicetify.Icon
-);
-
-addToMultiplePlaylistsMenuItem.register();
