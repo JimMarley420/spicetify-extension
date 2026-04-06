@@ -1,3 +1,5 @@
+import { fetchMetadataForTracks } from "../../../shared/api/fetchMetadataForTracks.ts";
+
 interface Playlist {
   name: string;
   uri: string;
@@ -392,13 +394,22 @@ export function createModal(trackUris: string[]) {
         
         const playlistTracks = await getPlaylistTracks(playlistUri);
         
-        for (const trackUri of trackUris) {
-          if (playlistTracks.has(trackUri)) {
+        const duplicateUris = trackUris.filter(t => playlistTracks.has(t));
+        
+        if (duplicateUris.length > 0) {
+          confirmBtn.textContent = "Loading...";
+          
+          const trackMetadata = await fetchMetadataForTracks(duplicateUris);
+          
+          for (const trackUri of duplicateUris) {
+            const meta = trackMetadata.get(trackUri);
+            const trackName = meta?.name || meta?.title || meta?.track?.name || getTrackName(trackUri);
+            
             duplicates.push({
               playlistUri,
               playlistName,
               trackUri,
-              trackName: getTrackName(trackUri),
+              trackName,
             });
           }
         }
