@@ -121,10 +121,21 @@ export function createConfirmModal(
   
   const info = document.createElement("div");
   info.className = "add-to-playlist-confirm-info";
+  
+  const playlistCount = new Set(duplicates.map(d => d.playlistUri)).size;
+  
   if (uniqueDuplicateCount === trackCount) {
-    info.textContent = "All selected tracks are already in the selected playlist(s).";
+    if (playlistCount === 1) {
+      info.textContent = `This track is already in ${playlistCount} selected playlist.`;
+    } else {
+      info.textContent = `All ${uniqueDuplicateCount} track(s) are already in ${playlistCount} selected playlists.`;
+    }
   } else {
-    info.textContent = `${uniqueDuplicateCount} of ${trackCount} tracks are already in the selected playlist(s).`;
+    if (playlistCount === 1) {
+      info.textContent = `${uniqueDuplicateCount} of ${trackCount} track(s) are already in ${playlistCount} selected playlist.`;
+    } else {
+      info.textContent = `${uniqueDuplicateCount} of ${trackCount} track(s) are already in ${playlistCount} selected playlists.`;
+    }
   }
   
   const buttons = document.createElement("div");
