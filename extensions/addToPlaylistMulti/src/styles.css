@@ -191,8 +191,9 @@
   padding: 16px 20px;
   border-top: 1px solid #282828;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
+  gap: 12px;
 }
 
 .add-to-playlist-buttons-left {

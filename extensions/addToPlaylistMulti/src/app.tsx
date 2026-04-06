@@ -188,9 +188,6 @@ function createModal(trackUris: string[]) {
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "add-to-playlist-buttons";
   
-  const buttonsLeft = document.createElement("div");
-  buttonsLeft.className = "add-to-playlist-buttons-left";
-  
   const selectAllBtn = document.createElement("button");
   selectAllBtn.className = "add-to-playlist-select-all";
   selectAllBtn.textContent = "Select All";
@@ -213,7 +210,9 @@ function createModal(trackUris: string[]) {
     updateButtonState();
   });
   
-  buttonsLeft.appendChild(selectAllBtn);
+  const buttonGroup = document.createElement("div");
+  buttonGroup.style.display = "flex";
+  buttonGroup.style.gap = "12px";
   
   const cancelBtn = document.createElement("button");
   cancelBtn.className = "add-to-playlist-btn cancel";
@@ -241,9 +240,11 @@ function createModal(trackUris: string[]) {
     }
   });
   
-  buttonContainer.appendChild(buttonsLeft);
-  buttonContainer.appendChild(cancelBtn);
-  buttonContainer.appendChild(confirmBtn);
+  buttonGroup.appendChild(cancelBtn);
+  buttonGroup.appendChild(confirmBtn);
+  
+  buttonContainer.appendChild(selectAllBtn);
+  buttonContainer.appendChild(buttonGroup);
   
   content.appendChild(header);
   content.appendChild(searchContainer);
