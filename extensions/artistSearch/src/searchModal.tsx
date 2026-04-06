@@ -341,7 +341,7 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
           value={query}
         />
         <a
-          href="https://github.com/JimMarley420/artistsSearch"
+          href="https://github.com/JimMarley420/spicetify-extension"
           target="_blank"
           rel="noopener noreferrer"
           className="artist-search-github"
