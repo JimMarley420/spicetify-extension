@@ -16,58 +16,50 @@ export async function fetchPlaylists(): Promise<Playlist[]> {
   const LibraryAPI = (Spicetify as any).Platform?.LibraryAPI;
   
   if (!LibraryAPI) {
-    return [];
+    throw new Error("LibraryAPI not available");
   }
   
-  try {
-    const response = await LibraryAPI.getContents({
-      offset: 0,
-      limit: 10000000,
-      flattenTree: true,
-    });
-    
-    const playlists: Playlist[] = [];
-    const items = response?.items || [];
-    
-    for (const item of items) {
-      if (item.type === "playlist" && item.canAddTo) {
-        playlists.push({
-          name: item.name,
-          uri: item.uri,
-        });
-      }
+  const response = await LibraryAPI.getContents({
+    offset: 0,
+    limit: 10000000,
+    flattenTree: true,
+  });
+  
+  const playlists: Playlist[] = [];
+  const items = response?.items || [];
+  
+  for (const item of items) {
+    if (item.type === "playlist" && item.canAddTo) {
+      playlists.push({
+        name: item.name,
+        uri: item.uri,
+      });
     }
-    
-    return playlists;
-  } catch (e) {
-    return [];
   }
+  
+  return playlists;
 }
 
 export async function getPlaylistTracks(playlistUri: string): Promise<Set<string>> {
   const trackUris = new Set<string>();
   
-  try {
-    const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
-    
-    if (!PlaylistAPI) {
-      return trackUris;
-    }
-    
-    const response = await PlaylistAPI.getContents(playlistUri, {
-      offset: 0,
-      limit: -1,
-    });
-    
-    if (response?.items) {
-      for (const item of response.items) {
-        if (item?.uri) {
-          trackUris.add(item.uri);
-        }
+  const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
+  
+  if (!PlaylistAPI) {
+    throw new Error("PlaylistAPI not available");
+  }
+  
+  const response = await PlaylistAPI.getContents(playlistUri, {
+    offset: 0,
+    limit: -1,
+  });
+  
+  if (response?.items) {
+    for (const item of response.items) {
+      if (item?.uri) {
+        trackUris.add(item.uri);
       }
     }
-  } catch (e) {
-    return trackUris;
   }
   
   return trackUris;
@@ -97,10 +89,26 @@ export function createConfirmModal(
   const list = document.createElement("div");
   list.className = "add-to-playlist-confirm-list";
   
+  const duplicateTrackUris = new Set<string>();
+  for (const dup of duplicates) {
+    duplicateTrackUris.add(dup.trackUri);
+  }
+  const uniqueDuplicateCount = duplicateTrackUris.size;
+  
   for (const dup of duplicates.slice(0, 10)) {
     const item = document.createElement("div");
     item.className = "add-to-playlist-confirm-item";
-    item.innerHTML = `<span class="track-name">${dup.trackName}</span><span class="playlist-name">in ${dup.playlistName}</span>`;
+    
+    const trackName = document.createElement("span");
+    trackName.className = "track-name";
+    trackName.textContent = dup.trackName;
+    
+    const playlistName = document.createElement("span");
+    playlistName.className = "playlist-name";
+    playlistName.textContent = `in ${dup.playlistName}`;
+    
+    item.appendChild(trackName);
+    item.appendChild(playlistName);
     list.appendChild(item);
   }
   
@@ -113,10 +121,21 @@ export function createConfirmModal(
   
   const info = document.createElement("div");
   info.className = "add-to-playlist-confirm-info";
-  if (duplicates.length === trackCount) {
-    info.textContent = "All selected tracks are already in the selected playlist(s).";
+  
+  const playlistCount = new Set(duplicates.map(d => d.playlistUri)).size;
+  
+  if (uniqueDuplicateCount === trackCount) {
+    if (playlistCount === 1) {
+      info.textContent = `This track is already in ${playlistCount} selected playlist.`;
+    } else {
+      info.textContent = `All ${uniqueDuplicateCount} track(s) are already in ${playlistCount} selected playlists.`;
+    }
   } else {
-    info.textContent = `${duplicates.length} of ${trackCount} tracks are already in the selected playlist(s).`;
+    if (playlistCount === 1) {
+      info.textContent = `${uniqueDuplicateCount} of ${trackCount} track(s) are already in ${playlistCount} selected playlist.`;
+    } else {
+      info.textContent = `${uniqueDuplicateCount} of ${trackCount} track(s) are already in ${playlistCount} selected playlists.`;
+    }
   }
   
   const buttons = document.createElement("div");
@@ -312,9 +331,11 @@ export function createModal(trackUris: string[]) {
     trackCount.textContent = `${trackUris.length} track(s) selected • ${selectedCount} playlist(s)`;
     confirmBtn.disabled = selectedCount === 0;
     
-    if (selectedCount === 0) {
+    const selectedWithinFiltered = filteredPlaylists.filter(p => selectedSet.has(p.uri)).length;
+    
+    if (selectedWithinFiltered === 0) {
       selectAllBtn.textContent = "Select All";
-    } else if (selectedCount === filteredPlaylists.length) {
+    } else if (selectedWithinFiltered === filteredPlaylists.length) {
       selectAllBtn.textContent = "Deselect All";
     } else {
       selectAllBtn.textContent = "Select All";
@@ -330,6 +351,7 @@ export function createModal(trackUris: string[]) {
     } catch (e) {
       emptyState.textContent = "Failed to load playlists";
       playlistList.appendChild(emptyState);
+      Spicetify.showNotification("Failed to load playlists", true);
     }
   }
   
@@ -347,8 +369,11 @@ export function createModal(trackUris: string[]) {
   selectAllBtn.className = "add-to-playlist-select-all";
   selectAllBtn.textContent = "Select All";
   selectAllBtn.addEventListener("click", () => {
-    if (selectedSet.size === filteredPlaylists.length) {
-      selectedSet.clear();
+    const selectedWithinFiltered = filteredPlaylists.filter(p => selectedSet.has(p.uri)).length;
+    const allFilteredSelected = selectedWithinFiltered === filteredPlaylists.length;
+    
+    if (allFilteredSelected) {
+      filteredPlaylists.forEach(p => selectedSet.delete(p.uri));
       playlistList.querySelectorAll(".add-to-playlist-item").forEach(item => {
         item.classList.remove("selected");
         const checkbox = item.querySelector(".add-to-playlist-checkbox") as HTMLInputElement;
@@ -392,26 +417,30 @@ export function createModal(trackUris: string[]) {
         const playlist = allPlaylists.find(p => p.uri === playlistUri);
         const playlistName = playlist?.name || "Unknown";
         
-        const playlistTracks = await getPlaylistTracks(playlistUri);
-        
-        const duplicateUris = trackUris.filter(t => playlistTracks.has(t));
-        
-        if (duplicateUris.length > 0) {
-          confirmBtn.textContent = "Loading...";
+        try {
+          const playlistTracks = await getPlaylistTracks(playlistUri);
           
-          const trackMetadata = await fetchMetadataForTracks(duplicateUris);
+          const duplicateUris = trackUris.filter(t => playlistTracks.has(t));
           
-          for (const trackUri of duplicateUris) {
-            const meta = trackMetadata.get(trackUri);
-            const trackName = meta?.name || meta?.title || meta?.track?.name || getTrackName(trackUri);
+          if (duplicateUris.length > 0) {
+            confirmBtn.textContent = "Loading...";
             
-            duplicates.push({
-              playlistUri,
-              playlistName,
-              trackUri,
-              trackName,
-            });
+            const trackMetadata = await fetchMetadataForTracks(duplicateUris);
+            
+            for (const trackUri of duplicateUris) {
+              const meta = trackMetadata.get(trackUri);
+              const trackName = meta?.name || meta?.title || meta?.track?.name || getTrackName(trackUri);
+              
+              duplicates.push({
+                playlistUri,
+                playlistName,
+                trackUri,
+                trackName,
+              });
+            }
           }
+        } catch (e) {
+          Spicetify.showNotification(`Failed to check ${playlistName}`, true);
         }
       }
       
@@ -437,24 +466,10 @@ export function createModal(trackUris: string[]) {
           }
         );
       } else {
-        const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
+        const result = await addTracksToPlaylists(playlistUris, trackUris);
         
-        if (!PlaylistAPI) {
-          throw new Error("No PlaylistAPI");
-        }
-        
-        let addedCount = 0;
-        
-        for (const playlistUri of playlistUris) {
-          try {
-            await PlaylistAPI.add(playlistUri, trackUris, []);
-            addedCount++;
-          } catch (e) {
-          }
-        }
-        
-        if (addedCount > 0) {
-          Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${addedCount} playlist(s)`);
+        if (result.success.length > 0) {
+          Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${result.success.length} playlist(s)`);
         } else {
           Spicetify.showNotification("Failed to add tracks", true);
         }
