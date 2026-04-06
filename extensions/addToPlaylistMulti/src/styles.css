@@ -1,0 +1,112 @@
+.add-to-playlist-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.add-to-playlist-content {
+  background: #181818;
+  border-radius: 8px;
+  width: 400px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  font-family: var(--font-family, sans-serif);
+}
+
+.add-to-playlist-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #282828;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.add-to-playlist-track-count {
+  padding: 12px 20px;
+  font-size: 13px;
+  color: #b3b3b3;
+}
+
+.add-to-playlist-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px;
+}
+
+.add-to-playlist-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.add-to-playlist-item:hover {
+  background: #282828;
+}
+
+.add-to-playlist-checkbox {
+  margin-right: 12px;
+  width: 18px;
+  height: 18px;
+  accent-color: #1db954;
+  cursor: pointer;
+}
+
+.add-to-playlist-name {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.add-to-playlist-buttons {
+  padding: 16px 20px;
+  border-top: 1px solid #282828;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.add-to-playlist-btn {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-to-playlist-btn.cancel {
+  background: transparent;
+  color: #b3b3b3;
+}
+
+.add-to-playlist-btn.cancel:hover {
+  color: #fff;
+}
+
+.add-to-playlist-btn.confirm {
+  background: #1db954;
+  color: #000;
+}
+
+.add-to-playlist-btn.confirm:hover:not(:disabled) {
+  background: #1ed760;
+}
+
+.add-to-playlist-btn.confirm:disabled {
+  background: #535353;
+  color: #181818;
+  cursor: not-allowed;
+}
