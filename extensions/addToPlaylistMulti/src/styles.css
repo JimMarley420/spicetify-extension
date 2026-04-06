@@ -33,6 +33,40 @@
   align-items: center;
 }
 
+.add-to-playlist-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-to-playlist-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.add-to-playlist-close:hover {
+  background: #282828;
+}
+
+.add-to-playlist-close svg {
+  width: 18px;
+  height: 18px;
+  fill: #b3b3b3;
+  transition: fill 0.15s;
+}
+
+.add-to-playlist-close:hover svg {
+  fill: #fff;
+}
+
 .add-to-playlist-github {
   display: flex;
   align-items: center;
