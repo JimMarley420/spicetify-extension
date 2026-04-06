@@ -10,6 +10,9 @@ interface Track {
   name: string;
   artist: string;
   album: string;
+  imageUrl: string;
+  duration: number;
+  uid: string;
 }
 
 async function fetchAllLibraryContents(): Promise<object[]> {
@@ -49,6 +52,101 @@ export async function fetchPlaylistsWithDeletePermission(): Promise<Playlist[]> 
   }
 }
 
+function formatTime(ms: number | undefined): string {
+  if (ms == null || ms <= 0) return "0:00";
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+}
+
+function createTrackImage(url: string): HTMLElement {
+  const imgContainer = document.createElement("div");
+  imgContainer.className = "bulk-delete-track-image-container";
+  
+  const img = document.createElement("img");
+  img.className = "bulk-delete-track-image";
+  img.src = url || "";
+  img.loading = "lazy";
+  
+  img.onerror = () => {
+    img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23282828' d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/%3E%3C/svg%3E";
+  };
+  
+  imgContainer.appendChild(img);
+  return imgContainer;
+}
+
+function createPlaybackControl(uri: string, duration: number): HTMLElement {
+  const container = document.createElement("div");
+  container.className = "bulk-delete-playback-controls";
+  
+  const playBtn = document.createElement("button");
+  playBtn.className = "bulk-delete-playback-button";
+  playBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>`;
+  
+  playBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    try {
+      const player = (Spicetify as any).Player;
+      if (!player) return;
+      
+      const currentUri = player?.data?.item?.uri;
+      if (currentUri === uri) {
+        if (player?.isPlaying()) {
+          player.pause();
+        } else {
+          player.play();
+        }
+      } else {
+        player.playUri(uri);
+      }
+    } catch (err) {
+      (Spicetify as any).Player?.playUri(uri);
+    }
+  });
+  
+  const sliderContainer = document.createElement("div");
+  sliderContainer.className = "bulk-delete-slider-container";
+  
+  const currentTime = document.createElement("span");
+  currentTime.className = "bulk-delete-slider-time";
+  currentTime.textContent = "0:00";
+  
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.className = "bulk-delete-slider";
+  slider.min = "0";
+  slider.max = duration > 0 ? duration.toString() : "1";
+  slider.value = "0";
+  slider.step = "1000";
+  
+  const totalTime = document.createElement("span");
+  totalTime.className = "bulk-delete-slider-time";
+  totalTime.textContent = formatTime(duration);
+  
+  slider.addEventListener("input", () => {
+    currentTime.textContent = formatTime(parseInt(slider.value));
+  });
+  
+  slider.addEventListener("change", () => {
+    try {
+      (Spicetify as any).Player?.seek(parseInt(slider.value));
+    } catch (e) {}
+  });
+  
+  container.appendChild(playBtn);
+  container.appendChild(currentTime);
+  container.appendChild(slider);
+  container.appendChild(totalTime);
+  
+  return container;
+}
+
+function createPlayingIndicator(): HTMLElement {
+  const indicator = document.createElement("div");
+  indicator.className = "bulk-delete-playing-indicator";
+  return indicator;
+}
+
 export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
   const tracks: Track[] = [];
   
@@ -70,22 +168,24 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
           let name = "Unknown Track";
           let artist = "Unknown Artist";
           let album = "Unknown Album";
+          let imageUrl = "";
+          let duration = 0;
+          let uid = item.uid || "";
           
-          if (item.name) {
-            name = item.name;
-          }
-          if (item.artists?.[0]?.name) {
-            artist = item.artists[0].name;
-          }
-          if (item.album?.name) {
-            album = item.album.name;
-          }
+          if (item.name) name = item.name;
+          if (item.artists?.[0]?.name) artist = item.artists[0].name;
+          if (item.album?.name) album = item.album.name;
+          if (item.album?.coverArt?.sources?.[0]?.url) imageUrl = item.album.coverArt.sources[0].url;
+          if (item.duration?.totalMs) duration = item.duration.totalMs;
           
           tracks.push({
             uri: item.uri,
             name,
             artist,
             album,
+            imageUrl,
+            duration,
+            uid,
           });
         }
       }
@@ -279,9 +379,45 @@ export function createModal(trackUris: string[]) {
       return;
     }
     
-    for (const track of tracks) {
-      const item = document.createElement("label");
+    const currentPlayingUri = (Spicetify as any).Player?.data?.item?.uri || null;
+    
+    for (let i = 0; i < tracks.length; i++) {
+      const track = tracks[i];
+      const isPlaying = currentPlayingUri === track.uri;
+      
+      const item = document.createElement("div");
       item.className = "bulk-delete-item" + (selectedSet.has(track.uri) ? " selected" : "");
+      
+      const trackNumber = document.createElement("span");
+      trackNumber.className = "bulk-delete-track-number";
+      if (isPlaying) {
+        trackNumber.appendChild(createPlayingIndicator());
+      } else {
+        trackNumber.textContent = (i + 1).toString();
+      }
+      
+      const image = createTrackImage(track.imageUrl);
+      
+      const info = document.createElement("div");
+      info.className = "bulk-delete-item-info";
+      
+      const title = document.createElement("span");
+      title.className = "bulk-delete-item-title";
+      title.textContent = track.name;
+      
+      const artist = document.createElement("span");
+      artist.className = "bulk-delete-item-artist";
+      artist.textContent = track.artist;
+      
+      const album = document.createElement("span");
+      album.className = "bulk-delete-item-album";
+      album.textContent = track.album;
+      
+      info.appendChild(title);
+      info.appendChild(artist);
+      info.appendChild(album);
+      
+      const playback = createPlaybackControl(track.uri, track.duration);
       
       const checkboxWrapper = document.createElement("div");
       checkboxWrapper.className = "bulk-delete-checkbox-wrapper";
@@ -308,27 +444,11 @@ export function createModal(trackUris: string[]) {
         updateButtonState();
       });
       
-      const info = document.createElement("div");
-      info.className = "bulk-delete-item-info";
-      
-      const title = document.createElement("div");
-      title.className = "bulk-delete-item-title";
-      title.textContent = track.name;
-      
-      const artist = document.createElement("div");
-      artist.className = "bulk-delete-item-artist";
-      artist.textContent = track.artist;
-      
-      const album = document.createElement("div");
-      album.className = "bulk-delete-item-album";
-      album.textContent = track.album;
-      
-      info.appendChild(title);
-      info.appendChild(artist);
-      info.appendChild(album);
-      
+      item.appendChild(trackNumber);
       item.appendChild(checkboxWrapper);
+      item.appendChild(image);
       item.appendChild(info);
+      item.appendChild(playback);
       trackList.appendChild(item);
     }
   }
