@@ -39,26 +39,168 @@ async function fetchPlaylists(): Promise<Playlist[]> {
   }
 }
 
-async function addTracksToPlaylists(playlistUris: string[], trackUris: string[]): Promise<{ success: string[]; failed: string[] }> {
+async function getPlaylistTracks(playlistUri: string): Promise<Set<string>> {
+  const trackUris = new Set<string>();
+  
+  try {
+    const response = await Spicetify.CosmosAsync.get(
+      `sp://playlist/v1/tracks?uri=${encodeURIComponent(playlistUri)}`
+    );
+    
+    if (response?.tracks) {
+      for (const track of response.tracks) {
+        if (track?.uri) {
+          trackUris.add(track.uri);
+        }
+      }
+    }
+  } catch (e) {
+    return trackUris;
+  }
+  
+  return trackUris;
+}
+
+interface DuplicateCheck {
+  playlistUri: string;
+  playlistName: string;
+  trackUri: string;
+  trackName: string;
+}
+
+function createConfirmModal(
+  duplicates: DuplicateCheck[],
+  trackCount: number,
+  onConfirm: () => void,
+  onCancel: () => void
+) {
+  const modal = document.createElement("div");
+  modal.className = "add-to-playlist-modal";
+  
+  const content = document.createElement("div");
+  content.className = "add-to-playlist-confirm-content";
+  
+  const header = document.createElement("div");
+  header.className = "add-to-playlist-confirm-header";
+  header.textContent = "Tracks already in playlist(s)";
+  
+  const list = document.createElement("div");
+  list.className = "add-to-playlist-confirm-list";
+  
+  for (const dup of duplicates.slice(0, 10)) {
+    const item = document.createElement("div");
+    item.className = "add-to-playlist-confirm-item";
+    item.innerHTML = `<span class="track-name">${dup.trackName}</span><span class="playlist-name">in ${dup.playlistName}</span>`;
+    list.appendChild(item);
+  }
+  
+  if (duplicates.length > 10) {
+    const more = document.createElement("div");
+    more.className = "add-to-playlist-confirm-more";
+    more.textContent = `...and ${duplicates.length - 10} more`;
+    list.appendChild(more);
+  }
+  
+  const info = document.createElement("div");
+  info.className = "add-to-playlist-confirm-info";
+  if (duplicates.length === trackCount) {
+    info.textContent = "All selected tracks are already in the selected playlist(s).";
+  } else {
+    info.textContent = `${duplicates.length} of ${trackCount} tracks are already in the selected playlist(s).`;
+  }
+  
+  const buttons = document.createElement("div");
+  buttons.className = "add-to-playlist-confirm-buttons";
+  
+  const cancelBtn = document.createElement("button");
+  cancelBtn.className = "add-to-playlist-btn cancel";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", () => {
+    modal.remove();
+    onCancel();
+  });
+  
+  const confirmBtn = document.createElement("button");
+  confirmBtn.className = "add-to-playlist-btn confirm";
+  confirmBtn.textContent = duplicates.length === trackCount ? "Add Anyway" : "Add Anyway";
+  confirmBtn.addEventListener("click", () => {
+    modal.remove();
+    onConfirm();
+  });
+  
+  buttons.appendChild(cancelBtn);
+  buttons.appendChild(confirmBtn);
+  
+  content.appendChild(header);
+  content.appendChild(list);
+  content.appendChild(info);
+  content.appendChild(buttons);
+  
+  modal.appendChild(content);
+  
+  document.body.appendChild(modal);
+  
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.remove();
+      onCancel();
+    }
+  });
+}
+
+async function addTracksToPlaylists(
+  playlistUris: string[],
+  trackUris: string[],
+  onDuplicateFound: (duplicates: DuplicateCheck[]) => Promise<boolean>
+): Promise<{ success: string[]; failed: string[]; duplicates: DuplicateCheck[] }> {
   const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
   
   if (!PlaylistAPI) {
     throw new Error("No PlaylistAPI");
   }
   
+  const allDuplicates: DuplicateCheck[] = [];
   const success: string[] = [];
   const failed: string[] = [];
   
   for (const playlistUri of playlistUris) {
-    try {
-      await PlaylistAPI.add(playlistUri, trackUris, []);
-      success.push(playlistUri);
-    } catch (e) {
-      failed.push(playlistUri);
+    let playlistTracks: Set<string> | null = null;
+    
+    for (const trackUri of trackUris) {
+      if (playlistTracks === null) {
+        playlistTracks = await getPlaylistTracks(playlistUri);
+      }
+      
+      if (playlistTracks.has(trackUri)) {
+        const playlist = playlistUris.find(p => p === playlistUri);
+        const playlistName = "Playlist";
+        allDuplicates.push({
+          playlistUri,
+          playlistName: playlistName || "Unknown",
+          trackUri,
+          trackName: "Track",
+        });
+        continue;
+      }
+      
+      try {
+        await PlaylistAPI.add(playlistUri, [trackUri], []);
+        success.push(playlistUri);
+      } catch (e) {
+        failed.push(playlistUri);
+      }
     }
   }
   
-  return { success, failed };
+  return { success, failed, duplicates: allDuplicates };
+}
+
+function getTrackName(uri: string): string {
+  try {
+    return decodeURIComponent(uri.split(":").pop() || "Unknown track");
+  } catch {
+    return "Unknown track";
+  }
 }
 
 function createModal(trackUris: string[]) {
@@ -250,20 +392,73 @@ function createModal(trackUris: string[]) {
   confirmBtn.addEventListener("click", async () => {
     const playlistUris = Array.from(selectedSet);
     confirmBtn.disabled = true;
-    confirmBtn.textContent = "Adding...";
+    confirmBtn.textContent = "Checking...";
     
     try {
-      const result = await addTracksToPlaylists(playlistUris, trackUris);
+      const duplicates: DuplicateCheck[] = [];
       
-      if (result.failed.length === 0) {
-        Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${result.success.length} playlist(s)`);
-      } else if (result.success.length === 0) {
-        Spicetify.showNotification("Failed to add tracks - they may already be in the playlists", true);
-      } else {
-        Spicetify.showNotification(`Added to ${result.success.length} playlist(s). ${result.failed.length} already contained the track(s).`, true);
+      for (const playlistUri of playlistUris) {
+        const playlist = allPlaylists.find(p => p.uri === playlistUri);
+        const playlistName = playlist?.name || "Unknown";
+        const playlistTracks = await getPlaylistTracks(playlistUri);
+        
+        for (const trackUri of trackUris) {
+          if (playlistTracks.has(trackUri)) {
+            duplicates.push({
+              playlistUri,
+              playlistName,
+              trackUri,
+              trackName: getTrackName(trackUri),
+            });
+          }
+        }
       }
       
-      modal.remove();
+      if (duplicates.length > 0) {
+        confirmBtn.textContent = "Adding...";
+        
+        createConfirmModal(
+          duplicates,
+          trackUris.length,
+          async () => {
+            const result = await addTracksToPlaylists(playlistUris, trackUris, async () => false);
+            
+            if (result.success.length > 0) {
+              Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${result.success.length} playlist(s)`);
+            } else {
+              Spicetify.showNotification("No tracks were added", true);
+            }
+            modal.remove();
+          },
+          () => {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = "Add";
+          }
+        );
+      } else {
+        const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
+        
+        if (!PlaylistAPI) {
+          throw new Error("No PlaylistAPI");
+        }
+        
+        let addedCount = 0;
+        
+        for (const playlistUri of playlistUris) {
+          try {
+            await PlaylistAPI.add(playlistUri, trackUris, []);
+            addedCount++;
+          } catch (e) {
+          }
+        }
+        
+        if (addedCount > 0) {
+          Spicetify.showNotification(`Added ${trackUris.length} track(s) to ${addedCount} playlist(s)`);
+        } else {
+          Spicetify.showNotification("Failed to add tracks", true);
+        }
+        modal.remove();
+      }
     } catch (e) {
       Spicetify.showNotification("Failed to add tracks", true);
       confirmBtn.disabled = false;
