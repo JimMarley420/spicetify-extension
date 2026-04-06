@@ -177,7 +177,7 @@ const addToMultiplePlaylistsMenuItem = new Spicetify.ContextMenu.Item(
   "Add to Multiple Playlists",
   handleMenuClick,
   (uris: string[]) => uris.length > 0,
-  "plus" as Spicetify.Icon
+  "plus-alt" as Spicetify.Icon
 );
 
 addToMultiplePlaylistsMenuItem.register();
