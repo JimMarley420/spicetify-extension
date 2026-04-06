@@ -16,58 +16,50 @@ export async function fetchPlaylists(): Promise<Playlist[]> {
   const LibraryAPI = (Spicetify as any).Platform?.LibraryAPI;
   
   if (!LibraryAPI) {
-    return [];
+    throw new Error("LibraryAPI not available");
   }
   
-  try {
-    const response = await LibraryAPI.getContents({
-      offset: 0,
-      limit: 10000000,
-      flattenTree: true,
-    });
-    
-    const playlists: Playlist[] = [];
-    const items = response?.items || [];
-    
-    for (const item of items) {
-      if (item.type === "playlist" && item.canAddTo) {
-        playlists.push({
-          name: item.name,
-          uri: item.uri,
-        });
-      }
+  const response = await LibraryAPI.getContents({
+    offset: 0,
+    limit: 10000000,
+    flattenTree: true,
+  });
+  
+  const playlists: Playlist[] = [];
+  const items = response?.items || [];
+  
+  for (const item of items) {
+    if (item.type === "playlist" && item.canAddTo) {
+      playlists.push({
+        name: item.name,
+        uri: item.uri,
+      });
     }
-    
-    return playlists;
-  } catch (e) {
-    return [];
   }
+  
+  return playlists;
 }
 
 export async function getPlaylistTracks(playlistUri: string): Promise<Set<string>> {
   const trackUris = new Set<string>();
   
-  try {
-    const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
-    
-    if (!PlaylistAPI) {
-      return trackUris;
-    }
-    
-    const response = await PlaylistAPI.getContents(playlistUri, {
-      offset: 0,
-      limit: -1,
-    });
-    
-    if (response?.items) {
-      for (const item of response.items) {
-        if (item?.uri) {
-          trackUris.add(item.uri);
-        }
+  const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
+  
+  if (!PlaylistAPI) {
+    throw new Error("PlaylistAPI not available");
+  }
+  
+  const response = await PlaylistAPI.getContents(playlistUri, {
+    offset: 0,
+    limit: -1,
+  });
+  
+  if (response?.items) {
+    for (const item of response.items) {
+      if (item?.uri) {
+        trackUris.add(item.uri);
       }
     }
-  } catch (e) {
-    return trackUris;
   }
   
   return trackUris;
@@ -97,10 +89,26 @@ export function createConfirmModal(
   const list = document.createElement("div");
   list.className = "add-to-playlist-confirm-list";
   
+  const duplicateTrackUris = new Set<string>();
+  for (const dup of duplicates) {
+    duplicateTrackUris.add(dup.trackUri);
+  }
+  const uniqueDuplicateCount = duplicateTrackUris.size;
+  
   for (const dup of duplicates.slice(0, 10)) {
     const item = document.createElement("div");
     item.className = "add-to-playlist-confirm-item";
-    item.innerHTML = `<span class="track-name">${dup.trackName}</span><span class="playlist-name">in ${dup.playlistName}</span>`;
+    
+    const trackName = document.createElement("span");
+    trackName.className = "track-name";
+    trackName.textContent = dup.trackName;
+    
+    const playlistName = document.createElement("span");
+    playlistName.className = "playlist-name";
+    playlistName.textContent = `in ${dup.playlistName}`;
+    
+    item.appendChild(trackName);
+    item.appendChild(playlistName);
     list.appendChild(item);
   }
   
@@ -113,10 +121,10 @@ export function createConfirmModal(
   
   const info = document.createElement("div");
   info.className = "add-to-playlist-confirm-info";
-  if (duplicates.length === trackCount) {
+  if (uniqueDuplicateCount === trackCount) {
     info.textContent = "All selected tracks are already in the selected playlist(s).";
   } else {
-    info.textContent = `${duplicates.length} of ${trackCount} tracks are already in the selected playlist(s).`;
+    info.textContent = `${uniqueDuplicateCount} of ${trackCount} tracks are already in the selected playlist(s).`;
   }
   
   const buttons = document.createElement("div");
@@ -330,6 +338,7 @@ export function createModal(trackUris: string[]) {
     } catch (e) {
       emptyState.textContent = "Failed to load playlists";
       playlistList.appendChild(emptyState);
+      Spicetify.showNotification("Failed to load playlists", true);
     }
   }
   
