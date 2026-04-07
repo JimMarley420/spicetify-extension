@@ -10,10 +10,8 @@ Add tracks to multiple playlists at once from the context menu.
 </table>
 
 ## Features
-
 - **Multiple Selection** - Select multiple playlists and add tracks to all of them at once
-- **Appears in "Add to Playlist"** - Integrates into the existing context menu under "Add to Playlist"
-- **"Select Multiple..."** - Opens a modal to select multiple playlists at once
+- **"Select Multiple..."** - Opens a modal to select multiple song at once
 - **Duplicate Detection** - Warns if tracks are already in selected playlists
 
 ## Usage
