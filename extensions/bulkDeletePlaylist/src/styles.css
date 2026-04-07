@@ -308,7 +308,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 180px;
+  width: 280px;
   flex-shrink: 0;
 }
 
@@ -526,7 +526,7 @@
 .bulk-delete-confirm-content {
   background: #181818;
   border-radius: 8px;
-  width: 400px;
+  width: 480px;
   padding: 20px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
@@ -567,4 +567,55 @@
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
+}
+
+.bulk-delete-confirm-track-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 4px;
+  background: #282828;
+}
+
+.bulk-delete-confirm-track-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-bottom: 1px solid #333;
+}
+
+.bulk-delete-confirm-track-item:last-child {
+  border-bottom: none;
+}
+
+.bulk-delete-confirm-track-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #333;
+}
+
+.bulk-delete-confirm-track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bulk-delete-confirm-track-title {
+  color: #fff;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bulk-delete-confirm-track-artist-album {
+  color: #a0a0a0;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
