@@ -519,6 +519,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@oazmi/esbuild-plugin-deno@0.4.5",
+      "jsr:@std/bytes@1.0.11",
       "jsr:@std/path@1.1.4",
       "jsr:@std/streams@1.0.17",
       "npm:@babel/core@latest",
