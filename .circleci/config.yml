@@ -57,15 +57,22 @@ jobs:
           name: Run release
           command: deno task release
       - run:
-          name: Commit dist
+          name: Check for changes and commit
           command: |
             git add dist/
-            git commit -m "chore: update dist [ci skip]" || echo "No changes to commit"
+            if git diff --cached --quiet; then
+              echo "No changes to commit"
+              exit 0
+            fi
+            git commit -m "chore: update dist [ci skip]"
       - run:
-          name: Push
+          name: Push changes
           command: |
             git remote set-url origin https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
-            git push origin HEAD:$CIRCLE_BRANCH
+            git push origin HEAD:${CIRCLE_BRANCH}
+      - store_artifacts:
+          path: dist
+          destination: dist
 
 workflows:
   ci:
@@ -85,6 +92,6 @@ workflows:
             - test
           filters:
             branches:
-              ignore:
-                - main
-                - master
+              only:
+                - /feature\/.*/
+                - /fix\/.*/
