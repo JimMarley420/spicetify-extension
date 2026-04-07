@@ -327,12 +327,12 @@ function createDeleteConfirmModal(
   });
 }
 
-export function createModal(trackUris: string[]) {
+export function createModal(trackUris: string[], preferredPlaylistUri?: string | null) {
   let allPlaylists: Playlist[] = [];
   let currentTracks: Track[] = [];
   let filteredTracks: Track[] = [];
   const selectedSet = new Set<string>();
-  let currentPlaylistUri: string | null = null;
+  let currentPlaylistUri: string | null = preferredPlaylistUri || null;
   
   const modal = document.createElement("div");
   modal.className = "bulk-delete-modal";
@@ -576,16 +576,32 @@ export function createModal(trackUris: string[]) {
       if (trackUris.length > 0 && allPlaylists.length > 0) {
         let foundPlaylist: Playlist | null = null;
         
-        for (const playlist of allPlaylists) {
-          try {
-            const tracks = await getPlaylistTracks(playlist.uri);
-            const trackUrisSet = new Set(tracks.map(t => t.uri));
-            const hasSelectedTrack = trackUris.some(uri => trackUrisSet.has(uri));
-            if (hasSelectedTrack) {
-              foundPlaylist = playlist;
-              break;
-            }
-          } catch (e) {
+        if (currentPlaylistUri) {
+          const preferred = allPlaylists.find(p => p.uri === currentPlaylistUri);
+          if (preferred) {
+            try {
+              const tracks = await getPlaylistTracks(preferred.uri);
+              const trackUrisSet = new Set(tracks.map(t => t.uri));
+              const hasSelectedTrack = trackUris.some(uri => trackUrisSet.has(uri));
+              if (hasSelectedTrack) {
+                foundPlaylist = preferred;
+              }
+            } catch (e) {}
+          }
+        }
+        
+        if (!foundPlaylist) {
+          for (const playlist of allPlaylists) {
+            if (playlist.uri === currentPlaylistUri) continue;
+            try {
+              const tracks = await getPlaylistTracks(playlist.uri);
+              const trackUrisSet = new Set(tracks.map(t => t.uri));
+              const hasSelectedTrack = trackUris.some(uri => trackUrisSet.has(uri));
+              if (hasSelectedTrack) {
+                foundPlaylist = playlist;
+                break;
+              }
+            } catch (e) {}
           }
         }
         
