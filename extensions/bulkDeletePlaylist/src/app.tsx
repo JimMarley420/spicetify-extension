@@ -3,7 +3,7 @@ import { createModal } from "./modal.tsx";
 
 document.adoptedStyleSheets.push(styles);
 
-async function handleMenuClick(uris: string[]) {
+async function handleMenuClick(uris: string[], _uids?: string[], contextUri?: string) {
   const trackUris = uris.filter((uri: string) => {
     const uriObj = Spicetify.URI.from(uri);
     return uriObj && (uriObj as any).type === "track";
@@ -14,10 +14,18 @@ async function handleMenuClick(uris: string[]) {
     return;
   }
   
-  createModal(trackUris);
+  let playlistUri: string | undefined;
+  if (contextUri) {
+    const uriObj = Spicetify.URI.from(contextUri);
+    if (uriObj && (uriObj as any).type === "playlist") {
+      playlistUri = contextUri;
+    }
+  }
+  
+  createModal(trackUris, playlistUri);
 }
 
-function shouldAdd(uris: string[], uids?: string[], contextUri?: string): boolean {
+function shouldAdd(uris: string[]): boolean {
   return uris.some((uri: string) => {
     const uriObj = Spicetify.URI.from(uri);
     return uriObj && (uriObj as any).type === "track";
