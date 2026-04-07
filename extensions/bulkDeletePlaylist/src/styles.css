@@ -1,0 +1,626 @@
+.bulk-delete-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.bulk-delete-content {
+  background: #181818;
+  border-radius: 8px;
+  width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  font-family: var(--font-family, spotify), sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.bulk-delete-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #282828;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bulk-delete-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-delete-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.bulk-delete-close:hover {
+  background: #282828;
+}
+
+.bulk-delete-close svg {
+  width: 18px;
+  height: 18px;
+  fill: #b3b3b3;
+  transition: fill 0.15s;
+}
+
+.bulk-delete-close:hover svg {
+  fill: #fff;
+}
+
+.bulk-delete-github {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.bulk-delete-github:hover {
+  background: #282828;
+}
+
+.bulk-delete-github svg {
+  width: 18px;
+  height: 18px;
+  fill: #b3b3b3;
+  transition: fill 0.15s;
+}
+
+.bulk-delete-github:hover svg {
+  fill: #fff;
+}
+
+.bulk-delete-playlist-selector {
+  padding: 16px 20px;
+  border-bottom: 1px solid #282828;
+}
+
+.bulk-delete-playlist-label {
+  display: block;
+  color: #b3b3b3;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bulk-delete-playlist-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: #3f3f3f;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%23b3b3b3'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.bulk-delete-playlist-select:hover {
+  background-color: #4a4a4a;
+}
+
+.bulk-delete-playlist-select:focus {
+  outline: none;
+  background-color: #4a4a4a;
+}
+
+.bulk-delete-search {
+  padding: 16px 20px;
+  border-bottom: 1px solid #282828;
+}
+
+.bulk-delete-search-wrapper {
+  display: flex;
+  align-items: center;
+  background: #282828;
+  border-radius: 4px;
+  padding: 0 12px;
+}
+
+.bulk-delete-search-icon {
+  color: #b3b3b3;
+  display: flex;
+  align-items: center;
+}
+
+.bulk-delete-search-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bulk-delete-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  padding: 12px;
+  outline: none;
+}
+
+.bulk-delete-search input::placeholder {
+  color: #b3b3b3;
+}
+
+.bulk-delete-search input:disabled {
+  opacity: 0.5;
+}
+
+.bulk-delete-track-info {
+  padding: 12px 20px;
+  background: #121212;
+  border-bottom: 1px solid #282828;
+}
+
+.bulk-delete-track-info p {
+  color: #b3b3b3;
+  font-size: 13px;
+  margin: 0;
+}
+
+.bulk-delete-track-info span {
+  color: #fff;
+  font-weight: 600;
+}
+
+.bulk-delete-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  min-height: 400px;
+}
+
+.bulk-delete-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+  color: #b3b3b3;
+  font-size: 14px;
+}
+
+.bulk-delete-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  gap: 8px;
+}
+
+.bulk-delete-item:hover {
+  background: #282828;
+}
+
+.bulk-delete-item.selected {
+  background: rgba(29, 185, 84, 0.1);
+}
+
+.bulk-delete-track-number {
+  width: 32px;
+  text-align: center;
+  color: #b3b3b3;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.bulk-delete-playing-indicator {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+}
+
+.bulk-delete-playing-indicator::before {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: #1db954;
+  border-radius: 50%;
+  animation: bulk-delete-pulse 1s ease-in-out infinite;
+}
+
+@keyframes bulk-delete-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.bulk-delete-track-image-container {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #282828;
+}
+
+.bulk-delete-track-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bulk-delete-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bulk-delete-item-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bulk-delete-item-artist {
+  color: #b3b3b3;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bulk-delete-item-album {
+  color: #727272;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.bulk-delete-playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.bulk-delete-playback-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.bulk-delete-playback-button:hover {
+  background: #282828;
+}
+
+.bulk-delete-playback-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bulk-delete-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.bulk-delete-slider-time {
+  color: #b3b3b3;
+  font-size: 11px;
+  min-width: 35px;
+}
+
+.bulk-delete-slider {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #4a4a4a;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.bulk-delete-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.bulk-delete-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+.bulk-delete-checkbox-wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bulk-delete-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.bulk-delete-checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #b3b3b3;
+  border-radius: 4px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #282828;
+}
+
+.bulk-delete-checkbox:checked + .bulk-delete-checkbox-custom {
+  background: #1db954;
+  border-color: #1db954;
+}
+
+.bulk-delete-checkbox:checked + .bulk-delete-checkbox-custom::after {
+  content: "";
+  width: 8px;
+  height: 12px;
+  border: solid #000;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+  margin-bottom: 3px;
+}
+
+.bulk-delete-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bulk-delete-item-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bulk-delete-item-artist {
+  color: #b3b3b3;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bulk-delete-item-album {
+  color: #727272;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.bulk-delete-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid #282828;
+}
+
+.bulk-delete-select-all {
+  background: transparent;
+  border: none;
+  color: #1db954;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: color 0.2s;
+}
+
+.bulk-delete-select-all:hover {
+  color: #1ed760;
+}
+
+.bulk-delete-button-group {
+  display: flex;
+  gap: 12px;
+}
+
+.bulk-delete-btn {
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.bulk-delete-btn.cancel {
+  background: transparent;
+  border: 1px solid #727272;
+  color: #fff;
+}
+
+.bulk-delete-btn.cancel:hover {
+  border-color: #fff;
+}
+
+.bulk-delete-btn.delete {
+  background: #e91429;
+  color: #fff;
+}
+
+.bulk-delete-btn.delete:hover:not(:disabled) {
+  background: #f03727;
+}
+
+.bulk-delete-btn.delete:disabled {
+  background: #535353;
+  color: #181818;
+  cursor: not-allowed;
+}
+
+.bulk-delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.bulk-delete-confirm-content {
+  background: #181818;
+  border-radius: 8px;
+  width: 480px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.bulk-delete-confirm-header {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.bulk-delete-confirm-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(233, 20, 41, 0.1);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.bulk-delete-confirm-warning svg {
+  width: 24px;
+  height: 24px;
+  color: #e91429;
+  flex-shrink: 0;
+}
+
+.bulk-delete-confirm-warning p {
+  color: #fff;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.bulk-delete-confirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.bulk-delete-confirm-track-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 4px;
+  background: #282828;
+}
+
+.bulk-delete-confirm-track-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-bottom: 1px solid #333;
+}
+
+.bulk-delete-confirm-track-item:last-child {
+  border-bottom: none;
+}
+
+.bulk-delete-confirm-track-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #333;
+}
+
+.bulk-delete-confirm-track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bulk-delete-confirm-track-title {
+  color: #fff;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bulk-delete-confirm-track-artist-album {
+  color: #a0a0a0;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -2,7 +2,7 @@
 
 Access an artist's entire discography instantly from a single menu. Browse, play, and queue all tracks without navigating albums.
 
-**Available on Spicetify Marketplace:** [artistsSearch](https://github.com/JimMarley420/artistsSearch)
+**Available on Spicetify Marketplace:** [spicetify-extension](https://github.com/JimMarley420/spicetify-extension)
 
 <table>
   <tr>
@@ -48,6 +48,14 @@ deno task watch
 deno task dev-build
 deno task dev-watch
 ```
+
+## Contributing
+
+Found a bug or want to contribute? Here's how you can help:
+
+- **Issues**: [Open an issue](https://github.com/JimMarley420/spicetify-extension/issues/new/choose)
+- **Pull Requests**: [Create a PR](https://github.com/JimMarley420/spicetify-extension/compare)
+- **Discussion**: [Start a discussion](https://github.com/JimMarley420/spicetify-extension/discussions)
 
 ## License
 
