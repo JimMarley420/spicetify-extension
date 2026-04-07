@@ -84,10 +84,18 @@ jobs:
             PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
             echo "Adding label to PR #$PR_NUMBER"
 
-            gh api repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels \
-              -X POST \
-              -H "Content-Type: application/json" \
-              -d '{"labels":["ready-for-review"]}' 2>&1
+            RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels \
+              -d '{"labels":["ready-for-review"]}')
+
+            if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
+              echo "Label added successfully"
+            else
+              echo "Failed to add label"
+              cat response.json
+            fi
 
       - store_artifacts:
           path: dist
