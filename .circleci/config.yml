@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: Lint
-          command: deno lint
+          command: deno task lint
 
   typecheck:
     docker:
@@ -17,7 +17,7 @@ jobs:
       - checkout
       - run:
           name: Type check
-          command: deno check .
+          command: deno task typecheck
 
   test:
     docker:
@@ -26,7 +26,7 @@ jobs:
       - checkout
       - run:
           name: Run tests
-          command: deno test --allow-all
+          command: deno task test
 
   build:
     docker:
@@ -36,6 +36,71 @@ jobs:
       - run:
           name: Build extension
           command: deno task build
+
+  release:
+    docker:
+      - image: denoland/deno:latest
+    steps:
+      - checkout
+      - run:
+          name: Install git and configure credentials
+          command: |
+            apt-get update && apt-get install -y git gh
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+            echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+            git config credential.helper store
+
+      - run:
+          name: Clean and run release
+          command: |
+            rm -rf dist
+            deno task release
+
+      - run:
+          name: Commit dist if changed
+          command: |
+            git add dist/
+            if git diff --cached --quiet; then
+              echo "No changes to commit"
+              exit 0
+            fi
+            git commit -m "chore: update dist [ci skip]"
+
+      - run:
+          name: Push changes
+          command: |
+            git push origin HEAD:${CIRCLE_BRANCH}
+
+      - run:
+          name: Add ready-for-review label
+          command: |
+            apt-get update && apt-get install -y curl
+
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a PR, skipping label"
+              exit 0
+            fi
+
+            PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
+            echo "Adding label to PR #$PR_NUMBER"
+
+            RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels \
+              -d '{"labels":["ready-for-review"]}')
+
+            if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
+              echo "Label added successfully"
+            else
+              echo "Failed to add label"
+              cat response.json
+            fi
+
+      - store_artifacts:
+          path: dist
+          destination: dist
 
 workflows:
   ci:
@@ -50,3 +115,11 @@ workflows:
       - build:
           requires:
             - test
+      - release:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - /feature\/.*/
+                - /fix\/.*/
