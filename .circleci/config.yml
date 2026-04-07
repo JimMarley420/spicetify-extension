@@ -36,6 +36,36 @@ jobs:
       - run:
           name: Build extension
           command: deno task build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+
+  release:
+    docker:
+      - image: denoland/deno:latest
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Setup git
+          command: |
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+      - run:
+          name: Run release
+          command: deno task release
+      - run:
+          name: Commit dist
+          command: |
+            git add dist/
+            git commit -m "chore: update dist [ci skip]" || echo "No changes to commit"
+      - run:
+          name: Push
+          command: |
+            git remote set-url origin https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
+            git push origin HEAD:$CIRCLE_BRANCH
 
 workflows:
   ci:
@@ -50,3 +80,11 @@ workflows:
       - test:
           requires:
             - typecheck
+      - release:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore:
+                - main
+                - master
