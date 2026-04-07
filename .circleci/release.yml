@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   tag-merged-pr:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:1.37.0
     steps:
       - checkout
       - run:
@@ -17,8 +17,8 @@ jobs:
           name: Find latest merged PR and create tag
           command: |
             MERGED_PR=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?state=closed&sort=updated&direction=desc&per_page=1" | \
-              jq -r '.[] | select(.merged_at != null) | .number // empty')
+              "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?state=closed&sort=updated&direction=desc&per_page=100" | \
+              jq -r '[.[] | select(.merged_at != null)][0].number // empty')
 
             if [ -z "$MERGED_PR" ]; then
               echo "No merged PR found"
@@ -42,4 +42,4 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - master
