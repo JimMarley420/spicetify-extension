@@ -162,7 +162,7 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
     
     const response = await PlaylistAPI.getContents(playlistUri, {
       offset: 0,
-      limit: -1,
+      limit: 500,
     });
     
     if (response?.items) {
