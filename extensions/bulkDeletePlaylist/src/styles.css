@@ -302,6 +302,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-top: 2px;
 }
 
 .bulk-delete-playback-controls {
@@ -419,6 +420,9 @@
 .bulk-delete-item-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .bulk-delete-item-title {

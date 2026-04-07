@@ -36,27 +36,20 @@ jobs:
       - run:
           name: Build extension
           command: deno task build
-      - persist_to_workspace:
-          root: .
-          paths:
-            - dist
 
   release:
     docker:
       - image: denoland/deno:latest
     steps:
       - checkout
-      - attach_workspace:
-          at: .
       - run:
-          name: Install git
-          command: apt-get update && apt-get install -y git
-
-      - run:
-          name: Setup git
+          name: Install git and configure credentials
           command: |
+            apt-get update && apt-get install -y git
             git config user.email "ci@circleci.com"
             git config user.name "circleci-bot"
+            echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+            git config credential.helper store
 
       - run:
           name: Clean and run release
@@ -77,7 +70,6 @@ jobs:
       - run:
           name: Push changes
           command: |
-            git remote set-url origin https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
             git push origin HEAD:${CIRCLE_BRANCH}
 
       - store_artifacts:

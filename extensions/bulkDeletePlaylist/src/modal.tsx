@@ -19,13 +19,28 @@ async function fetchAllLibraryContents(): Promise<object[]> {
   const LibraryAPI = (Spicetify as any).Platform?.LibraryAPI;
   if (!LibraryAPI) return [];
   
-  const response = await LibraryAPI.getContents({
-    offset: 0,
-    limit: 10000000,
-    flattenTree: true,
-  });
+  const pageSize = 10000;
+  const items: object[] = [];
+  let offset = 0;
   
-  return response?.items || [];
+  while (true) {
+    const response = await LibraryAPI.getContents({
+      offset: offset,
+      limit: pageSize,
+      flattenTree: true,
+    });
+    
+    const pageItems = response?.items || [];
+    items.push(...pageItems);
+    
+    if (pageItems.length < pageSize) {
+      break;
+    }
+    
+    offset += pageSize;
+  }
+  
+  return items;
 }
 
 export async function fetchPlaylistsWithDeletePermission(): Promise<Playlist[]> {
@@ -114,7 +129,9 @@ function createPlaybackControl(uri: string, duration: number): HTMLElement {
   slider.addEventListener("change", () => {
     try {
       (Spicetify as any).Player?.seek(parseInt(slider.value));
-    } catch (e) {}
+    } catch (e) {
+      console.error("Failed to seek:", e);
+    }
   });
   
   sliderContainer.appendChild(currentTime);
@@ -160,12 +177,19 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
       throw new Error("PlaylistAPI not available");
     }
     
-    const response = await PlaylistAPI.getContents(playlistUri, {
-      offset: 0,
-      limit: 500,
-    });
+    const pageSize = 500;
+    let offset = 0;
     
-    if (response?.items) {
+    while (true) {
+      const response = await PlaylistAPI.getContents(playlistUri, {
+        offset: offset,
+        limit: pageSize,
+      });
+      
+      if (!response?.items) {
+        break;
+      }
+      
       for (const item of response.items) {
         if (item?.uri) {
           let name = "Unknown Track";
@@ -181,12 +205,17 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
           if (item.album?.images?.[0]?.url) imageUrl = item.album.images[0].url;
           else if (item.album?.coverArt?.sources?.[0]?.url) imageUrl = item.album.coverArt.sources[0].url;
           
-const itemAny = item as any;
+          const itemAny = item as Record<string, unknown>;
           let durationVal: number = 0;
-          if (itemAny.duration?.totalMs) durationVal = itemAny.duration.totalMs;
-          else if (typeof itemAny.duration === "number") durationVal = itemAny.duration;
-          else if (itemAny.durationMs) durationVal = itemAny.durationMs;
-          else if (itemAny.duration?.milliseconds) durationVal = itemAny.duration.milliseconds;
+          if (itemAny.duration && typeof itemAny.duration === "object") {
+            const dur = itemAny.duration as { totalMs?: number; milliseconds?: number };
+            if (dur.totalMs) durationVal = dur.totalMs;
+            else if (dur.milliseconds) durationVal = dur.milliseconds;
+          } else if (typeof itemAny.duration === "number") {
+            durationVal = itemAny.duration;
+          } else if (typeof itemAny.durationMs === "number") {
+            durationVal = itemAny.durationMs;
+          }
           duration = durationVal;
           
           tracks.push({
@@ -200,8 +229,15 @@ const itemAny = item as any;
           });
         }
       }
+      
+      if (response.items.length < pageSize) {
+        break;
+      }
+      
+      offset += pageSize;
     }
   } catch (e) {
+    console.error("Error fetching playlist tracks:", e);
     throw e;
   }
   
@@ -254,10 +290,27 @@ function createDeleteConfirmModal(
   
   const warning = document.createElement("div");
   warning.className = "bulk-delete-confirm-warning";
-  warning.innerHTML = `
-    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-    <p>This will permanently remove <strong>${tracks.length}</strong> track(s) from <strong>${playlistName}</strong>. This action cannot be undone.</p>
-  `;
+  
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("fill", "currentColor");
+  path.setAttribute("d", "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z");
+  svg.appendChild(path);
+  
+  const p = document.createElement("p");
+  p.appendChild(document.createTextNode("This will permanently remove "));
+  const strong1 = document.createElement("strong");
+  strong1.textContent = tracks.length.toString();
+  p.appendChild(strong1);
+  p.appendChild(document.createTextNode(" track(s) from "));
+  const strong2 = document.createElement("strong");
+  strong2.textContent = playlistName;
+  p.appendChild(strong2);
+  p.appendChild(document.createTextNode(". This action cannot be undone."));
+  
+  warning.appendChild(svg);
+  warning.appendChild(p);
   
   const trackList = document.createElement("div");
   trackList.className = "bulk-delete-confirm-track-list";
@@ -432,6 +485,7 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
       
       const item = document.createElement("div");
       item.className = "bulk-delete-item" + (selectedSet.has(track.uri) ? " selected" : "");
+      item.setAttribute("data-uri", track.uri);
       item.style.cursor = "pointer";
       
       item.addEventListener("click", (e) => {
@@ -619,14 +673,11 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
           }
           
           trackList.querySelectorAll(".bulk-delete-item").forEach(item => {
+            const uri = item.getAttribute("data-uri");
             const checkbox = item.querySelector(".bulk-delete-checkbox") as HTMLInputElement;
-            const titleEl = item.querySelector(".bulk-delete-item-title") as HTMLElement;
-            if (titleEl) {
-              const track = currentTracks.find(t => t.name === titleEl.textContent);
-              if (track && selectedSet.has(track.uri)) {
-                item.classList.add("selected");
-                checkbox.checked = true;
-              }
+            if (uri && selectedSet.has(uri)) {
+              item.classList.add("selected");
+              checkbox.checked = true;
             }
           });
           
@@ -694,7 +745,10 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   const cancelBtn = document.createElement("button");
   cancelBtn.className = "bulk-delete-btn cancel";
   cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", () => modal.remove());
+  cancelBtn.addEventListener("click", () => {
+    cleanupInterval();
+    modal.remove();
+  });
   
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "bulk-delete-btn delete";
@@ -749,8 +803,16 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   
   document.body.appendChild(modal);
   
+  const cleanupInterval = () => {
+    if (updateInterval) {
+      window.clearInterval(updateInterval);
+      updateInterval = null;
+    }
+  };
+  
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
+      cleanupInterval();
       modal.remove();
     }
   });

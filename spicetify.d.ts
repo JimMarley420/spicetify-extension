@@ -161,6 +161,9 @@ declare namespace Spicetify {
       function removeTracks(id: string, uris: string[]): Promise<any>;
       function setDetails(id: string, name: string, description?: string): Promise<any>;
       function reorder(id: string, rangeStart: number, insertBefore: number): Promise<any>;
+      function getContents(uri: string, options?: { offset?: number; limit?: number }): Promise<{ items?: any[] }>;
+      function remove(uri: string, tracks: { uri: string; uid: string }[]): Promise<any>;
+      function add(uri: string, trackUris: string[], options?: Record<string, unknown>): Promise<any>;
     }
   }
 

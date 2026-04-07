@@ -1,4 +1,5 @@
 {
+  "version": "1.37.0",
   "tasks": {
     "release": "deno run -A tasks/release.ts",
     "dev-build": "deno run -A tasks/build.ts --dev",
@@ -25,11 +26,11 @@
     "react-dom": "https://esm.sh/react-dom@19.2.3",
     "react-dom/client": "https://esm.sh/react-dom@19.2.3/client",
     "react/jsx-runtime": "https://esm.sh/react@19.2.3/jsx-runtime",
-    "babel-plugin-react-compiler": "npm:babel-plugin-react-compiler@latest",
-    "@babel/preset-typescript": "npm:@babel/preset-typescript@latest",
-    "@babel/preset-react": "npm:@babel/preset-react@latest",
-    "react-compiler-runtime": "npm:react-compiler-runtime@latest",
-    "@babel/core": "npm:@babel/core@latest"
+    "babel-plugin-react-compiler": "npm:babel-plugin-react-compiler@1.0.0",
+    "@babel/preset-typescript": "npm:@babel/preset-typescript@7.28.5",
+    "@babel/preset-react": "npm:@babel/preset-react@7.28.5",
+    "react-compiler-runtime": "npm:react-compiler-runtime@0.0.0-experimental-22c6e49-20241220",
+    "@babel/core": "npm:@babel/core@7.29.0"
   },
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable", "dom.asynciterable", "deno.ns", "deno.unstable"],
