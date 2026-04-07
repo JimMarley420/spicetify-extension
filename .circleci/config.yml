@@ -75,12 +75,13 @@ jobs:
       - run:
           name: Add ready-for-review label
           command: |
+            apt-get update && apt-get install -y curl
+
             if [ -z "$CIRCLE_PULL_REQUEST" ]; then
               echo "Not a PR, skipping label"
               exit 0
             fi
 
-            export GH_TOKEN=$GITHUB_TOKEN
             PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
             echo "Adding label to PR #$PR_NUMBER"
 
