@@ -392,14 +392,15 @@
 }
 
 .bulk-delete-checkbox-custom {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border: 2px solid #b3b3b3;
-  border-radius: 3px;
+  border-radius: 4px;
   transition: all 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #282828;
 }
 
 .bulk-delete-checkbox:checked + .bulk-delete-checkbox-custom {
@@ -409,12 +410,12 @@
 
 .bulk-delete-checkbox:checked + .bulk-delete-checkbox-custom::after {
   content: "";
-  width: 6px;
-  height: 10px;
+  width: 8px;
+  height: 12px;
   border: solid #000;
-  border-width: 0 2px 2px 0;
+  border-width: 0 3px 3px 0;
   transform: rotate(45deg);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .bulk-delete-item-info {
