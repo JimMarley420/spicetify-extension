@@ -36,7 +36,7 @@ const bulkDeleteMenuItem = new Spicetify.ContextMenu.Item(
   "Delete from Playlist",
   handleMenuClick,
   shouldAdd,
-  "trashbin" as any
+  "block" as Spicetify.Icon
 );
 
 bulkDeleteMenuItem.register();
