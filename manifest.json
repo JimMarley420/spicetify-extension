@@ -2,7 +2,7 @@
   {
     "name": "Search Artist Tracks",
     "description": "Access an artist's entire discography instantly from a single menu. Browse, play, and queue all tracks without navigating albums.",
-    "preview": "extensions/artistSearch/assets/preview.png",
+    "preview": "https://github.com/JimMarley420/spicetify-extension/blob/master/extensions/artistSearch/assets/preview.png?raw=true",
     "main": "dist/artistSearch.mjs",
     "readme": "extensions/artistSearch/README.md",
     "branch": "master",
