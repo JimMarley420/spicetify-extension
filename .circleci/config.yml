@@ -41,12 +41,12 @@ workflows:
   ci:
     jobs:
       - lint
-      - typecheck:
+      - build:
           requires:
             - lint
+      - typecheck:
+          requires:
+            - build
       - test:
           requires:
             - typecheck
-      - build:
-          requires:
-            - test
