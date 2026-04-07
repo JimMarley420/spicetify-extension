@@ -8,6 +8,7 @@ Collection of Spicetify extensions for Spotify.
 |-----------|-------------|-------------|--------|
 | [Artist Search](extensions/artistSearch/README.md) | Browse an artist's entire discography from context menu | [Spicetify Marketplace](https://github.com/spicetify/marketplace) | ✅ Active |
 | [Add to Multiple Playlists](extensions/addToPlaylistMulti/README.md) | Add tracks to multiple playlists at once | [Spicetify Marketplace](https://github.com/spicetify/marketplace) | ✅ Active |
+| [Bulk Delete Playlist](extensions/bulkDeletePlaylist/README.md) | Delete multiple tracks from a playlist at once | [Spicetify Marketplace](https://github.com/spicetify/marketplace) | ✅ Active |
 
 ---
 
@@ -18,7 +19,7 @@ For extension-specific documentation, see each extension's README in `extensions
 ### Prerequisites
 
 - [Spicetify CLI](https://spicetify.app/docs/advanced-usage/spicetify-cli) installed
-- [Deno](https://deno.land/) runtime
+- [Deno](https://deno.land/) runtime (version 1.37.0 or higher required for CSS import assertions)
 
 ### Build
 
@@ -61,6 +62,35 @@ deno task check
 deno task format
 ```
 
+## Contributing
+
+Contributions are welcome! Here's how you can help:
+
+### Issues
+
+Found a bug or have a feature request? Open an issue:
+1. Go to [Issues](https://github.com/JimMarley420/spicetify-extension/issues)
+2. Click "New issue"
+3. Describe the problem or feature
+
+### Pull Requests
+
+Want to contribute code? Follow these steps:
+
+1. **Fork** the repository
+2. **Create** a new branch (`git checkout -b my-feature`)
+3. **Make** your changes
+4. **Push** to your fork (`git push origin my-feature`)
+5. **Create** a Pull Request
+
+### Development
+
+- Follow the existing code style
+- Run `deno task check` and `deno task format` before submitting
+- Test your changes locally with `deno task dev-build`
+
+---
+
 ## Project Structure
 
 ```
@@ -97,4 +127,4 @@ All rights reserved. Extensions are provided for personal use only.
 
 ---
 
-Made by [JimMarley420](https://github.com/JimMarley420)
+Made by [JimMarley420](https://github.com/JimMarley420/spicetify-extension)

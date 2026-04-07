@@ -1,0 +1,46 @@
+version: 2.1
+
+jobs:
+  tag-merged-pr:
+    docker:
+      - image: denoland/deno:1.37.0
+    steps:
+      - checkout
+      - run:
+          name: Configure git
+          command: |
+            apt-get update && apt-get install -y git curl jq
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+            git remote set-url origin https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
+
+      - run:
+          name: Find latest merged PR and create tag
+          command: |
+            MERGED_PR=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?state=closed&sort=updated&direction=desc&per_page=100" | \
+              jq -r '[.[] | select(.merged_at != null)][0].number // empty')
+
+            if [ -z "$MERGED_PR" ]; then
+              echo "No merged PR found"
+              exit 0
+            fi
+
+            EXISTING_TAG=$(git ls-remote --tags origin "refs/tags/pr-$MERGED_PR" | cut -f1)
+            if [ -n "$EXISTING_TAG" ]; then
+              echo "Tag pr-$MERGED_PR already exists"
+              exit 0
+            fi
+
+            echo "Creating tag for PR #$MERGED_PR"
+            git tag "pr-$MERGED_PR"
+            git push origin "pr-$MERGED_PR"
+
+workflows:
+  release-on-merge:
+    jobs:
+      - tag-merged-pr:
+          filters:
+            branches:
+              only:
+                - master
