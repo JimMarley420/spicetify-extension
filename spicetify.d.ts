@@ -147,6 +147,42 @@ declare namespace Spicetify {
   const ReactDOM: any;
   const ReactDOMServer: any;
 
+  namespace Platform {
+    namespace LibraryAPI {
+      function isFollowed(uri: string): Promise<boolean>;
+      function follow(uri: string): Promise<boolean>;
+      function unfollow(uri: string): Promise<boolean>;
+      function getAll(): Promise<any[]>;
+    }
+    namespace PlaylistAPI {
+      function get(id: string): Promise<any>;
+      function create(name: string, description?: string): Promise<any>;
+      function addTracks(id: string, uris: string[]): Promise<any>;
+      function removeTracks(id: string, uris: string[]): Promise<any>;
+      function setDetails(id: string, name: string, description?: string): Promise<any>;
+      function reorder(id: string, rangeStart: number, insertBefore: number): Promise<any>;
+    }
+  }
+
+  namespace GraphQL {
+    function query<T = any>(operationName: string, variables?: Record<string, any>): Promise<T>;
+  }
+
+  namespace ContextMenuV2 {
+    class Item {
+      constructor(options: {
+        name?: string;
+        children?: React.ReactNode;
+        leadingIcon?: Icon | string;
+        onClick: (context: any, item: any, event: any) => void;
+        shouldAdd?: (props: any) => boolean;
+        disabled?: boolean;
+      });
+      register(): void;
+      deregister(): void;
+    }
+  }
+
   function showNotification(message: any, isError?: boolean, msTimeout?: number): void;
   function addToQueue(uri: ContextTrack[]): Promise<void>;
   function removeFromQueue(uri: ContextTrack[]): Promise<void>;
@@ -156,6 +192,8 @@ declare namespace Spicetify {
   type ContextTrack = { uri: string; uid?: string; metadata?: Record<string, string> };
 
   class URI {
+    type: string;
+    id: string;
     constructor(type: string, props: any);
     static Type: Record<string, string>;
     static fromString(str: string): URI;
