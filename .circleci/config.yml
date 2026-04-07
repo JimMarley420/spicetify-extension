@@ -82,7 +82,12 @@ jobs:
 
             export GH_TOKEN=$GITHUB_TOKEN
             PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
-            gh pr edit $PR_NUMBER --add-label ready-for-review --repo $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME 2>/dev/null || true
+            echo "Adding label to PR #$PR_NUMBER"
+
+            gh api repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -d '{"labels":["ready-for-review"]}' 2>&1
 
       - store_artifacts:
           path: dist
