@@ -82,7 +82,7 @@ jobs:
 
             export GH_TOKEN=$GITHUB_TOKEN
             PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
-            gh pr edit $PR_NUMBER --add-label ready-for-review --repo $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+            gh pr edit $PR_NUMBER --add-label ready-for-review --repo $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME 2>/dev/null || true
 
       - store_artifacts:
           path: dist
