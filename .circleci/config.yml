@@ -112,6 +112,12 @@ workflows:
       - label_ready:
           requires:
             - build
+            - release
+          filters:
+            branches:
+              only:
+                - /feature\/.*/
+                - /fix\/.*/
       - release:
           requires:
             - build
