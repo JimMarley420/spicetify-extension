@@ -44,6 +44,14 @@ spicetify config extensions bulkDeletePlaylist.mjs
 spicetify apply
 ```
 
+## Contributing
+
+Found a bug or want to contribute? Here's how you can help:
+
+- **Issues**: [Open an issue](https://github.com/JimMarley420/spicetify-extension/issues/new/choose)
+- **Pull Requests**: [Create a PR](https://github.com/JimMarley420/spicetify-extension/compare)
+- **Discussion**: [Start a discussion](https://github.com/JimMarley420/spicetify-extension/discussions)
+
 ## License
 
 Copyright (c) 2026 JimMarley420
