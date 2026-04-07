@@ -8,6 +8,7 @@ Collection of Spicetify extensions for Spotify.
 |-----------|-------------|-------------|--------|
 | [Artist Search](extensions/artistSearch/README.md) | Browse an artist's entire discography from context menu | [Spicetify Marketplace](https://github.com/spicetify/marketplace) | ✅ Active |
 | [Add to Multiple Playlists](extensions/addToPlaylistMulti/README.md) | Add tracks to multiple playlists at once | [Spicetify Marketplace](https://github.com/spicetify/marketplace) | ✅ Active |
+| [Bulk Delete Playlist](extensions/bulkDeletePlaylist/README.md) | Delete multiple tracks from a playlist at once | [Spicetify Marketplace](https://github.com/spicetify/marketplace) | ✅ Active |
 
 ---
 
