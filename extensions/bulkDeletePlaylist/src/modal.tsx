@@ -178,12 +178,16 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
     }
     
     const pageSize = 500;
+    const maxTracks = 500;
     let offset = 0;
     
-    while (true) {
+    while (tracks.length < maxTracks) {
+      const remainingSlots = maxTracks - tracks.length;
+      const currentLimit = Math.min(pageSize, remainingSlots);
+      
       const response = await PlaylistAPI.getContents(playlistUri, {
         offset: offset,
-        limit: pageSize,
+        limit: currentLimit,
       });
       
       if (!response?.items) {
@@ -230,11 +234,15 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
         }
       }
       
-      if (response.items.length < pageSize) {
+      if (response.items.length < currentLimit || tracks.length >= maxTracks) {
         break;
       }
       
-      offset += pageSize;
+      offset += currentLimit;
+    }
+    
+    if (tracks.length >= maxTracks) {
+      Spicetify.showNotification(`Showing first ${maxTracks} tracks. Playlist is larger.`, false, 5000);
     }
   } catch (e) {
     console.error("Error fetching playlist tracks:", e);
