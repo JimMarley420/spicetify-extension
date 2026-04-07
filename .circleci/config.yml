@@ -5,9 +5,6 @@ jobs:
     docker:
       - image: denoland/deno:latest
     steps:
-      - run:
-          name: Install git
-          command: apt-get update && apt-get install -y git
       - checkout
       - run:
           name: Lint
@@ -17,9 +14,6 @@ jobs:
     docker:
       - image: denoland/deno:latest
     steps:
-      - run:
-          name: Install git
-          command: apt-get update && apt-get install -y git
       - checkout
       - run:
           name: Type check
@@ -29,9 +23,6 @@ jobs:
     docker:
       - image: denoland/deno:latest
     steps:
-      - run:
-          name: Install git
-          command: apt-get update && apt-get install -y git
       - checkout
       - run:
           name: Run tests
@@ -41,9 +32,6 @@ jobs:
     docker:
       - image: denoland/deno:latest
     steps:
-      - run:
-          name: Install git
-          command: apt-get update && apt-get install -y git
       - checkout
       - run:
           name: Build extension
@@ -57,22 +45,27 @@ jobs:
     docker:
       - image: denoland/deno:latest
     steps:
-      - run:
-          name: Install git
-          command: apt-get update && apt-get install -y git
       - checkout
       - attach_workspace:
           at: .
+      - run:
+          name: Install git
+          command: apt-get update && apt-get install -y git
+
       - run:
           name: Setup git
           command: |
             git config user.email "ci@circleci.com"
             git config user.name "circleci-bot"
+
       - run:
-          name: Run release
-          command: deno task release
+          name: Clean and run release
+          command: |
+            rm -rf dist
+            deno task release
+
       - run:
-          name: Check for changes and commit
+          name: Commit dist if changed
           command: |
             git add dist/
             if git diff --cached --quiet; then
@@ -80,11 +73,13 @@ jobs:
               exit 0
             fi
             git commit -m "chore: update dist [ci skip]"
+
       - run:
           name: Push changes
           command: |
             git remote set-url origin https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
             git push origin HEAD:${CIRCLE_BRANCH}
+
       - store_artifacts:
           path: dist
           destination: dist
