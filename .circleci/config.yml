@@ -37,6 +37,26 @@ jobs:
           name: Build extension
           command: deno task build
 
+  label_ready:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Add ready-for-review label
+          command: |
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a PR, skipping label"
+              exit 0
+            fi
+
+            PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
+
+            curl -s -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels \
+              -d '{"labels":["ready-for-review"]}'
+
   release:
     docker:
       - image: denoland/deno:latest
@@ -89,6 +109,9 @@ workflows:
       - build:
           requires:
             - test
+      - label_ready:
+          requires:
+            - build
       - release:
           requires:
             - build
