@@ -19,7 +19,7 @@ For extension-specific documentation, see each extension's README in `extensions
 ### Prerequisites
 
 - [Spicetify CLI](https://spicetify.app/docs/advanced-usage/spicetify-cli) installed
-- [Deno](https://deno.land/) runtime
+- [Deno](https://deno.land/) runtime (version 1.37.0 or higher required for CSS import assertions)
 
 ### Build
 

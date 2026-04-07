@@ -3,11 +3,18 @@ import { createModal } from "./modal.tsx";
 
 document.adoptedStyleSheets.push(styles);
 
+function isTrackUri(uri: string): boolean {
+  const uriObj = Spicetify.URI.from(uri);
+  return !!(uriObj && (uriObj as { type?: string }).type === "track");
+}
+
+function isPlaylistUri(uri: string): boolean {
+  const uriObj = Spicetify.URI.from(uri);
+  return !!(uriObj && (uriObj as { type?: string }).type === "playlist");
+}
+
 async function handleMenuClick(uris: string[], _uids?: string[], contextUri?: string) {
-  const trackUris = uris.filter((uri: string) => {
-    const uriObj = Spicetify.URI.from(uri);
-    return uriObj && (uriObj as any).type === "track";
-  });
+  const trackUris = uris.filter(isTrackUri);
   
   if (trackUris.length === 0) {
     Spicetify.showNotification("No tracks selected", true);
@@ -15,21 +22,15 @@ async function handleMenuClick(uris: string[], _uids?: string[], contextUri?: st
   }
   
   let playlistUri: string | undefined;
-  if (contextUri) {
-    const uriObj = Spicetify.URI.from(contextUri);
-    if (uriObj && (uriObj as any).type === "playlist") {
-      playlistUri = contextUri;
-    }
+  if (contextUri && isPlaylistUri(contextUri)) {
+    playlistUri = contextUri;
   }
   
   createModal(trackUris, playlistUri);
 }
 
 function shouldAdd(uris: string[]): boolean {
-  return uris.some((uri: string) => {
-    const uriObj = Spicetify.URI.from(uri);
-    return uriObj && (uriObj as any).type === "track";
-  });
+  return uris.some(isTrackUri);
 }
 
 const bulkDeleteMenuItem = new Spicetify.ContextMenu.Item(

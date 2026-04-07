@@ -1,4 +1,6 @@
 declare module "*.css" {
   const content: string;
-  export default content;
+  const sheet: CSSStyleSheet;
+  export { content, sheet };
+  export default sheet;
 }
