@@ -12,9 +12,7 @@ jobs:
             apt-get update && apt-get install -y git curl jq
             git config user.email "ci@circleci.com"
             git config user.name "circleci-bot"
-            git remote set-url origin https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
-            echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
-            git config credential.helper store
+            git remote set-url origin https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
 
       - run:
           name: Find latest merged PR and create tag
