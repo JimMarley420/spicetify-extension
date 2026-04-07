@@ -168,7 +168,7 @@ function createPlayingIndicator(): HTMLElement {
 }
 
 export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
-  const tracks: Track[] = [];
+  let tracks: Track[] = [];
   
   try {
     const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
@@ -181,9 +181,9 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
     const maxTracks = 500;
     let offset = 0;
     
-    while (tracks.length < maxTracks) {
-      const remainingSlots = maxTracks - tracks.length;
-      const currentLimit = Math.min(pageSize, remainingSlots);
+    while (tracks.length <= maxTracks) {
+      const probeLimit = (tracks.length === 0 && offset === 0) ? pageSize + 1 : pageSize;
+      const currentLimit = Math.min(probeLimit, maxTracks - tracks.length + 1);
       
       const response = await PlaylistAPI.getContents(playlistUri, {
         offset: offset,
@@ -234,14 +234,15 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
         }
       }
       
-      if (response.items.length < currentLimit || tracks.length >= maxTracks) {
+      if (response.items.length < currentLimit || tracks.length > maxTracks) {
         break;
       }
       
       offset += currentLimit;
     }
     
-    if (tracks.length >= maxTracks) {
+    if (tracks.length > maxTracks) {
+      tracks = tracks.slice(0, maxTracks);
       Spicetify.showNotification(`Showing first ${maxTracks} tracks. Playlist is larger.`, false, 5000);
     }
   } catch (e) {
@@ -394,9 +395,20 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   let filteredTracks: Track[] = [];
   const selectedSet = new Set<string>();
   let currentPlaylistUri: string | null = preferredPlaylistUri || null;
+  let updateInterval: number | null = null;
+  
+  const getSelectionKey = (track: Track) => track.uid || track.uri;
   
   const modal = document.createElement("div");
   modal.className = "bulk-delete-modal";
+  
+  const cleanupAndClose = () => {
+    if (updateInterval) {
+      window.clearInterval(updateInterval);
+      updateInterval = null;
+    }
+    modal.remove();
+  };
   
   const content = document.createElement("div");
   content.className = "bulk-delete-content";
@@ -421,7 +433,6 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   const closeBtn = document.createElement("button");
   closeBtn.className = "bulk-delete-close";
   closeBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
-  closeBtn.addEventListener("click", () => modal.remove());
   
   headerRight.appendChild(githubLink);
   headerRight.appendChild(closeBtn);
@@ -438,6 +449,12 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   
   const playlistSelect = document.createElement("select");
   playlistSelect.className = "bulk-delete-playlist-select";
+  
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select a playlist";
+  placeholder.disabled = true;
+  playlistSelect.appendChild(placeholder);
   
   playlistSelector.appendChild(playlistLabel);
   playlistSelector.appendChild(playlistSelect);
@@ -492,7 +509,7 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
       const isPlaying = currentPlayingUri === track.uri;
       
       const item = document.createElement("div");
-      item.className = "bulk-delete-item" + (selectedSet.has(track.uri) ? " selected" : "");
+      item.className = "bulk-delete-item" + (selectedSet.has(getSelectionKey(track)) ? " selected" : "");
       item.setAttribute("data-uri", track.uri);
       item.style.cursor = "pointer";
       
@@ -502,11 +519,12 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
           return;
         }
         checkbox.checked = !checkbox.checked;
+        const key = getSelectionKey(track);
         if (checkbox.checked) {
-          selectedSet.add(track.uri);
+          selectedSet.add(key);
           item.classList.add("selected");
         } else {
-          selectedSet.delete(track.uri);
+          selectedSet.delete(key);
           item.classList.remove("selected");
         }
         updateButtonState();
@@ -549,22 +567,17 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "bulk-delete-checkbox";
-      checkbox.checked = selectedSet.has(track.uri);
-      
-      const customCheckbox = document.createElement("div");
-      customCheckbox.className = "bulk-delete-checkbox-custom";
-      
-      checkboxWrapper.appendChild(checkbox);
-      checkboxWrapper.appendChild(customCheckbox);
-      
-      checkbox.addEventListener("change", () => {
-        if (checkbox.checked) {
-          selectedSet.add(track.uri);
-          item.classList.add("selected");
-        } else {
-          selectedSet.delete(track.uri);
-          item.classList.remove("selected");
-        }
+checkbox.checked = selectedSet.has(getSelectionKey(track));
+        
+        checkbox.addEventListener("change", () => {
+          const key = getSelectionKey(track);
+          if (checkbox.checked) {
+            selectedSet.add(key);
+            item.classList.add("selected");
+          } else {
+            selectedSet.delete(key);
+            item.classList.remove("selected");
+          }
         updateButtonState();
       });
       
@@ -603,19 +616,23 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   }
   
   async function loadPlaylistTracks(playlistUri: string) {
+    const requestToken = playlistUri;
     emptyState.textContent = "Loading tracks...";
     trackList.innerHTML = "";
     trackList.appendChild(emptyState);
     
     try {
       currentTracks = await getPlaylistTracks(playlistUri);
+      if (requestToken !== currentPlaylistUri) return;
       filteredTracks = [...currentTracks];
       selectedSet.clear();
       searchInput.disabled = false;
       searchInput.value = "";
       renderTracks(filteredTracks);
       updateButtonState();
+      return;
     } catch (e) {
+      if (requestToken !== currentPlaylistUri) return;
       emptyState.textContent = "Failed to load tracks";
       trackList.appendChild(emptyState);
       Spicetify.showNotification("Failed to load tracks", true);
@@ -673,17 +690,19 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
           await loadPlaylistTracks(foundPlaylist.uri);
           
           selectedSet.clear();
-          const currentUris = new Set(currentTracks.map(t => t.uri));
+          const currentKeys = new Set(currentTracks.map(t => getSelectionKey(t)));
           for (const uri of trackUris) {
-            if (currentUris.has(uri)) {
-              selectedSet.add(uri);
+            const track = currentTracks.find(t => t.uri === uri);
+            if (track) {
+              selectedSet.add(getSelectionKey(track));
             }
           }
           
           trackList.querySelectorAll(".bulk-delete-item").forEach(item => {
             const uri = item.getAttribute("data-uri");
             const checkbox = item.querySelector(".bulk-delete-checkbox") as HTMLInputElement;
-            if (uri && selectedSet.has(uri)) {
+            const track = currentTracks.find(t => t.uri === uri);
+            if (track && selectedSet.has(getSelectionKey(track))) {
               item.classList.add("selected");
               checkbox.checked = true;
             }
@@ -737,7 +756,7 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
         if (checkbox) checkbox.checked = false;
       });
     } else {
-      filteredTracks.forEach(t => selectedSet.add(t.uri));
+      filteredTracks.forEach(t => selectedSet.add(getSelectionKey(t)));
       trackList.querySelectorAll(".bulk-delete-item").forEach(item => {
         item.classList.add("selected");
         const checkbox = item.querySelector(".bulk-delete-checkbox") as HTMLInputElement;
@@ -753,10 +772,7 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   const cancelBtn = document.createElement("button");
   cancelBtn.className = "bulk-delete-btn cancel";
   cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", () => {
-    cleanupInterval();
-    modal.remove();
-  });
+  cancelBtn.addEventListener("click", () => cleanupAndClose());
   
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "bulk-delete-btn delete";
@@ -769,7 +785,7 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
     const playlist = allPlaylists.find(p => p.uri === currentPlaylistUri);
     const playlistName = playlist?.name || "Unknown Playlist";
     const trackCount = selectedSet.size;
-    const tracksToDelete = currentTracks.filter(t => selectedSet.has(t.uri));
+    const tracksToDelete = currentTracks.filter(t => selectedSet.has(getSelectionKey(t)));
     
     createDeleteConfirmModal(
       tracksToDelete,
@@ -781,8 +797,8 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
         if (success) {
           Spicetify.showNotification(`Deleted ${trackCount} track(s) from playlist`);
           
-          currentTracks = currentTracks.filter(t => !selectedSet.has(t.uri));
-          filteredTracks = filteredTracks.filter(t => !selectedSet.has(t.uri));
+          currentTracks = currentTracks.filter(t => !selectedSet.has(getSelectionKey(t)));
+          filteredTracks = filteredTracks.filter(t => !selectedSet.has(getSelectionKey(t)));
           selectedSet.clear();
           renderTracks(filteredTracks);
           updateButtonState();
@@ -811,21 +827,13 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
   
   document.body.appendChild(modal);
   
-  const cleanupInterval = () => {
-    if (updateInterval) {
-      window.clearInterval(updateInterval);
-      updateInterval = null;
-    }
-  };
-  
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
-      cleanupInterval();
-      modal.remove();
+      cleanupAndClose();
     }
   });
   
-  let updateInterval: number | null = null;
+  closeBtn.addEventListener("click", cleanupAndClose);
   
   const updatePlaybackState = () => {
     const player = (Spicetify as any).Player;
