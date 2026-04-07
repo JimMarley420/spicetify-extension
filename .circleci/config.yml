@@ -7,8 +7,26 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run linter
-          command: deno task check
+          name: Lint
+          command: deno lint
+
+  typecheck:
+    docker:
+      - image: denoland/deno:latest
+    steps:
+      - checkout
+      - run:
+          name: Type check
+          command: deno check .
+
+  test:
+    docker:
+      - image: denoland/deno:latest
+    steps:
+      - checkout
+      - run:
+          name: Run tests
+          command: deno test --allow-all
 
   build:
     docker:
@@ -23,6 +41,12 @@ workflows:
   ci:
     jobs:
       - lint
-      - build:
+      - typecheck:
           requires:
             - lint
+      - test:
+          requires:
+            - typecheck
+      - build:
+          requires:
+            - test
