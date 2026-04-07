@@ -38,9 +38,17 @@ jobs:
           command: deno task build
 
   label_ready:
+    context:
+      - github-api
     docker:
       - image: cimg/base:stable
     steps:
+      - run:
+          name: Install gh CLI
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y gh
+
       - run:
           name: Add ready-for-review label
           command: |
@@ -50,12 +58,9 @@ jobs:
             fi
 
             PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
+            export GH_TOKEN=$GITHUB_TOKEN
 
-            curl -s -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels \
-              -d '{"labels":["ready-for-review"]}'
+            gh pr edit $PR_NUMBER --add-label ready-for-review --repo $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 
   release:
     docker:
