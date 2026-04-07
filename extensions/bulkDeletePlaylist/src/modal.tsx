@@ -564,12 +564,12 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
       const checkboxWrapper = document.createElement("div");
       checkboxWrapper.className = "bulk-delete-checkbox-wrapper";
       
-      const checkbox = document.createElement("input");
+const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "bulk-delete-checkbox";
-checkbox.checked = selectedSet.has(getSelectionKey(track));
-        
-        checkbox.addEventListener("change", () => {
+      checkbox.checked = selectedSet.has(getSelectionKey(track));
+      
+      checkbox.addEventListener("change", () => {
           const key = getSelectionKey(track);
           if (checkbox.checked) {
             selectedSet.add(key);
