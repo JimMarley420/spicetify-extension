@@ -78,18 +78,18 @@ workflows:
   ci:
     jobs:
       - lint
-      - build:
-          requires:
-            - lint
       - typecheck:
           requires:
-            - build
+            - lint
       - test:
           requires:
             - typecheck
-      - release:
+      - build:
           requires:
             - test
+      - release:
+          requires:
+            - build
           filters:
             branches:
               only:
