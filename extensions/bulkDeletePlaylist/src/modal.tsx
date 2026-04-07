@@ -53,7 +53,7 @@ export async function fetchPlaylistsWithDeletePermission(): Promise<Playlist[]> 
 }
 
 function formatTime(ms: number | undefined): string {
-  if (ms == null || ms <= 0) return "0:00";
+  if (ms == null || isNaN(ms) || ms <= 0) return "0:00";
   const s = Math.floor(ms / 1000);
   return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 }
@@ -178,8 +178,16 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
           if (item.name) name = item.name;
           if (item.artists?.[0]?.name) artist = item.artists[0].name;
           if (item.album?.name) album = item.album.name;
-          if (item.album?.coverArt?.sources?.[0]?.url) imageUrl = item.album.coverArt.sources[0].url;
-          if (item.duration?.totalMs) duration = item.duration.totalMs;
+          if (item.album?.images?.[0]?.url) imageUrl = item.album.images[0].url;
+          else if (item.album?.coverArt?.sources?.[0]?.url) imageUrl = item.album.coverArt.sources[0].url;
+          
+const itemAny = item as any;
+          let durationVal: number = 0;
+          if (itemAny.duration?.totalMs) durationVal = itemAny.duration.totalMs;
+          else if (typeof itemAny.duration === "number") durationVal = itemAny.duration;
+          else if (itemAny.durationMs) durationVal = itemAny.durationMs;
+          else if (itemAny.duration?.milliseconds) durationVal = itemAny.duration.milliseconds;
+          duration = durationVal;
           
           tracks.push({
             uri: item.uri,
@@ -202,7 +210,7 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
 
 export async function deleteTracksFromPlaylist(
   playlistUri: string,
-  trackUris: string[]
+  tracks: { uri: string; uid: string }[]
 ): Promise<boolean> {
   const PlaylistAPI = (Spicetify as any).Platform?.PlaylistAPI;
   
@@ -211,17 +219,25 @@ export async function deleteTracksFromPlaylist(
   }
   
   try {
-    for (const trackUri of trackUris) {
-      await PlaylistAPI.remove(playlistUri, trackUri);
-    }
+    const trackList = tracks.map(t => ({
+      uri: t.uri,
+      uid: t.uid
+    }));
+    await PlaylistAPI.remove(playlistUri, trackList);
     return true;
   } catch (e) {
-    return false;
+    try {
+      await PlaylistAPI.remove(playlistUri, tracks.map(t => t.uri));
+      return true;
+    } catch (e2) {
+      console.error("Delete failed:", e2);
+      return false;
+    }
   }
 }
 
 function createDeleteConfirmModal(
-  trackCount: number,
+  tracks: Track[],
   playlistName: string,
   onConfirm: () => void,
   onCancel: () => void
@@ -240,8 +256,38 @@ function createDeleteConfirmModal(
   warning.className = "bulk-delete-confirm-warning";
   warning.innerHTML = `
     <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-    <p>This will permanently remove <strong>${trackCount}</strong> track(s) from <strong>${playlistName}</strong>. This action cannot be undone.</p>
+    <p>This will permanently remove <strong>${tracks.length}</strong> track(s) from <strong>${playlistName}</strong>. This action cannot be undone.</p>
   `;
+  
+  const trackList = document.createElement("div");
+  trackList.className = "bulk-delete-confirm-track-list";
+  
+  for (const track of tracks) {
+    const trackItem = document.createElement("div");
+    trackItem.className = "bulk-delete-confirm-track-item";
+    
+    const img = document.createElement("img");
+    img.className = "bulk-delete-confirm-track-image";
+    img.src = track.imageUrl || "https://www.scdn.co/i/_global/favicon.png";
+    img.alt = "";
+    
+    const info = document.createElement("div");
+    info.className = "bulk-delete-confirm-track-info";
+    
+    const title = document.createElement("span");
+    title.className = "bulk-delete-confirm-track-title";
+    title.textContent = track.name;
+    
+    const artistAlbum = document.createElement("span");
+    artistAlbum.className = "bulk-delete-confirm-track-artist-album";
+    artistAlbum.textContent = `${track.artist} — ${track.album}`;
+    
+    info.appendChild(title);
+    info.appendChild(artistAlbum);
+    trackItem.appendChild(img);
+    trackItem.appendChild(info);
+    trackList.appendChild(trackItem);
+  }
   
   const buttons = document.createElement("div");
   buttons.className = "bulk-delete-confirm-buttons";
@@ -267,6 +313,7 @@ function createDeleteConfirmModal(
   
   content.appendChild(header);
   content.appendChild(warning);
+  content.appendChild(trackList);
   content.appendChild(buttons);
   
   overlay.appendChild(content);
@@ -385,6 +432,23 @@ export function createModal(trackUris: string[]) {
       
       const item = document.createElement("div");
       item.className = "bulk-delete-item" + (selectedSet.has(track.uri) ? " selected" : "");
+      item.style.cursor = "pointer";
+      
+      item.addEventListener("click", (e) => {
+        if ((e.target as HTMLElement).closest(".bulk-delete-checkbox-wrapper") || 
+            (e.target as HTMLElement).closest(".bulk-delete-playback-controls")) {
+          return;
+        }
+        checkbox.checked = !checkbox.checked;
+        if (checkbox.checked) {
+          selectedSet.add(track.uri);
+          item.classList.add("selected");
+        } else {
+          selectedSet.delete(track.uri);
+          item.classList.remove("selected");
+        }
+        updateButtonState();
+      });
       
       const trackNumber = document.createElement("span");
       trackNumber.className = "bulk-delete-track-number";
@@ -627,13 +691,14 @@ export function createModal(trackUris: string[]) {
     const playlist = allPlaylists.find(p => p.uri === currentPlaylistUri);
     const playlistName = playlist?.name || "Unknown Playlist";
     const trackCount = selectedSet.size;
+    const tracksToDelete = currentTracks.filter(t => selectedSet.has(t.uri));
     
     createDeleteConfirmModal(
-      trackCount,
+      tracksToDelete,
       playlistName,
       async () => {
-        const trackUrisToDelete = Array.from(selectedSet);
-        const success = await deleteTracksFromPlaylist(currentPlaylistUri!, trackUrisToDelete);
+        const tracksWithUid = tracksToDelete.map(t => ({ uri: t.uri, uid: t.uid }));
+        const success = await deleteTracksFromPlaylist(currentPlaylistUri!, tracksWithUid);
         
         if (success) {
           Spicetify.showNotification(`Deleted ${trackCount} track(s) from playlist`);
@@ -713,14 +778,12 @@ export function createModal(trackUris: string[]) {
       const playbacks = item.querySelectorAll(".bulk-delete-playback-controls");
       let itemUri = "";
       playbacks.forEach((pb: any) => {
-        if (pb.dataset.uri === currentUri) {
-          itemUri = currentUri;
-        }
+        itemUri = pb.dataset.uri || "";
       });
       
       if (itemUri === currentUri) {
         trackNumber.innerHTML = `<div class="bulk-delete-playing-indicator"></div>`;
-      } else if (!trackNumber.querySelector(".bulk-delete-playing-indicator")) {
+      } else {
         const idx = Array.from(trackList.querySelectorAll(".bulk-delete-item")).indexOf(item) + 1;
         trackNumber.textContent = idx.toString();
       }
