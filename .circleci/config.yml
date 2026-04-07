@@ -37,31 +37,6 @@ jobs:
           name: Build extension
           command: deno task build
 
-  label_ready:
-    context:
-      - github-api
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - run:
-          name: Install gh CLI
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y gh
-
-      - run:
-          name: Add ready-for-review label
-          command: |
-            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
-              echo "Not a PR, skipping label"
-              exit 0
-            fi
-
-            PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
-            export GH_TOKEN=$GITHUB_TOKEN
-
-            gh pr edit $PR_NUMBER --add-label ready-for-review --repo $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-
   release:
     docker:
       - image: denoland/deno:latest
@@ -70,7 +45,7 @@ jobs:
       - run:
           name: Install git and configure credentials
           command: |
-            apt-get update && apt-get install -y git
+            apt-get update && apt-get install -y git gh
             git config user.email "ci@circleci.com"
             git config user.name "circleci-bot"
             echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
@@ -97,6 +72,18 @@ jobs:
           command: |
             git push origin HEAD:${CIRCLE_BRANCH}
 
+      - run:
+          name: Add ready-for-review label
+          command: |
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a PR, skipping label"
+              exit 0
+            fi
+
+            export GH_TOKEN=$GITHUB_TOKEN
+            PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
+            gh pr edit $PR_NUMBER --add-label ready-for-review --repo $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+
       - store_artifacts:
           path: dist
           destination: dist
@@ -114,15 +101,6 @@ workflows:
       - build:
           requires:
             - test
-      - label_ready:
-          requires:
-            - build
-            - release
-          filters:
-            branches:
-              only:
-                - /feature\/.*/
-                - /fix\/.*/
       - release:
           requires:
             - build
