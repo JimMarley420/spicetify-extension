@@ -6,7 +6,7 @@
     "concat": "deno run -A tasks/concat.ts",
     "dev-watch": "deno run -A tasks/watch.ts --dev",
     "watch": "deno run -A tasks/watch.ts",
-    "lint": "deno run -A @biomejs/biome check",
+    "lint": "deno run -A @biomejs/biome check .",
     "typecheck": "deno check tasks/build.ts tasks/pluginInlineCSS.ts tasks/reactCompilerPlugin.ts tasks/release.ts tasks/spicetifyShimsPlugin.ts shared/api/ shared/utils/ shared/webpack/",
     "test": "deno test --allow-all",
     "check": "deno task lint && deno task typecheck",
