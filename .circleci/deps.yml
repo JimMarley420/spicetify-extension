@@ -1,0 +1,63 @@
+version: 2.1
+
+jobs:
+  update-deno-deps:
+    docker:
+      - image: denoland/deno:latest
+
+    steps:
+      - checkout
+
+      - run:
+          name: Install git
+          command: |
+            apt-get update && apt-get install -y git curl
+
+      - run:
+          name: Install dmm (Deno Module Manager)
+          command: |
+            deno install -A -f -n dmm https://deno.land/x/dmm/cli.ts
+
+      - run:
+          name: Update dependencies
+          command: |
+            dmm update
+
+      - run:
+          name: Check if changes exist
+          command: |
+            git diff --exit-code || echo "deps updated"
+
+      - run:
+          name: Commit changes
+          command: |
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+
+            git add deno.json deno.lock || true
+
+            if git diff --cached --quiet; then
+              echo "No dependency changes"
+              exit 0
+            fi
+
+            git commit -m "deps: update deno dependencies [ci skip]"
+
+      - run:
+          name: Push changes
+          command: |
+            git push origin HEAD:${CIRCLE_BRANCH}
+
+      - run:
+          name: Trigger main CI pipeline
+          command: |
+            curl -X POST \
+              -H "Circle-Token: $CIRCLECI_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"branch\": \"${CIRCLE_BRANCH}\"}" \
+              https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline
+
+workflows:
+  deps:
+    jobs:
+      - update-deno-deps
