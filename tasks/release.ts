@@ -24,15 +24,13 @@ const getEntryFile = async (folderPath: string): Promise<string | null> => {
 const resolveReactCompilerRuntime = (): esbuild.Plugin => ({
   name: "resolve-react-compiler-runtime",
   setup(build) {
-    build.onResolve({ filter: /^react-compiler-runtime$/ }, (args) => {
-      return {
-        path: "react-compiler-runtime-stub",
-        namespace: "react-compiler-runtime-ns",
-      };
-    });
-    build.onLoad({ filter: /./, namespace: "react-compiler-runtime-ns" }, () => {
-      return {
-        contents: `
+    build.onResolve({ filter: /^react-compiler-runtime$/ }, () => ({
+      path: "react-compiler-runtime-stub",
+      namespace: "react-compiler-runtime-ns",
+    }));
+
+    build.onLoad({ filter: /./, namespace: "react-compiler-runtime-ns" }, () => ({
+      contents: `
 import * as React from "react";
 import { useMemo } from "react";
 
@@ -63,9 +61,8 @@ export function $makeReadOnly() {
 
 export function $structuralCheck() {}
 `,
-        loader: "js",
-      };
-    });
+      loader: "js",
+    }));
   },
 });
 
@@ -74,7 +71,8 @@ const buildExtension = async (folderName: string, folderPath: string): Promise<v
   if (!SRC) return;
 
   const OUT = join("dist", `${folderName}.mjs`);
-  await esbuild.build({
+
+  const ctx = await esbuild.context({
     entryPoints: [SRC],
     outfile: OUT,
     format: "esm",
@@ -89,24 +87,21 @@ const buildExtension = async (folderName: string, folderPath: string): Promise<v
     plugins: [
       resolveReactCompilerRuntime(),
       spicetifyShims(),
-      inlineCSSPlugin({
-        minify: true,
-      }),
-      ...denoPlugins({
-        initialPluginData: {
-          runtimePackage: "./deno.json",
-        },
-      }),
+      inlineCSSPlugin({ minify: true }),
+      ...denoPlugins({ initialPluginData: { runtimePackage: "./deno.json" } }),
       reactCompilerPlugin(),
     ] as esbuild.Plugin[],
     banner: {
       js: "await new Promise((resolve) => Spicetify.Events.webpackLoaded.on(resolve));",
     },
   });
+
+  await ctx.rebuild();
+  await ctx.dispose(); // ✅ Close esbuild handles to allow CI to exit
 };
 
 const buildFolders = async (): Promise<void> => {
-  const buildPromises = [];
+  const buildPromises: Promise<void>[] = [];
   for await (const dirEntry of Deno.readDir("extensions")) {
     if (dirEntry.isDirectory) {
       const folderPath = join("extensions", dirEntry.name);
@@ -116,22 +111,43 @@ const buildFolders = async (): Promise<void> => {
   await Promise.all(buildPromises);
 };
 
+// 🔹 Fixed runBiome: capture stdout, stderr, exit status
 const runBiome = async (): Promise<void> => {
   const formatCommand = new Deno.Command("deno", {
     args: ["task", "check"],
   });
-  const { stdout } = await formatCommand.output();
-  console.log("Biome:", new TextDecoder().decode(stdout));
+
+  const result = await formatCommand.output();
+
+  const stdoutStr = new TextDecoder().decode(result.stdout);
+  const stderrStr = new TextDecoder().decode(result.stderr);
+
+  if (stdoutStr.trim()) {
+    console.log("Biome stdout:\n", stdoutStr);
+  }
+
+  if (stderrStr.trim()) {
+    console.error("Biome stderr:\n", stderrStr);
+  }
+
+  if (!result.status.success) {
+    console.error(`Biome check failed with code ${result.status.code}`);
+    Deno.exit(result.status.code || 1);
+  }
 };
 
 const runBuilds = async (): Promise<void> => {
   const startTime = performance.now();
 
+  console.log("Starting build...");
   await buildFolders();
+
+  console.log("Running biome...");
   await runBiome();
 
   const endTime = performance.now();
   const elapsed = ((endTime - startTime) / 1000).toFixed(2);
+
   console.log(`\x1b[33mBuild completed in ${elapsed} seconds.\x1b[0m`);
   Deno.exit(0);
 };
