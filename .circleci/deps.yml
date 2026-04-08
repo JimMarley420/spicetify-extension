@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Install dmm (Deno Module Manager)
           command: |
-            deno install -A -f -n dmm https://deno.land/x/dmm/cli.ts
+            deno install --global -A -f -n dmm https://deno.land/x/dmm/cli.ts
 
       - run:
           name: Update dependencies
