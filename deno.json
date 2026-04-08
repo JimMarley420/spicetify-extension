@@ -7,25 +7,28 @@
     "concat": "deno run -A tasks/concat.ts",
     "dev-watch": "deno run -A tasks/watch.ts --dev",
     "watch": "deno run -A tasks/watch.ts",
-    "lint": "deno run -A @biomejs/biome check .",
+    "lint": "deno run -A npm:@biomejs/biome@2.4.4 check .",
     "typecheck": "deno check tasks/build.ts tasks/pluginInlineCSS.ts tasks/reactCompilerPlugin.ts tasks/release.ts tasks/spicetifyShimsPlugin.ts shared/api/ shared/utils/ shared/webpack/",
     "test": "deno test --allow-all",
     "check": "deno task lint && deno task typecheck",
-    "format": "deno run -A @biomejs/biome format --write"
+    "format": "deno run -A npm:@biomejs/biome@2.4.4 format --write"
   },
   "imports": {
     "@biomejs/biome": "npm:@biomejs/biome@2.4.4",
     "@esbuild/": "https://deno.land/x/esbuild@v0.27.2/",
     "@oazmi/esbuild-plugin-deno": "jsr:@oazmi/esbuild-plugin-deno@0.4.5",
-    "@std/bytes": "jsr:@std/bytes@1.0.11",
-    "@std/assert": "jsr:@std/assert@1.0.11",
-    "@std/path": "jsr:@std/path@1.1.4",
-    "@std/streams": "jsr:@std/streams@1.0.17",
+
+    "@std/bytes": "jsr:@std/bytes@^1.0.0",
+    "@std/assert": "jsr:@std/assert@^1.0.0",
+    "@std/path": "jsr:@std/path@^1.0.0",
+    "@std/streams": "jsr:@std/streams@^1.0.0",
+
     "esbuild-plugin-babel": "npm:esbuild-plugin-babel@^0.2.3",
     "react": "https://esm.sh/react@19.2.3",
     "react-dom": "https://esm.sh/react-dom@19.2.3",
     "react-dom/client": "https://esm.sh/react-dom@19.2.3/client",
     "react/jsx-runtime": "https://esm.sh/react@19.2.3/jsx-runtime",
+
     "babel-plugin-react-compiler": "npm:babel-plugin-react-compiler@1.0.0",
     "@babel/preset-typescript": "npm:@babel/preset-typescript@7.28.5",
     "@babel/preset-react": "npm:@babel/preset-react@7.28.5",
