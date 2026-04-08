@@ -7,14 +7,14 @@
   "dependencyDashboard": true,
   "labels": ["dependencies"],
   "commitMessagePrefix": "deps:",
+{
   "regexManagers": [
     {
-      "description": "Detect Deno imports in deno.json",
       "fileMatch": ["(^|/)deno\\.json$"],
       "matchStrings": [
-        "\"(?<depName>[^\"@/]+)@(?<currentValue>[^\"@]+)\""
+        "\"npm:(?<depName>[^@]+)@(?<currentValue>[^\\\"]+)\""
       ],
-      "datasourceTemplate": "deno"
+      "datasourceTemplate": "npm"
     }
   ]
 }
