@@ -4,13 +4,11 @@
     "jsr:@oazmi/esbuild-plugin-deno@0.4.5": "0.4.5",
     "jsr:@oazmi/esbuild-types@0.27.0": "0.27.0",
     "jsr:@oazmi/kitchensink@0.9.15": "0.9.15",
-    "jsr:@std/assert@1.0.11": "1.0.11",
-    "jsr:@std/bytes@*": "1.0.6",
+    "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
     "jsr:@std/internal@^1.0.12": "1.0.12",
-    "jsr:@std/internal@^1.0.5": "1.0.12",
-    "jsr:@std/path@1.1.4": "1.1.4",
-    "jsr:@std/streams@1.0.17": "1.0.17",
+    "jsr:@std/path@^1.1.4": "1.1.4",
+    "jsr:@std/streams@^1.0.17": "1.0.17",
     "npm:@babel/core@7.29.0": "7.29.0",
     "npm:@babel/preset-react@7.28.5": "7.28.5_@babel+core@7.29.0",
     "npm:@babel/preset-typescript@7.28.5": "7.28.5_@babel+core@7.29.0",
@@ -33,10 +31,10 @@
     "@oazmi/kitchensink@0.9.15": {
       "integrity": "01fce611fb67dfe100aaf0e98ac3a039c47b84cf01dd299c0b3647bff88c3d86"
     },
-    "@std/assert@1.0.11": {
-      "integrity": "2461ef3c368fe88bc60e186e7744a93112f16fd110022e113a0849e94d1c83c1",
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
       "dependencies": [
-        "jsr:@std/internal@^1.0.5"
+        "jsr:@std/internal"
       ]
     },
     "@std/bytes@1.0.6": {
@@ -48,13 +46,13 @@
     "@std/path@1.1.4": {
       "integrity": "1d2d43f39efb1b42f0b1882a25486647cb851481862dc7313390b2bb044314b5",
       "dependencies": [
-        "jsr:@std/internal@^1.0.12"
+        "jsr:@std/internal"
       ]
     },
     "@std/streams@1.0.17": {
       "integrity": "7859f3d9deed83cf4b41f19223d4a67661b3d3819e9fc117698f493bf5992140",
       "dependencies": [
-        "jsr:@std/bytes@^1.0.6"
+        "jsr:@std/bytes"
       ]
     }
   },
@@ -527,10 +525,10 @@
   "workspace": {
     "dependencies": [
       "jsr:@oazmi/esbuild-plugin-deno@0.4.5",
-      "jsr:@std/assert@1.0.11",
-      "jsr:@std/bytes@1.0.11",
-      "jsr:@std/path@1.1.4",
-      "jsr:@std/streams@1.0.17",
+      "jsr:@std/assert@^1.0.19",
+      "jsr:@std/bytes@^1.0.6",
+      "jsr:@std/path@^1.1.4",
+      "jsr:@std/streams@^1.0.17",
       "npm:@babel/core@7.29.0",
       "npm:@babel/preset-react@7.28.5",
       "npm:@babel/preset-typescript@7.28.5",
