@@ -24,12 +24,13 @@ const getEntryFile = async (folderPath: string): Promise<string | null> => {
 const resolveReactCompilerRuntime = (): esbuild.Plugin => ({
   name: "resolve-react-compiler-runtime",
   setup(build) {
-    build.onResolve({ filter: /^react-compiler-runtime$/ }, (args) => {
+    build.onResolve({ filter: /^react-compiler-runtime$/ }, () => {
       return {
         path: "react-compiler-runtime-stub",
         namespace: "react-compiler-runtime-ns",
       };
     });
+
     build.onLoad({ filter: /./, namespace: "react-compiler-runtime-ns" }, () => {
       return {
         contents: `
@@ -74,7 +75,8 @@ const buildExtension = async (folderName: string, folderPath: string): Promise<v
   if (!SRC) return;
 
   const OUT = join("dist", `${folderName}.mjs`);
-  await esbuild.build({
+
+  const ctx = await esbuild.context({
     entryPoints: [SRC],
     outfile: OUT,
     format: "esm",
@@ -103,16 +105,22 @@ const buildExtension = async (folderName: string, folderPath: string): Promise<v
       js: "await new Promise((resolve) => Spicetify.Events.webpackLoaded.on(resolve));",
     },
   });
+
+  // 🔥 IMPORTANT : build + fermeture propre
+  await ctx.rebuild();
+  await ctx.dispose();
 };
 
 const buildFolders = async (): Promise<void> => {
-  const buildPromises = [];
+  const buildPromises: Promise<void>[] = [];
+
   for await (const dirEntry of Deno.readDir("extensions")) {
     if (dirEntry.isDirectory) {
       const folderPath = join("extensions", dirEntry.name);
       buildPromises.push(buildExtension(dirEntry.name, folderPath));
     }
   }
+
   await Promise.all(buildPromises);
 };
 
@@ -120,6 +128,7 @@ const runBiome = async (): Promise<void> => {
   const formatCommand = new Deno.Command("deno", {
     args: ["task", "check"],
   });
+
   const { stdout } = await formatCommand.output();
   console.log("Biome:", new TextDecoder().decode(stdout));
 };
@@ -127,12 +136,17 @@ const runBiome = async (): Promise<void> => {
 const runBuilds = async (): Promise<void> => {
   const startTime = performance.now();
 
+  console.log("Starting build...");
   await buildFolders();
+
+  console.log("Running biome...");
   await runBiome();
 
   const endTime = performance.now();
   const elapsed = ((endTime - startTime) / 1000).toFixed(2);
+
   console.log(`\x1b[33mBuild completed in ${elapsed} seconds.\x1b[0m`);
+
   Deno.exit(0);
 };
 
