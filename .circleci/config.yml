@@ -42,8 +42,7 @@ jobs:
       - image: denoland/deno:latest
     steps:
       - checkout
-
-      # ✅ Guard: uniquement en PR
+      
       - run:
           name: Skip if not a PR
           command: |
