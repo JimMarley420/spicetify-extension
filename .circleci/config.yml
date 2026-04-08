@@ -264,6 +264,3 @@ workflows:
           requires:
             - build
 
-  deps:
-    jobs:
-      - update-deno-deps
