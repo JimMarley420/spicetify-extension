@@ -106,7 +106,7 @@ const buildExtension = async (folderName: string, folderPath: string): Promise<v
     },
   });
 
-  // 🔥 IMPORTANT : build + fermeture propre
+  // Build and clean up
   await ctx.rebuild();
   await ctx.dispose();
 };
