@@ -40,9 +40,30 @@ jobs:
   release:
     docker:
       - image: denoland/deno:latest
+
     steps:
+      # 🔐 SSH key (CRUCIAL)
+      - add_ssh_keys:
+          fingerprints:
+            - "zhvhgYmcZBO8Dfn8P32ETQ+agImCNXFQCu5UfPoYtRc"
+
       - checkout
-      
+
+      # 📦 Install tools + SSH config
+      - run:
+          name: Install dependencies and configure git (SSH)
+          command: |
+            apt-get update && apt-get install -y git curl
+
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+
+            git remote set-url origin git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
+
+      # ⛔ Skip if not PR
       - run:
           name: Skip if not a PR
           command: |
@@ -51,36 +72,33 @@ jobs:
               circleci step halt
             fi
 
-      - run:
-          name: Install git and configure credentials
-          command: |
-            apt-get update && apt-get install -y git gh curl
-            git config user.email "ci@circleci.com"
-            git config user.name "circleci-bot"
-            echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
-            git config credential.helper store
-
+      # 🧹 Build
       - run:
           name: Clean and run release
           command: |
             rm -rf dist
             deno task release
 
+      # 💾 Commit changes
       - run:
           name: Commit dist if changed
           command: |
             git add dist/
+
             if git diff --cached --quiet; then
               echo "No changes to commit"
               exit 0
             fi
+
             git commit -m "chore: update dist [ci skip]"
 
+      # 🚀 Push (SSH)
       - run:
           name: Push changes
           command: |
             git push origin HEAD:${CIRCLE_BRANCH}
 
+      # 🏷 Add label to PR
       - run:
           name: Add ready-for-review label
           command: |
@@ -90,7 +108,6 @@ jobs:
             fi
 
             PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
-            echo "Adding label to PR #$PR_NUMBER"
 
             RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST \
               -H "Authorization: token $GITHUB_TOKEN" \
@@ -103,11 +120,132 @@ jobs:
             else
               echo "Failed to add label"
               cat response.json
+              exit 1
             fi
 
+      # 📦 Artifact
       - store_artifacts:
           path: dist
           destination: dist
+
+  update-deno-deps:
+    docker:
+      - image: denoland/deno:latest
+
+    steps:
+      # 🔐 SSH
+      - add_ssh_keys:
+          fingerprints:
+            - "zhvhgYmcZBO8Dfn8P32ETQ+agImCNXFQCu5UfPoYtRc"
+
+      - checkout
+
+      # 📦 tools
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update && apt-get install -y git curl jq
+
+      # 🔧 git SSH
+      - run:
+          name: Configure git (SSH)
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+
+            git remote set-url origin git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
+
+      # 🔍 outdated deps
+      - run:
+          name: Check outdated dependencies
+          command: |
+            deno outdated > outdated.txt || true
+            cat outdated.txt
+
+      # ⛔ stop if nothing
+      - run:
+          name: Stop if no updates
+          command: |
+            if [ ! -s outdated.txt ]; then
+              echo "No dependency updates"
+              circleci step halt
+            fi
+
+      # 🌿 branch
+      - run:
+          name: Create update branch
+          command: |
+            BRANCH="deps/auto-update-$(date +%Y%m%d%H%M%S)"
+            echo "export UPDATE_BRANCH=$BRANCH" >> $BASH_ENV
+            git checkout -b $BRANCH
+
+      # 🔄 update
+      - run:
+          name: Update dependencies
+          command: |
+            deno outdated --update
+
+      # 💾 commit
+      - run:
+          name: Commit changes
+          command: |
+            git add deno.json deno.lock || true
+
+            if git diff --cached --quiet; then
+              echo "No changes"
+              exit 0
+            fi
+
+            git commit -m "chore(deps): update deno dependencies [ci skip]"
+
+      # 🚀 push
+      - run:
+          name: Push branch
+          command: |
+            git push origin $UPDATE_BRANCH
+
+      # 🔀 PR
+      - run:
+          name: Create Pull Request
+          command: |
+            BASE_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+
+            RESPONSE=$(curl -s -w "%{http_code}" -o pr.json -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls \
+              -d "{
+                \"title\": \"chore(deps): update deno dependencies\",
+                \"head\": \"$UPDATE_BRANCH\",
+                \"base\": \"$BASE_BRANCH\",
+                \"body\": \"Automated dependency update via CircleCI.\"
+              }")
+
+            if [ "$RESPONSE" -ge 400 ]; then
+              echo "PR creation failed"
+              cat pr.json
+              exit 1
+            fi
+
+      # 🧾 Issue
+      - run:
+          name: Create Issue
+          command: |
+            BODY=$(cat outdated.txt)
+
+            JSON=$(jq -n \
+              --arg title "🔄 Deno dependencies update available" \
+              --arg body "$BODY" \
+              '{title: $title, body: ("```\n" + $body + "\n```")}')
+
+            curl -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues \
+              -d "$JSON"
 
 workflows:
   ci:
@@ -125,3 +263,7 @@ workflows:
       - release:
           requires:
             - build
+
+  deps:
+    jobs:
+      - update-deno-deps
