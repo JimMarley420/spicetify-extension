@@ -2,5 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
-  ]
+  ],
+  "enabledManagers": ["deno"],
+  "rangeStrategy": "auto",
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "commitMessagePrefix": "deps"
 }
