@@ -7,5 +7,5 @@
   "rangeStrategy": "auto",
   "dependencyDashboard": true,
   "labels": ["dependencies"],
-  "commitMessagePrefix": "deps"
+  "commitMessagePrefix": "deps:"
 }
