@@ -9,15 +9,36 @@ jobs:
       - checkout
 
       - run:
-          name: Install git + curl + jq
+          name: Install dependencies
           command: |
             apt-get update && apt-get install -y git curl jq
 
       - run:
-          name: Check outdated dependencies
+          name: Detect outdated dependencies
           command: |
             deno outdated > outdated.txt || true
             cat outdated.txt
+
+      - run:
+          name: Stop if nothing to update
+          command: |
+            if [ ! -s outdated.txt ]; then
+              echo "No updates"
+              circleci step halt
+            fi
+
+      - run:
+          name: Configure git
+          command: |
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+
+      - run:
+          name: Create update branch
+          command: |
+            BRANCH="deps/auto-update-$(date +%Y%m%d%H%M%S)"
+            echo "export UPDATE_BRANCH=$BRANCH" >> $BASH_ENV
+            git checkout -b $BRANCH
 
       - run:
           name: Update dependencies
@@ -25,48 +46,45 @@ jobs:
             deno outdated --update
 
       - run:
-          name: Check if changes exist
-          command: |
-            git diff --exit-code || echo "deps updated"
-
-      - run:
           name: Commit changes
           command: |
-            git config user.email "ci@circleci.com"
-            git config user.name "circleci-bot"
-
             git add deno.json deno.lock || true
-
-            if git diff --cached --quiet; then
-              echo "No dependency changes"
-              exit 0
-            fi
-
-            git commit -m "deps: update deno dependencies [ci skip]"
+            git commit -m "chore(deps): update deno dependencies"
 
       - run:
-          name: Push changes
+          name: Push branch
           command: |
-            git push origin HEAD:${CIRCLE_BRANCH}
+            git push origin $UPDATE_BRANCH
 
       - run:
-          name: Create GitHub Issue if updates exist
+          name: Create Pull Request
           command: |
-            if [ -s outdated.txt ]; then
-              TITLE="🔄 Deno dependencies updates available"
-              BODY=$(cat outdated.txt | sed 's/"/\\"/g')
+            PR_RESPONSE=$(curl -s -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls \
+              -d "{
+                \"title\": \"chore(deps): update deno dependencies\",
+                \"head\": \"$UPDATE_BRANCH\",
+                \"base\": \"main\",
+                \"body\": \"Automated dependency update via CircleCI.\"
+              }")
 
-              curl -X POST \
-                -H "Authorization: token $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github+json" \
-                https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues \
-                -d "{
-                  \"title\": \"$TITLE\",
-                  \"body\": \"Deno dependency updates detected:\\n\\n\`\`\`\\n$BODY\\n\`\`\`\"
-                }"
-            else
-              echo "No updates → no issue created"
-            fi
+            echo $PR_RESPONSE | jq .
+
+      - run:
+          name: Create Issue
+          command: |
+            BODY=$(cat outdated.txt | sed 's/"/\\"/g')
+
+            curl -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues \
+              -d "{
+                \"title\": \"🔄 Deno dependencies update available\",
+                \"body\": \"\`\`\`\n$BODY\n\`\`\`\"
+              }"
 
 workflows:
   deps:
