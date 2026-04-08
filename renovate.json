@@ -6,5 +6,15 @@
   "rangeStrategy": "auto",
   "dependencyDashboard": true,
   "labels": ["dependencies"],
-  "commitMessagePrefix": "deps:"
+  "commitMessagePrefix": "deps:",
+  "regexManagers": [
+    {
+      "description": "Detect Deno imports in deno.json",
+      "fileMatch": ["(^|/)deno\\.json$"],
+      "matchStrings": [
+        "\"(?<depName>[^\"@/]+)@(?<currentValue>[^\"@]+)\""
+      ],
+      "datasourceTemplate": "deno"
+    }
+  ]
 }
