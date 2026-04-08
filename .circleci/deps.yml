@@ -6,14 +6,12 @@ jobs:
       - image: denoland/deno:latest
 
     steps:
-      # 🔐 SSH (OBLIGATOIRE)
       - add_ssh_keys:
           fingerprints:
             - "zhvhgYmcZBO8Dfn8P32ETQ+agImCNXFQCu5UfPoYtRc"
 
       - checkout
 
-      # 📦 Install tools
       - run:
           name: Install dependencies
           command: |
@@ -31,14 +29,12 @@ jobs:
 
             git remote set-url origin git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
 
-      # 🔍 Check outdated deps
       - run:
           name: Check outdated dependencies
           command: |
             deno outdated > outdated.txt || true
             cat outdated.txt
 
-      # ⛔ Stop if nothing to update
       - run:
           name: Stop if no updates
           command: |
@@ -47,7 +43,6 @@ jobs:
               circleci step halt
             fi
 
-      # 🌿 Create branch
       - run:
           name: Create update branch
           command: |
@@ -55,13 +50,11 @@ jobs:
             echo "export UPDATE_BRANCH=$BRANCH" >> $BASH_ENV
             git checkout -b $BRANCH
 
-      # 🔄 Update dependencies
       - run:
           name: Update dependencies
           command: |
             deno outdated --update
 
-      # 💾 Commit changes
       - run:
           name: Commit changes
           command: |
@@ -74,20 +67,17 @@ jobs:
 
             git commit -m "chore(deps): update deno dependencies [ci skip]"
 
-      # 🚀 Push branch
       - run:
           name: Push branch
           command: |
             git push origin $UPDATE_BRANCH
 
-      # 🧠 Detect base branch dynamically
       - run:
           name: Detect base branch
           command: |
             BASE_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
             echo "export BASE_BRANCH=$BASE_BRANCH" >> $BASH_ENV
 
-      # 🔀 Create Pull Request (FIX 422)
       - run:
           name: Create Pull Request
           command: |
@@ -111,7 +101,6 @@ jobs:
             echo "✅ PR created"
             cat pr_response.json
 
-      # 🧾 Create Issue (FIX 400 avec jq)
       - run:
           name: Create Issue
           command: |
