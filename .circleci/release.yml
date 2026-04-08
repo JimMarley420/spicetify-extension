@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   tag-merged-pr:
     docker:
-      - image: denoland/deno:1.37.0
+      - image: denoland/deno:2.7.11
     steps:
       - add_ssh_keys:
           fingerprints:
