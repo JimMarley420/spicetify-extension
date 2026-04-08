@@ -6,6 +6,10 @@ jobs:
       - image: denoland/deno:latest
 
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "zhvhgYmcZBO8Dfn8P32ETQ+agImCNXFQCu5UfPoYtRc"
+
       - checkout
 
       - run:
@@ -14,24 +18,29 @@ jobs:
             apt-get update && apt-get install -y git curl jq
 
       - run:
-          name: Detect outdated dependencies
+          name: Configure git (SSH)
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+            git config user.email "ci@circleci.com"
+            git config user.name "circleci-bot"
+
+            git remote set-url origin git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
+
+      - run:
+          name: Check outdated dependencies
           command: |
             deno outdated > outdated.txt || true
             cat outdated.txt
 
       - run:
-          name: Stop if nothing to update
+          name: Stop if no updates
           command: |
             if [ ! -s outdated.txt ]; then
               echo "No updates"
               circleci step halt
             fi
-
-      - run:
-          name: Configure git
-          command: |
-            git config user.email "ci@circleci.com"
-            git config user.name "circleci-bot"
 
       - run:
           name: Create update branch
@@ -49,7 +58,13 @@ jobs:
           name: Commit changes
           command: |
             git add deno.json deno.lock || true
-            git commit -m "chore(deps): update deno dependencies"
+
+            if git diff --cached --quiet; then
+              echo "No changes to commit"
+              exit 0
+            fi
+
+            git commit -m "chore(deps): update deno dependencies [ci skip]"
 
       - run:
           name: Push branch
@@ -59,7 +74,7 @@ jobs:
       - run:
           name: Create Pull Request
           command: |
-            PR_RESPONSE=$(curl -s -X POST \
+            curl -s -X POST \
               -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls \
@@ -68,23 +83,21 @@ jobs:
                 \"head\": \"$UPDATE_BRANCH\",
                 \"base\": \"main\",
                 \"body\": \"Automated dependency update via CircleCI.\"
-              }")
-
-            echo $PR_RESPONSE | jq .
+              }" | jq .
 
       - run:
           name: Create Issue
           command: |
             BODY=$(cat outdated.txt | sed 's/"/\\"/g')
 
-            curl -X POST \
+            curl -s -X POST \
               -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues \
               -d "{
                 \"title\": \"🔄 Deno dependencies update available\",
                 \"body\": \"\`\`\`\n$BODY\n\`\`\`\"
-              }"
+              }" | jq .
 
 workflows:
   deps:
