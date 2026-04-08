@@ -42,10 +42,20 @@ jobs:
       - image: denoland/deno:latest
     steps:
       - checkout
+
+      # ✅ Guard: uniquement en PR
+      - run:
+          name: Skip if not a PR
+          command: |
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a PR, skipping release"
+              circleci step halt
+            fi
+
       - run:
           name: Install git and configure credentials
           command: |
-            apt-get update && apt-get install -y git gh
+            apt-get update && apt-get install -y git gh curl
             git config user.email "ci@circleci.com"
             git config user.name "circleci-bot"
             echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
@@ -75,8 +85,6 @@ jobs:
       - run:
           name: Add ready-for-review label
           command: |
-            apt-get update && apt-get install -y curl
-
             if [ -z "$CIRCLE_PULL_REQUEST" ]; then
               echo "Not a PR, skipping label"
               exit 0
@@ -118,8 +126,3 @@ workflows:
       - release:
           requires:
             - build
-          filters:
-            branches:
-              only:
-                - /feature\/.*/
-                - /fix\/.*/
