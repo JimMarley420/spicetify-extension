@@ -126,7 +126,4 @@ jobs:
             echo "✅ Issue created"
             cat issue_response.json
 
-workflows:
-  deps:
-    jobs:
-      - update-deno-deps
+
