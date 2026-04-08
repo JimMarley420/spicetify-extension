@@ -9,19 +9,20 @@ jobs:
       - checkout
 
       - run:
-          name: Install git
+          name: Install git + curl + jq
           command: |
-            apt-get update && apt-get install -y git curl
+            apt-get update && apt-get install -y git curl jq
 
       - run:
-          name: Install dmm (Deno Module Manager)
+          name: Check outdated dependencies
           command: |
-            deno install --global -A -f -n dmm https://deno.land/x/dmm/cli.ts
+            deno outdated > outdated.txt || true
+            cat outdated.txt
 
       - run:
           name: Update dependencies
           command: |
-            dmm update
+            deno outdated --update
 
       - run:
           name: Check if changes exist
@@ -49,13 +50,23 @@ jobs:
             git push origin HEAD:${CIRCLE_BRANCH}
 
       - run:
-          name: Trigger main CI pipeline
+          name: Create GitHub Issue if updates exist
           command: |
-            curl -X POST \
-              -H "Circle-Token: $CIRCLECI_API_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"branch\": \"${CIRCLE_BRANCH}\"}" \
-              https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline
+            if [ -s outdated.txt ]; then
+              TITLE="🔄 Deno dependencies updates available"
+              BODY=$(cat outdated.txt | sed 's/"/\\"/g')
+
+              curl -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues \
+                -d "{
+                  \"title\": \"$TITLE\",
+                  \"body\": \"Deno dependency updates detected:\\n\\n\`\`\`\\n$BODY\\n\`\`\`\"
+                }"
+            else
+              echo "No updates → no issue created"
+            fi
 
 workflows:
   deps:
