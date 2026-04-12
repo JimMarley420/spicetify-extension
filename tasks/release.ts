@@ -139,11 +139,10 @@ const minifyCSS = async (content: string): Promise<string> => {
 
 const minifyJS = async (content: string): Promise<string> => {
   let minified = content;
-  minified = minified.replace(/\/\/.*$/gm, "");
   minified = minified.replace(/\/\*[\s\S]*?\*\//g, "");
-  minified = minified.replace(/\s+/g, " ");
-  minified = minified.replace(/\s*([{}():;,])\s*/g, "$1");
-  minified = minified.replace(/;\s*}/g, "}");
+  minified = minified.replace(/^[\t ]*\/\/.*$/gm, "");
+  minified = minified.replace(/^\s+$/gm, "");
+  minified = minified.replace(/\n\s*\n/g, "\n");
   return minified.trim();
 };
 
@@ -153,15 +152,13 @@ const buildTheme = async (themeName: string, themePath: string): Promise<void> =
 
   const cssInPath = join(themePath, "user.css");
   if (await Deno.stat(cssInPath).catch(() => null)) {
-    let cssContent = await Deno.readTextFile(cssInPath);
-    cssContent = await minifyCSS(cssContent);
+    const cssContent = await Deno.readTextFile(cssInPath);
     await Deno.writeTextFile(join(OUT, "user.css"), cssContent);
   }
 
   const jsInPath = join(themePath, "theme.js");
   if (await Deno.stat(jsInPath).catch(() => null)) {
-    let jsContent = await Deno.readTextFile(jsInPath);
-    jsContent = await minifyJS(jsContent);
+    const jsContent = await Deno.readTextFile(jsInPath);
     await Deno.writeTextFile(join(OUT, "theme.js"), jsContent);
   }
 
