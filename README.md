@@ -19,7 +19,7 @@ Collection of Spicetify extensions and themes for Spotify.
 
 1. Copy the `CustomNight` folder to your Themes directory:
    - Windows: `%appdata%\spicetify\Themes\`
-   - Linux/MacOS: `~/.config/spicetify/Themes/`
+   - Linux/macOS: `~/.config/spicetify/Themes/`
 
 2. Apply the theme:
    ```bash

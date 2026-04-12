@@ -36,8 +36,12 @@ async function checkTheme(themePath: string): Promise<ThemeCheckResult> {
   if (existsSync(userCssPath)) {
     const content = await Deno.readTextFile(userCssPath);
     
-    if (content.includes("@keyframes") && !content.includes("from") && !content.includes("to")) {
-      result.errors.push("user.css contains incomplete @keyframes");
+    if (content.includes("@keyframes")) {
+      const hasFromTo = content.includes("from") && content.includes("to");
+      const hasPercent = /\d+%/.test(content);
+      if (!hasFromTo && !hasPercent) {
+        result.errors.push("user.css contains incomplete @keyframes");
+      }
     }
     
     const hasOpenBrace = (content.match(/{/g) || []).length;
@@ -51,13 +55,16 @@ async function checkTheme(themePath: string): Promise<ThemeCheckResult> {
   if (existsSync(themeJsPath)) {
     const content = await Deno.readTextFile(themeJsPath);
     
-    const jsErrors = [];
+    const jsErrors: string[] = [];
     try {
       new Function(content);
     } catch (e) {
       if (e instanceof SyntaxError) {
         jsErrors.push(e.message);
       }
+    }
+    if (jsErrors.length > 0) {
+      result.errors.push(...jsErrors);
     }
     
     if (content.includes("document.") && !content.includes("waitForElement")) {

@@ -151,24 +151,53 @@ const buildTheme = async (themeName: string, themePath: string): Promise<void> =
   await Deno.mkdir(OUT, { recursive: true });
 
   const cssInPath = join(themePath, "user.css");
-  if (await Deno.stat(cssInPath).catch(() => null)) {
+  let cssExists = false;
+  try {
+    await Deno.stat(cssInPath);
+    cssExists = true;
+  } catch (err) {
+    if (!(err instanceof Deno.errors.NotFound)) throw err;
+  }
+  if (cssExists) {
     const cssContent = await Deno.readTextFile(cssInPath);
     const minifiedCSS = await minifyCSS(cssContent);
     await Deno.writeTextFile(join(OUT, "user.css"), minifiedCSS);
   }
 
   const jsInPath = join(themePath, "theme.js");
-  if (await Deno.stat(jsInPath).catch(() => null)) {
+  let jsExists = false;
+  try {
+    await Deno.stat(jsInPath);
+    jsExists = true;
+  } catch (err) {
+    if (!(err instanceof Deno.errors.NotFound)) throw err;
+  }
+  if (jsExists) {
     const jsContent = await Deno.readTextFile(jsInPath);
     const minifiedJS = await minifyJS(jsContent);
     await Deno.writeTextFile(join(OUT, "theme.js"), minifiedJS);
   }
 
-  const filesToCopy = ["color.ini", "README.md"];
+  const filesToCopy = ["color.ini", "README.md", "assets"];
   for (const file of filesToCopy) {
     const srcPath = join(themePath, file);
-    if (await Deno.stat(srcPath).catch(() => null)) {
-      await Deno.copyFile(srcPath, join(OUT, file));
+    let fileExists = false;
+    try {
+      await Deno.stat(srcPath);
+      fileExists = true;
+    } catch (err) {
+      if (!(err instanceof Deno.errors.NotFound)) throw err;
+    }
+    if (fileExists) {
+      const destPath = join(OUT, file);
+      if (file === "assets") {
+        await Deno.mkdir(destPath, { recursive: true });
+        for await (const assetEntry of Deno.readDir(srcPath)) {
+          await Deno.copyFile(join(srcPath, assetEntry.name), join(destPath, assetEntry.name));
+        }
+      } else {
+        await Deno.copyFile(srcPath, destPath);
+      }
     }
   }
 };

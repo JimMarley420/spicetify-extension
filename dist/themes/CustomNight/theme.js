@@ -107,43 +107,62 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
         menu.style.display = 'none';
       }
     });
-  });
-  const urlInput = document.getElementById('customnight-url-input');
-  const preview = document.getElementById('customnight-preview');
-  const currentDisplay = document.getElementById('customnight-current');
-  const currentBg = getCustomBackgroundUrl();
-  if (currentBg) {
-    preview.style.backgroundImage = `url("${currentBg}")`;
-    currentDisplay.textContent = `Current: ${currentBg}`;
-  }
-  document.getElementById('customnight-apply').addEventListener('click', () => {
-    const url = urlInput.value.trim();
-    if (url) {
-      setCustomBackgroundUrl(url);
-      window.location.reload();
+    const urlInput = menu.querySelector('#customnight-url-input');
+    const preview = menu.querySelector('#customnight-preview');
+    const currentDisplay = menu.querySelector('#customnight-current');
+    const currentBg = getCustomBackgroundUrl();
+    if (currentBg && preview) {
+      preview.style.backgroundImage = `url("${currentBg}")`;
+      if (currentDisplay) currentDisplay.textContent = `Current: ${currentBg}`;
     }
-  });
-  document.getElementById('customnight-reset').addEventListener('click', () => {
-    setCustomBackgroundUrl(null);
-    window.location.reload();
-  });
-  urlInput.addEventListener('input', () => {
-    const url = urlInput.value.trim();
-    if (url) {
-      preview.style.backgroundImage = `url("${url}")`;
-    } else {
-      preview.style.backgroundImage = 'none';
+    const applyBtn = menu.querySelector('#customnight-apply');
+    const resetBtn = menu.querySelector('#customnight-reset');
+    if (applyBtn && urlInput) {
+      applyBtn.addEventListener('click', () => {
+        const url = urlInput.value.trim();
+        if (url) {
+          setCustomBackgroundUrl(url);
+          window.location.reload();
+        }
+      });
     }
-  });
-  urlInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      const url = urlInput.value.trim();
-      if (url) {
-        setCustomBackgroundUrl(url);
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        setCustomBackgroundUrl(null);
         window.location.reload();
-      }
+      });
+    }
+    if (urlInput && preview) {
+      urlInput.addEventListener('input', () => {
+        const url = urlInput.value.trim();
+        if (url) {
+          preview.style.backgroundImage = `url("${url}")`;
+        } else {
+          preview.style.backgroundImage = 'none';
+        }
+      });
+      urlInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const url = urlInput.value.trim();
+          if (url) {
+            setCustomBackgroundUrl(url);
+            window.location.reload();
+          }
+        }
+      });
     }
   });
+  function handleLabelChange() {
+    const playButton = document.querySelector('[data-encore-id="buttonPrimary"]');
+    if (!playButton) return;
+    const img = document.querySelector('.main-nowPlayingWidget-coverArt .cover-art img');
+    if (!img) return;
+    if (playButton.getAttribute('aria-label') == 'Pause') {
+      img.classList.add('running-animation');
+    } else {
+      img.classList.remove('running-animation');
+    }
+  }
   waitForElement(['.Root__now-playing-bar'], ([playbar]) => {
     waitForElement(['.Root__right-sidebar'], ([rightbar]) => {
       const resizeObserver = new ResizeObserver((entries) => {
@@ -169,6 +188,8 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
     });
   });
   waitForElement(['[data-encore-id="buttonPrimary"]'], ([targetElement]) => {
+    if (!targetElement) return;
+    handleLabelChange();
     const playObserver = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (
@@ -182,14 +203,4 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
     const playConfig = { attributes: true, attributeFilter: ['aria-label'] };
     playObserver.observe(targetElement, playConfig);
   });
-  function handleLabelChange() {
-    const img = document.querySelector(
-      '.main-nowPlayingWidget-coverArt .cover-art img'
-    );
-    if (document.querySelector('[data-encore-id="buttonPrimary"]').getAttribute('aria-label') == 'Pause') {
-      img.classList.add('running-animation');
-    } else {
-      img.classList.remove('running-animation');
-    }
-  }
 });
