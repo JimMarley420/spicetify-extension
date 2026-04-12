@@ -270,7 +270,7 @@
 
 .customnight-bg-container {
   position: fixed;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   height: 100%;
   width: 100%;
@@ -284,7 +284,7 @@
   height: 70vh;
   width: 70vh;
   right: 20px;
-  z-index: 3;
+  z-index: -1;
 }
 
 .customnight-bg-container .stars {
@@ -295,7 +295,7 @@
   left: 0;
   right: 0;
   display: block;
-  z-index: 0;
+  z-index: -1;
 }
 
 .customnight-bg-container .twinkling {
@@ -307,7 +307,7 @@
   right: 0;
   top: 0;
   bottom: 0;
-  z-index: 2;
+  z-index: -1;
   animation: move-background 70s linear infinite;
 }
 
@@ -320,7 +320,7 @@
   right: 0;
   top: 0;
   bottom: 0;
-  z-index: 3;
+  z-index: -1;
   animation: move-background 150s linear infinite;
 }
 
