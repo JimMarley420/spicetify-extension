@@ -23,7 +23,7 @@ Collection of Spicetify extensions and themes for Spotify.
 
 2. Apply the theme:
    ```bash
-   spicetify config theme CustomNight
+   spicetify config current_theme CustomNight
    spicetify apply
    ```
 
@@ -47,6 +47,9 @@ spicetify apply
 ```bash
 # Build all
 deno task build
+
+# Release  all
+deno task release
 
 # Theme check
 deno task theme:check
