@@ -32,7 +32,8 @@ function setCustomBackgroundUrl(url) {
 function createBackgroundButton() {
   const btn = document.createElement('button');
   btn.className = 'customnight-btn';
-  btn.innerHTML = '🎨 Background';
+  btn.innerHTML = '🎨';
+  btn.title = 'Change Background';
   document.body.appendChild(btn);
 
   const menu = document.createElement('div');

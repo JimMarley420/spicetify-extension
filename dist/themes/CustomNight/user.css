@@ -27,12 +27,13 @@
 
 .background-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
   z-index: 0;
   pointer-events: none;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: transparent;
 }
 
 .background-container .stars {
@@ -94,7 +95,7 @@
   background-repeat: no-repeat;
 }
 
-.background-container.user-bg img,
+.background-container.user-bg > img,
 .background-container.user-bg .stars,
 .background-container.user-bg .twinkling,
 .background-container.user-bg .clouds {
@@ -103,35 +104,40 @@
 
 .customnight-btn {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.7);
+  top: 60px;
+  right: 10px;
+  z-index: 99999;
+  background: rgba(29, 185, 84, 0.9);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 10px 16px;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
-  font-size: 14px;
-  font-family: sans-serif;
-  transition: background 0.2s;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .customnight-btn:hover {
-  background: rgba(30, 30, 30, 0.9);
+  background: #1ed760;
+  transform: scale(1.1);
 }
 
 .customnight-menu {
   position: fixed;
-  top: 60px;
-  right: 20px;
+  top: 100px;
+  right: 10px;
   background: rgba(20, 20, 20, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 16px;
-  z-index: 10000;
+  z-index: 100000;
   min-width: 280px;
   display: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .customnight-menu.show {
