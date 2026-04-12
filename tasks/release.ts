@@ -155,14 +155,14 @@ const buildTheme = async (themeName: string, themePath: string): Promise<void> =
   if (await Deno.stat(cssInPath).catch(() => null)) {
     let cssContent = await Deno.readTextFile(cssInPath);
     cssContent = await minifyCSS(cssContent);
-    await Deno.writeTextFile(join(OUT, "user.min.css"), cssContent);
+    await Deno.writeTextFile(join(OUT, "user.css"), cssContent);
   }
 
   const jsInPath = join(themePath, "theme.js");
   if (await Deno.stat(jsInPath).catch(() => null)) {
     let jsContent = await Deno.readTextFile(jsInPath);
     jsContent = await minifyJS(jsContent);
-    await Deno.writeTextFile(join(OUT, "theme.min.js"), jsContent);
+    await Deno.writeTextFile(join(OUT, "theme.js"), jsContent);
   }
 
   const filesToCopy = ["color.ini", "README.md"];
