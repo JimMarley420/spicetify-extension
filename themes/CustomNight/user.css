@@ -377,7 +377,8 @@ button[data-testid="cover-art-button"] {
 }
 
 .customnight-menu input[type="text"]:focus {
-  outline: none;
+  outline: 2px solid #1db954;
+  outline-offset: 2px;
   border-color: #1db954;
 }
 
