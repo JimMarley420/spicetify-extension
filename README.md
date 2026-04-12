@@ -1,6 +1,49 @@
-# 🎵 Spicetify Extensions
+# 🎵 Spicetify Extensions & Themes
 
-Collection of Spicetify extensions for Spotify.
+Collection of Spicetify extensions and themes for Spotify.
+
+## Themes
+
+| Theme | Description |
+|-------|-------------|
+| [CustomNight](themes/CustomNight/README.md) | Customizable night sky with user background support |
+
+### CustomNight Installation
+
+1. Copy the `CustomNight` folder to your Themes directory:
+   - Windows: `%appdata%\spicetify\Themes\`
+   - Linux/MacOS: `~/.config/spicetify/Themes/`
+
+2. Apply the theme:
+   ```bash
+   spicetify config theme CustomNight
+   spicetify apply
+   ```
+
+### Custom Background
+
+By default, the theme displays an animated night sky. You can set your own custom background image using JavaScript in the Spotify console:
+
+```javascript
+// Set a custom background image
+setCustomNightBackground('https://example.com/your-image.jpg');
+
+// Get the current custom background URL
+getCustomNightBackground();
+
+// Reset to default night sky background
+resetCustomNightBackground();
+```
+
+### Color Schemes
+
+Switch color schemes using Spicetify config:
+```bash
+spicetify config color_scheme <scheme-name>
+spicetify apply
+```
+
+Available schemes: Base, Cotton-candy, Forest, Galaxy, Orange, Sky, Sunrise
 
 ## Extensions
 
@@ -13,6 +56,8 @@ Collection of Spicetify extensions for Spotify.
 ---
 
 For extension-specific documentation, see each extension's README in `extensions/<extensionName>/README.md`.
+
+For theme-specific documentation, see each theme's README in `themes/<themeName>/README.md`.
 
 ## Quick Start
 
@@ -60,6 +105,9 @@ deno task dev-watch
 # Lint
 deno task check
 deno task format
+
+# Theme check
+deno task theme:check
 ```
 
 ## Contributing
@@ -94,6 +142,14 @@ Want to contribute code? Follow these steps:
 ## Project Structure
 
 ```
+├── themes/
+│   └── CustomNight/
+│       ├── assets/
+│       │   └── *.png
+│       ├── color.ini
+│       ├── user.css
+│       ├── theme.js
+│       └── README.md
 ├── extensions/
 │   └── <extensionName>/
 │       ├── assets/
@@ -118,7 +174,7 @@ Want to contribute code? Follow these steps:
 
 Copyright (c) 2026 JimMarley420
 
-All rights reserved. Extensions are provided for personal use only.
+All rights reserved. Extensions and themes are provided for personal use only.
 
 **You are NOT allowed to:**
 - Republish or redistribute on Spicetify Marketplace
