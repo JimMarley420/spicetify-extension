@@ -36,6 +36,10 @@
   background-color: transparent;
 }
 
+.background-container * {
+  pointer-events: none !important;
+}
+
 .background-container .stars {
   background: black url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/stars.png) repeat;
   position: absolute;
@@ -93,6 +97,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  pointer-events: none !important;
 }
 
 .background-container.user-bg > img,
@@ -107,6 +112,7 @@
   top: 60px;
   right: 10px;
   z-index: 99999;
+  pointer-events: auto !important;
   background: rgba(29, 185, 84, 0.9);
   color: white;
   border: none;
@@ -138,6 +144,7 @@
   min-width: 280px;
   display: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: auto !important;
 }
 
 .customnight-menu.show {
