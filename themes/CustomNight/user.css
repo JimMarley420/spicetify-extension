@@ -346,35 +346,8 @@ button[data-testid="cover-art-button"] {
   display: contents;
 }
 
-.customnight-btn {
-  position: relative;
-  top: 60px;
-  right: 10px;
-  z-index: 100000;
-  background: rgba(29, 185, 84, 0.9);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.2s;
-  pointer-events: auto !important;
-}
-
-.customnight-btn:hover {
-  background: #1ed760;
-  transform: scale(1.1);
-}
-
 .customnight-menu {
-  position: absolute;
-  top: 50px;
-  right: 0;
+  position: fixed;
   background: rgba(20, 20, 20, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
@@ -458,6 +431,31 @@ button[data-testid="cover-art-button"] {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.5);
   word-break: break-all;
+}
+
+.customnight-github {
+  margin-top: 12px;
+}
+
+.customnight-github a {
+  text-decoration: none;
+}
+
+.customnight-github .btn-github {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: sans-serif;
+  transition: background 0.2s;
+}
+
+.customnight-github .btn-github:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 @keyframes spin {
