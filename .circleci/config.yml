@@ -280,6 +280,8 @@ workflows:
       - build:
           requires:
             - test
+            - theme-check
+            - theme-lint
       - release:
           requires:
             - build
