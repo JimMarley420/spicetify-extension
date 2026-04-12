@@ -7,6 +7,10 @@ function waitForElement(els, func, timeout = 100) {
   }
 }
 
+function random(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 const STORAGE_KEY = 'customnight-bg-url';
 
 function getCustomBackgroundUrl() {
@@ -29,7 +33,43 @@ function setCustomBackgroundUrl(url) {
   }
 }
 
-function createBackgroundButton() {
+waitForElement(['.Root__top-container'], ([topContainer]) => {
+  const r = document.documentElement;
+  const rs = window.getComputedStyle(r);
+
+  const backgroundContainer = document.createElement('div');
+  backgroundContainer.className = 'customnight-bg-container';
+  topContainer.appendChild(backgroundContainer);
+
+  const rootElement = document.querySelector('.Root__top-container');
+  rootElement.style.zIndex = '0';
+
+  const customBgUrl = getCustomBackgroundUrl();
+
+  if (customBgUrl) {
+    backgroundContainer.style.backgroundImage = `url("${customBgUrl}")`;
+    backgroundContainer.style.backgroundSize = 'cover';
+    backgroundContainer.style.backgroundPosition = 'center';
+    backgroundContainer.style.backgroundRepeat = 'no-repeat';
+  } else {
+    const moonImg = document.createElement('img');
+    moonImg.src = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/moon2.png';
+    moonImg.alt = 'Moon';
+    backgroundContainer.appendChild(moonImg);
+
+    const stars = document.createElement('div');
+    stars.className = 'stars';
+    backgroundContainer.appendChild(stars);
+
+    const twinkling = document.createElement('div');
+    twinkling.className = 'twinkling';
+    backgroundContainer.appendChild(twinkling);
+
+    const clouds = document.createElement('div');
+    clouds.className = 'clouds';
+    backgroundContainer.appendChild(clouds);
+  }
+
   const btn = document.createElement('button');
   btn.className = 'customnight-btn';
   btn.innerHTML = '🎨';
@@ -102,44 +142,6 @@ function createBackgroundButton() {
       }
     }
   });
-}
-
-waitForElement(['.Root__top-container'], ([topContainer]) => {
-  const r = document.documentElement;
-  const rs = window.getComputedStyle(r);
-
-  const backgroundContainer = document.createElement('div');
-  backgroundContainer.className = 'background-container';
-  topContainer.appendChild(backgroundContainer);
-
-  const rootElement = document.querySelector('.Root__top-container');
-  rootElement.style.zIndex = '0';
-
-  const customBgUrl = getCustomBackgroundUrl();
-
-  if (customBgUrl) {
-    backgroundContainer.classList.add('user-bg');
-    backgroundContainer.style.backgroundImage = `url("${customBgUrl}")`;
-  } else {
-    const moonImg = document.createElement('img');
-    moonImg.src = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/moon2.png';
-    moonImg.alt = 'Moon';
-    backgroundContainer.appendChild(moonImg);
-
-    const stars = document.createElement('div');
-    stars.className = 'stars';
-    backgroundContainer.appendChild(stars);
-
-    const twinkling = document.createElement('div');
-    twinkling.className = 'twinkling';
-    backgroundContainer.appendChild(twinkling);
-
-    const clouds = document.createElement('div');
-    clouds.className = 'clouds';
-    backgroundContainer.appendChild(clouds);
-  }
-
-  createBackgroundButton();
 
   waitForElement(['.Root__now-playing-bar'], ([playbar]) => {
     waitForElement(['.Root__right-sidebar'], ([rightbar]) => {

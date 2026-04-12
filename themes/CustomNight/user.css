@@ -1,231 +1,3 @@
-@keyframes move-background {
-  from {
-    -webkit-transform: translate3d(0px, 0px, 0px);
-  }
-  to {
-    -webkit-transform: translate3d(1000px, 0px, 0px);
-  }
-}
-
-@-webkit-keyframes move-background {
-  from {
-    -webkit-transform: translate3d(0px, 0px, 0px);
-  }
-  to {
-    -webkit-transform: translate3d(1000px, 0px, 0px);
-  }
-}
-
-@-moz-keyframes move-background {
-  from {
-    -webkit-transform: translate3d(0px, 0px, 0px);
-  }
-  to {
-    -webkit-transform: translate3d(1000px, 0px, 0px);
-  }
-}
-
-.background-container {
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  background-color: transparent;
-}
-
-.background-container * {
-  pointer-events: none !important;
-}
-
-.background-container .stars {
-  background: black url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/stars.png) repeat;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: block;
-  z-index: 0;
-}
-
-.background-container .twinkling {
-  width: 10000px;
-  height: 100%;
-  background: transparent url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/twinkling.png") repeat;
-  background-size: 1000px 1000px;
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 2;
-  -moz-animation: move-background 70s linear infinite;
-  -ms-animation: move-background 70s linear infinite;
-  -o-animation: move-background 70s linear infinite;
-  -webkit-animation: move-background 70s linear infinite;
-  animation: move-background 70s linear infinite;
-}
-
-.background-container .clouds {
-  width: 10000px;
-  height: 100%;
-  background: transparent url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/clouds_repeat.png") repeat;
-  background-size: 1000px 1000px;
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 3;
-  -moz-animation: move-background 150s linear infinite;
-  -ms-animation: move-background 150s linear infinite;
-  -o-animation: move-background 150s linear infinite;
-  -webkit-animation: move-background 150s linear infinite;
-  animation: move-background 150s linear infinite;
-}
-
-.background-container > img {
-  height: 70vh;
-  width: 70vh;
-  position: absolute;
-  z-index: 3;
-  right: 20px;
-}
-
-.background-container.user-bg {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  pointer-events: none !important;
-}
-
-.background-container.user-bg > img,
-.background-container.user-bg .stars,
-.background-container.user-bg .twinkling,
-.background-container.user-bg .clouds {
-  display: none;
-}
-
-.customnight-btn {
-  position: fixed;
-  top: 60px;
-  right: 10px;
-  z-index: 99999;
-  pointer-events: auto !important;
-  background: rgba(29, 185, 84, 0.9);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.customnight-btn:hover {
-  background: #1ed760;
-  transform: scale(1.1);
-}
-
-.customnight-menu {
-  position: fixed;
-  top: 100px;
-  right: 10px;
-  background: rgba(20, 20, 20, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 16px;
-  z-index: 100000;
-  min-width: 280px;
-  display: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  pointer-events: auto !important;
-}
-
-.customnight-menu.show {
-  display: block;
-}
-
-.customnight-menu h3 {
-  margin: 0 0 12px 0;
-  color: white;
-  font-size: 14px;
-  font-family: sans-serif;
-}
-
-.customnight-menu input[type="text"] {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.customnight-menu input[type="text"]:focus {
-  outline: none;
-  border-color: #1db954;
-}
-
-.customnight-menu-buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.customnight-menu button {
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  font-family: sans-serif;
-  transition: background 0.2s;
-}
-
-.customnight-menu .btn-apply {
-  background: #1db954;
-  color: white;
-}
-
-.customnight-menu .btn-apply:hover {
-  background: #1ed760;
-}
-
-.customnight-menu .btn-reset {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.customnight-menu .btn-reset:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.customnight-preview {
-  margin-top: 12px;
-  width: 100%;
-  height: 100px;
-  border-radius: 6px;
-  background-size: cover;
-  background-position: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.customnight-current {
-  margin-top: 12px;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  word-break: break-all;
-}
-
 .button-module__button___hf2qg_marketplace {
   color: var(--spice-subtext);
 }
@@ -446,12 +218,12 @@
   height: 100%;
 }
 
-.main-coverSlotCollapsed-container > :first-child {
+.main-coverSlotCollapsed-container> :first-child {
   width: 100%;
   height: 100%;
 }
 
-.main-coverSlotCollapsed-container > :first-child > :first-child {
+.main-coverSlotCollapsed-container> :first-child> :first-child {
   width: 100%;
   height: 100%;
   background-color: #00000000;
@@ -496,6 +268,71 @@
   color: var(--spice-sidebar);
 }
 
+.customnight-bg-container {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+}
+
+.customnight-bg-container > img {
+  position: absolute;
+  height: 70vh;
+  width: 70vh;
+  right: 20px;
+  z-index: 3;
+}
+
+.customnight-bg-container .stars {
+  background: black url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/stars.png) repeat;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  z-index: 0;
+}
+
+.customnight-bg-container .twinkling {
+  width: 10000px;
+  height: 100%;
+  background: transparent url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/twinkling.png") repeat;
+  background-size: 1000px 1000px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  animation: move-background 70s linear infinite;
+}
+
+.customnight-bg-container .clouds {
+  width: 10000px;
+  height: 100%;
+  background: transparent url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/clouds_repeat.png") repeat;
+  background-size: 1000px 1000px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  animation: move-background 150s linear infinite;
+}
+
+@keyframes move-background {
+  from {
+    -webkit-transform: translate3d(0px, 0px, 0px);
+  }
+  to {
+    -webkit-transform: translate3d(1000px, 0px, 0px);
+  }
+}
+
 .ffFwfKcPDbmAPLXzxzKq {
   background-color: #00000000 !important;
 }
@@ -507,6 +344,125 @@ button[data-testid="cover-art-button"] {
   background-color: #00000000;
   box-shadow: 0 0 0px var(--spice-rgb-shadow);
   display: contents;
+}
+
+.customnight-btn {
+  position: fixed;
+  top: 60px;
+  right: 10px;
+  z-index: 99999;
+  background: rgba(29, 185, 84, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+  pointer-events: auto !important;
+}
+
+.customnight-btn:hover {
+  background: #1ed760;
+  transform: scale(1.1);
+}
+
+.customnight-menu {
+  position: fixed;
+  top: 100px;
+  right: 10px;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 100000;
+  min-width: 280px;
+  display: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: auto !important;
+}
+
+.customnight-menu.show {
+  display: block;
+}
+
+.customnight-menu h3 {
+  margin: 0 0 12px 0;
+  color: white;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.customnight-menu input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.customnight-menu input[type="text"]:focus {
+  outline: none;
+  border-color: #1db954;
+}
+
+.customnight-menu-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.customnight-menu button {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: sans-serif;
+  transition: background 0.2s;
+}
+
+.customnight-menu .btn-apply {
+  background: #1db954;
+  color: white;
+}
+
+.customnight-menu .btn-apply:hover {
+  background: #1ed760;
+}
+
+.customnight-menu .btn-reset {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.customnight-menu .btn-reset:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.customnight-preview {
+  margin-top: 12px;
+  width: 100%;
+  height: 100px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.customnight-current {
+  margin-top: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  word-break: break-all;
 }
 
 @keyframes spin {
