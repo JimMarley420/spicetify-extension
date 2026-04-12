@@ -2,7 +2,7 @@
 
 A customizable Spicetify theme with a beautiful animated night sky background. Users can set their own custom background image.
 
-<img width="300" height="500" alt="image" src="https://github.com/user-attachments/assets/dfb96bf2-8985-424f-ab05-4b3dd89d6a1e" />
+<img width="608" height="386" alt="image" src="https://github.com/user-attachments/assets/e237a931-6eb6-4ba9-9c2d-d457a4d6e4f1" />
 <img width="252" height="264" alt="image" src="https://github.com/user-attachments/assets/c7e56bfd-e7a9-4c2c-88ee-f260888f8046" />
 
 
