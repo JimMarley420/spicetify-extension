@@ -28,6 +28,24 @@ jobs:
           name: Run tests
           command: deno task test
 
+  theme-check:
+    docker:
+      - image: denoland/deno:latest
+    steps:
+      - checkout
+      - run:
+          name: Theme check
+          command: deno task theme:check
+
+  theme-lint:
+    docker:
+      - image: denoland/deno:latest
+    steps:
+      - checkout
+      - run:
+          name: Theme lint
+          command: deno task theme:lint
+
   build:
     docker:
       - image: denoland/deno:latest
@@ -257,6 +275,8 @@ workflows:
       - test:
           requires:
             - typecheck
+      - theme-check
+      - theme-lint
       - build:
           requires:
             - test

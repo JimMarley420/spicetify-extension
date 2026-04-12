@@ -1,0 +1,10 @@
+{
+  "defaultSeverity": "warning",
+  "rules": {
+    "color-no-invalid-hex": true,
+    "unit-allowed-list": ["px", "vh", "vw", "%", "em", "rem", "s", "ms", "deg", "fr"],
+    "number-max-precision": 4,
+    "value-keyword-case": "lower"
+  },
+  "ignoreFiles": ["**/*.ini", "**/*.md", "**/*.js", "**/*.json"]
+}

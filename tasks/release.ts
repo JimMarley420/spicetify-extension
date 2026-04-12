@@ -124,6 +124,69 @@ const buildFolders = async (): Promise<void> => {
   await Promise.all(buildPromises);
 };
 
+const minifyCSS = async (content: string): Promise<string> => {
+  let minified = content;
+  minified = minified.replace(/\/\*[\s\S]*?\*\//g, "");
+  minified = minified.replace(/\s+/g, " ");
+  minified = minified.replace(/\s*{\s*/g, "{");
+  minified = minified.replace(/\s*}\s*/g, "}");
+  minified = minified.replace(/\s*:\s*/g, ":");
+  minified = minified.replace(/\s*;\s*/g, ";");
+  minified = minified.replace(/\s*,\s*/g, ",");
+  minified = minified.replace(/;\s*}/g, "}");
+  return minified.trim();
+};
+
+const minifyJS = async (content: string): Promise<string> => {
+  let minified = content;
+  minified = minified.replace(/\/\/.*$/gm, "");
+  minified = minified.replace(/\/\*[\s\S]*?\*\//g, "");
+  minified = minified.replace(/\s+/g, " ");
+  minified = minified.replace(/\s*([{}():;,])\s*/g, "$1");
+  minified = minified.replace(/;\s*}/g, "}");
+  return minified.trim();
+};
+
+const buildTheme = async (themeName: string, themePath: string): Promise<void> => {
+  const OUT = join("dist", "themes", themeName);
+  await Deno.mkdir(OUT, { recursive: true });
+
+  const cssInPath = join(themePath, "user.css");
+  if (await Deno.stat(cssInPath).catch(() => null)) {
+    let cssContent = await Deno.readTextFile(cssInPath);
+    cssContent = await minifyCSS(cssContent);
+    await Deno.writeTextFile(join(OUT, "user.min.css"), cssContent);
+  }
+
+  const jsInPath = join(themePath, "theme.js");
+  if (await Deno.stat(jsInPath).catch(() => null)) {
+    let jsContent = await Deno.readTextFile(jsInPath);
+    jsContent = await minifyJS(jsContent);
+    await Deno.writeTextFile(join(OUT, "theme.min.js"), jsContent);
+  }
+
+  const filesToCopy = ["color.ini", "README.md"];
+  for (const file of filesToCopy) {
+    const srcPath = join(themePath, file);
+    if (await Deno.stat(srcPath).catch(() => null)) {
+      await Deno.copyFile(srcPath, join(OUT, file));
+    }
+  }
+};
+
+const buildThemes = async (): Promise<void> => {
+  const buildPromises: Promise<void>[] = [];
+
+  for await (const dirEntry of Deno.readDir("themes")) {
+    if (dirEntry.isDirectory) {
+      const themePath = join("themes", dirEntry.name);
+      buildPromises.push(buildTheme(dirEntry.name, themePath));
+    }
+  }
+
+  await Promise.all(buildPromises);
+};
+
 const runBiome = async (): Promise<void> => {
   const formatCommand = new Deno.Command("deno", {
     args: ["task", "check"],
@@ -136,8 +199,11 @@ const runBiome = async (): Promise<void> => {
 const runBuilds = async (): Promise<void> => {
   const startTime = performance.now();
 
-  console.log("Starting build...");
+  console.log("Building extensions...");
   await buildFolders();
+
+  console.log("Building themes...");
+  await buildThemes();
 
   console.log("Running biome...");
   await runBiome();
