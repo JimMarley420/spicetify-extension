@@ -5,8 +5,7 @@ A customizable Spicetify theme with a beautiful animated night sky background. U
 ## Features
 
 - Beautiful animated night sky background (stars, twinkling, clouds, moon)
-- Custom background support - set your own image
-- Multiple color schemes
+- Custom background support - set your own image from URL
 - Transparent UI elements
 
 ## Installation
@@ -23,16 +22,7 @@ A customizable Spicetify theme with a beautiful animated night sky background. U
 
 ## Custom Background
 
-Click the palette button in the navigation bar to set a custom background image.
-
-### Color Schemes
-
-```bash
-spicetify config color_scheme <scheme-name>
-spicetify apply
-```
-
-Available schemes: Base, Cotton-candy, Forest, Galaxy, Orange, Sky, Sunrise
+Click the palette button in the navigation bar to set a custom background image URL.
 
 ## License
 
