@@ -74,8 +74,7 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
   btn.className = 'customnight-btn';
   btn.innerHTML = '🎨';
   btn.title = 'Change Background';
-  document.body.appendChild(btn);
-
+  
   const menu = document.createElement('div');
   menu.className = 'customnight-menu';
   menu.innerHTML = `
@@ -88,7 +87,14 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
     <div class="customnight-preview" id="customnight-preview"></div>
     <div class="customnight-current" id="customnight-current"></div>
   `;
-  document.body.appendChild(menu);
+  menu.style.display = 'none';
+  
+  const menuContainer = document.createElement('div');
+  menuContainer.id = 'customnight-menu-container';
+  menuContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;pointer-events:none;';
+  menuContainer.appendChild(btn);
+  menuContainer.appendChild(menu);
+  document.body.appendChild(menuContainer);
 
   const urlInput = document.getElementById('customnight-url-input');
   const preview = document.getElementById('customnight-preview');
@@ -102,12 +108,16 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
 
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    menu.classList.toggle('show');
+    if (menu.style.display === 'none' || menu.style.display === '') {
+      menu.style.display = 'block';
+    } else {
+      menu.style.display = 'none';
+    }
   });
 
   document.addEventListener('click', (e) => {
     if (!menu.contains(e.target) && !btn.contains(e.target)) {
-      menu.classList.remove('show');
+      menu.style.display = 'none';
     }
   });
 

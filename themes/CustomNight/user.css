@@ -347,10 +347,10 @@ button[data-testid="cover-art-button"] {
 }
 
 .customnight-btn {
-  position: fixed;
+  position: relative;
   top: 60px;
   right: 10px;
-  z-index: 99999;
+  z-index: 100000;
   background: rgba(29, 185, 84, 0.9);
   color: white;
   border: none;
@@ -372,22 +372,17 @@ button[data-testid="cover-art-button"] {
 }
 
 .customnight-menu {
-  position: fixed;
-  top: 100px;
-  right: 10px;
+  position: absolute;
+  top: 50px;
+  right: 0;
   background: rgba(20, 20, 20, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 16px;
-  z-index: 100000;
+  z-index: 100001;
   min-width: 280px;
-  display: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   pointer-events: auto !important;
-}
-
-.customnight-menu.show {
-  display: block;
 }
 
 .customnight-menu h3 {
