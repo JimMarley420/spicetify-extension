@@ -1,7 +1,7 @@
 [
   {
     "name": "CustomNight",
-    "description": "Customizable night sky theme with user background support",
+    "description": "Customizable night sky theme with user custom background support",
     "preview": "themes/CustomNight/assets/preview.png",
     "usercss": "themes/CustomNight/user.css",
     "schemes": "themes/CustomNight/color.ini",
