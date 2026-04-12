@@ -71,9 +71,12 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
   }
 
   const btn = document.createElement('button');
-  btn.className = 'customnight-btn';
-  btn.innerHTML = '🎨';
+  btn.className = 'e-10180-legacy-button e-10180-legacy-button-tertiary e-10180-overflow-wrap-anywhere e-10180-button-tertiary--icon-only-medium e-10180-button-tertiary--icon-only e-10180-button-tertiary--condensed e-10180-button-tertiary--text-subdued encore-internal-color-text-subdued link-subtle main-globalNav-navLink main-globalNav-link-icon custom-navlink';
+  btn.setAttribute('aria-label', 'Custom Background');
+  btn.setAttribute('data-encore-id', 'buttonTertiary');
+  btn.innerHTML = '<span aria-hidden="true" class="e-10180-button__icon-wrapper"><svg data-encore-id="icon" role="img" aria-hidden="true" class="e-10180-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg></span>';
   btn.title = 'Change Background';
+  btn.style.width = '50px';
   
   const menu = document.createElement('div');
   menu.className = 'customnight-menu';
@@ -86,16 +89,43 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
     </div>
     <div class="customnight-preview" id="customnight-preview"></div>
     <div class="customnight-current" id="customnight-current"></div>
+    <div class="customnight-github">
+      <a href="https://github.com/JimMarley420/spicetify-extension" target="_blank" rel="noopener noreferrer">
+        <button class="btn-github">View on GitHub</button>
+      </a>
+    </div>
   `;
   menu.style.display = 'none';
   
-  const menuContainer = document.createElement('div');
-  menuContainer.id = 'customnight-menu-container';
-  menuContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;pointer-events:none;';
-  menuContainer.appendChild(btn);
-  menuContainer.appendChild(menu);
-  document.body.appendChild(menuContainer);
-
+  waitForElement(['#global-nav-bar'], ([navBar]) => {
+    const carousel = navBar.querySelector('.spicetify-sc-carousel');
+    if (carousel) {
+      const navLinks = navBar.querySelector('.spicetify-sc-contentArea .spicetify-sc-scroller > div');
+      if (navLinks) {
+        navLinks.appendChild(btn);
+        
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (menu.style.display === 'none' || menu.style.display === '') {
+            const rect = btn.getBoundingClientRect();
+            menu.style.display = 'block';
+            menu.style.top = (rect.bottom + 5) + 'px';
+            menu.style.left = rect.left + 'px';
+          } else {
+            menu.style.display = 'none';
+          }
+        });
+      }
+    }
+    document.body.appendChild(menu);
+    
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.style.display = 'none';
+      }
+    });
+  });
+  
   const urlInput = document.getElementById('customnight-url-input');
   const preview = document.getElementById('customnight-preview');
   const currentDisplay = document.getElementById('customnight-current');
@@ -105,21 +135,6 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
     preview.style.backgroundImage = `url("${currentBg}")`;
     currentDisplay.textContent = `Current: ${currentBg}`;
   }
-
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (menu.style.display === 'none' || menu.style.display === '') {
-      menu.style.display = 'block';
-    } else {
-      menu.style.display = 'none';
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!menu.contains(e.target) && !btn.contains(e.target)) {
-      menu.style.display = 'none';
-    }
-  });
 
   document.getElementById('customnight-apply').addEventListener('click', () => {
     const url = urlInput.value.trim();
