@@ -16,7 +16,7 @@ A customizable Spicetify theme with a beautiful animated night sky background. U
 
 2. Apply the theme:
    ```bash
-   spicetify config theme CustomNight
+   spicetify config current_theme CustomNight
    spicetify apply
    ```
 

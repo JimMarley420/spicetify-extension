@@ -1,3 +1,5 @@
 nul
 node_modules/
 dulwich/
+
+.vs/
