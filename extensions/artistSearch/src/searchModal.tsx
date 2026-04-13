@@ -10,6 +10,7 @@ interface Track {
   duration_ms: number;
   album: {
     name: string;
+    uri: string;
     images: Array<{ url: string }>;
   };
   artists: Array<{ name: string }>;
@@ -120,16 +121,17 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
         if (!track) continue;
         const images = coverArt || track?.album?.coverArt?.sources || [];
         const artists = Array.isArray(track?.artists) ? track.artists : [];
-        results.push({
-          uri: track?.uri || "",
-          name: track?.name || "",
-          duration_ms: track?.duration?.totalMs || 0,
-          album: {
-            name: albumName,
-            images: images.map((img: any) => ({ url: img?.url || "" })),
-          },
-          artists: artists.map((a: any) => ({ name: a?.profile?.name || a?.name || "" })),
-        });
+results.push({
+           uri: track?.uri || "",
+           name: track?.name || "",
+           duration_ms: track?.duration?.totalMs || 0,
+           album: {
+             name: albumName,
+             uri: albumUri,
+             images: images.map((img: any) => ({ url: img?.url || "" })),
+           },
+           artists: artists.map((a: any) => ({ name: a?.profile?.name || a?.name || "" })),
+         });
       }
       return results;
     } catch {
@@ -426,12 +428,28 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                     className="artist-search-track-image"
                     src={track.album.images[2]?.url || track.album.images[0]?.url || ""}
                   />
-                  <div className="artist-search-track-info">
-                    <span className="artist-search-track-name">{track.name}</span>
-                    <span className="artist-search-track-artists">
-                      {track.artists.map((a) => a.name).join(", ")}
-                    </span>
-                  </div>
+<div className="artist-search-track-info">
+                      <a
+                        className="artist-search-track-name"
+                        href={track.album.uri}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (track.album.uri.startsWith("spotify:")) {
+                            Spicetify.Platform.History.push(track.album.uri.replace("spotify:album:", "/album/"));
+                          }
+                        }}
+                        onDoubleClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        {track.name}
+                      </a>
+                      <span className="artist-search-track-artists">
+                        {track.artists.map((a) => a.name).join(", ")}
+                      </span>
+                    </div>
                   <span className="artist-search-track-album">{track.album.name}</span>
                   <div className="artist-search-track-playback">
                     <TrackPlaybackControl uri={track.uri} duration={track.duration_ms} />
@@ -483,18 +501,34 @@ export function ArtistSearchModal({ artistUri, artistName }: Props) {
                             className="artist-search-track-image"
                             src={track.album.images[2]?.url || track.album.images[0]?.url || ""}
                           />
-                          <div className="artist-search-track-info">
-                            <span className="artist-search-track-name">{track.name}</span>
-                            <span className="artist-search-track-artists">
-                              {track.artists.map((a) => a.name).join(", ")}
-                            </span>
-                          </div>
-                          <div className="artist-search-track-playback">
-                            <TrackPlaybackControl uri={track.uri} duration={track.duration_ms} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+<div className="artist-search-track-info">
+                             <a
+                               className="artist-search-track-name"
+                               href={track.album.uri}
+                               onClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                                 if (track.album.uri.startsWith("spotify:")) {
+                                   Spicetify.Platform.History.push(track.album.uri.replace("spotify:album:", "/album/"));
+                                 }
+                               }}
+                               onDoubleClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                               }}
+                             >
+                               {track.name}
+                             </a>
+                             <span className="artist-search-track-artists">
+                               {track.artists.map((a) => a.name).join(", ")}
+                             </span>
+                           </div>
+                           <div className="artist-search-track-playback">
+                             <TrackPlaybackControl uri={track.uri} duration={track.duration_ms} />
+                           </div>
+                         </div>
+                       ))}
+                     </div>
                   </div>
                 ))}
               </div>

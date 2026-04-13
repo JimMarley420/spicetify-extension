@@ -137,6 +137,7 @@ async function applyExtensions(): Promise<void> {
   const distDir = "dist";
 
   for await (const file of Deno.readDir(distDir)) {
+    if (!file.isFile) continue;
     const sourceFile = join(distDir, file.name);
     await Deno.copyFile(sourceFile, join(SPOTIFY_OUT, file.name));
   }
@@ -180,7 +181,22 @@ async function runBuilds(): Promise<void> {
 
   if (Deno.args.includes("--dev")) {
     await killSpotify();
-    await applyExtensions();
+    const maxAttempts = 5;
+    let delay = 100;
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+      try {
+        await applyExtensions();
+        break;
+      } catch (e) {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          throw e;
+        }
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2;
+      }
+    }
     startSpotify();
   }
 
