@@ -347,6 +347,13 @@
   color: var(--spice-text);
   white-space: nowrap;
   max-width: 144px;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+
+.artist-search-track-name:hover {
+  text-decoration: underline;
 }
 
 .artist-search-track-artists {
