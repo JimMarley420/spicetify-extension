@@ -434,9 +434,14 @@ results.push({
                         href={track.album.uri}
                         onClick={(e) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           if (track.album.uri.startsWith("spotify:")) {
                             Spicetify.Platform.History.push(track.album.uri.replace("spotify:album:", "/album/"));
                           }
+                        }}
+                        onDoubleClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                         }}
                       >
                         {track.name}
@@ -502,9 +507,14 @@ results.push({
                                href={track.album.uri}
                                onClick={(e) => {
                                  e.preventDefault();
+                                 e.stopPropagation();
                                  if (track.album.uri.startsWith("spotify:")) {
                                    Spicetify.Platform.History.push(track.album.uri.replace("spotify:album:", "/album/"));
                                  }
+                               }}
+                               onDoubleClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
                                }}
                              >
                                {track.name}
