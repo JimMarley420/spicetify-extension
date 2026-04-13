@@ -286,6 +286,13 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+
+.bulk-delete-item-title:hover {
+  text-decoration: underline;
 }
 
 .bulk-delete-item-artist {
@@ -433,6 +440,13 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+
+.bulk-delete-item-title:hover {
+  text-decoration: underline;
 }
 
 .bulk-delete-item-artist {
