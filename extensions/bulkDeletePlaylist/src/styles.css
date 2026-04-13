@@ -425,30 +425,6 @@
   margin-bottom: 3px;
 }
 
-.bulk-delete-item-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.bulk-delete-item-title {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  text-decoration: none;
-  display: block;
-}
-
-.bulk-delete-item-title:hover {
-  text-decoration: underline;
-}
-
 .bulk-delete-item-artist {
   color: #b3b3b3;
   font-size: 12px;

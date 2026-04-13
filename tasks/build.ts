@@ -181,8 +181,22 @@ async function runBuilds(): Promise<void> {
 
   if (Deno.args.includes("--dev")) {
     await killSpotify();
-    await new Promise(r => setTimeout(r, 2000));
-    await applyExtensions();
+    const maxAttempts = 5;
+    let delay = 100;
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+      try {
+        await applyExtensions();
+        break;
+      } catch (e) {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          throw e;
+        }
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2;
+      }
+    }
     startSpotify();
   }
 
