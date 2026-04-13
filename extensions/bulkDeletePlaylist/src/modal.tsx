@@ -552,6 +552,7 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
       title.textContent = track.name;
       title.addEventListener("click", (e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (track.albumUri.startsWith("spotify:album:")) {
           const path = track.albumUri.replace("spotify:album:", "/album/");
           (Spicetify as any).Platform?.History?.push(path);
