@@ -10,6 +10,7 @@ interface Track {
   name: string;
   artist: string;
   album: string;
+  albumUri: string;
   imageUrl: string;
   duration: number;
   uid: string;
@@ -206,6 +207,7 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
           if (item.name) name = item.name;
           if (item.artists?.[0]?.name) artist = item.artists[0].name;
           if (item.album?.name) album = item.album.name;
+          const albumUri = item.album?.uri || "";
           if (item.album?.images?.[0]?.url) imageUrl = item.album.images[0].url;
           else if (item.album?.coverArt?.sources?.[0]?.url) imageUrl = item.album.coverArt.sources[0].url;
           
@@ -227,6 +229,7 @@ export async function getPlaylistTracks(playlistUri: string): Promise<Track[]> {
             name,
             artist,
             album,
+            albumUri,
             imageUrl,
             duration,
             uid,
@@ -543,9 +546,18 @@ export function createModal(trackUris: string[], preferredPlaylistUri?: string |
       const info = document.createElement("div");
       info.className = "bulk-delete-item-info";
       
-      const title = document.createElement("span");
+      const title = document.createElement("a");
       title.className = "bulk-delete-item-title";
+      title.href = track.albumUri;
       title.textContent = track.name;
+      title.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (track.albumUri.startsWith("spotify:album:")) {
+          const path = track.albumUri.replace("spotify:album:", "/album/");
+          (Spicetify as any).Platform?.History?.push(path);
+        }
+      });
       
       const artist = document.createElement("span");
       artist.className = "bulk-delete-item-artist";
