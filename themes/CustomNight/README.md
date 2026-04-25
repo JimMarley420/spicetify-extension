@@ -9,8 +9,10 @@ A customizable Spicetify theme with a beautiful animated night sky background. U
 ## Features
 
 - Beautiful animated night sky background (stars, twinkling, clouds, moon)
-- Custom background support - set your own image from URL
+- Custom background support - set your own image from URL or upload from computer
+- Adjustable zoom and position for custom backgrounds
 - Transparent UI elements
+- Animated play button on album cover
 
 ## Installation
 
@@ -26,8 +28,39 @@ A customizable Spicetify theme with a beautiful animated night sky background. U
 
 ## Custom Background
 
-Click the palette button in the navigation bar to set a custom background image URL.
+Click the gradient button in the navigation bar to open the custom background modal:
+
+- **Enter URL**: Type an image URL and click Apply
+- **Upload**: Click "Choose File" to upload an image from your computer
+- **Adjust**: Use the slider to zoom in/out, or scroll with your mouse
+- **Move**: Click and drag the preview to reposition
+- **Reset**: Click Reset to remove custom background
+
+### Recommended Image Sizes
+
+- 1920x1080 (Full HD)
+- 2560x1440 (2K)
+- Higher resolutions work best
 
 ## License
 
 MIT License
+
+## Contributing
+
+Contributions are welcome! Please feel free to:
+
+- **Report bugs**: Open an issue at https://github.com/JimMarley420/spicetify-extension/issues
+- **Submit fixes**: Create a pull request
+- **Suggest features**: Open a discussion
+
+## Support
+
+If you encounter any issues or have questions:
+
+1. Check existing issues: https://github.com/JimMarley420/spicetify-extension/issues
+2. Create a new issue with:
+   - Clear description of the problem
+   - Steps to reproduce
+   - Your system info (OS, Spotify version, Spicetify version)
+   - Screenshots if applicable
