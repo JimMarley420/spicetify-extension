@@ -2,6 +2,15 @@
 button[aria-label="Custom Background"]{min-width:32px!important;width:32px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important}
 button[aria-label="Custom Background"] svg{width:20px!important;height:20px!important}
 button[aria-label="Custom Background"]:hover{opacity:1!important}
+button[aria-label="Custom Background"][class*="legacy-button"]{background-color:transparent!important;border-radius:4px!important;color:var(--spice-subtext)!important}
+button[aria-label="Custom Background"][class*="legacy-button"]:hover{background-color:var(--spice-highlight)!important}
+button[aria-label="Custom Background"][class*="legacy-button"]:active{background-color:var(--spice-active)!important}
+button[aria-label="Custom Background"][class*="legacy-button"]{pointer-events:auto!important;cursor:pointer!important}
+div:has(> button[aria-label="Custom Background"]){display:inline-flex!important;align-items:center!important;gap:4px!important}
+.main-globalNav-historyButtons > div:has(> button[aria-label="Custom Background"]){vertical-align:middle!important}
+button[aria-label="Custom Background"]{min-width:32px!important;width:32px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important}
+button[aria-label="Custom Background"] svg{width:20px!important;height:20px!important}
+button[aria-label="Custom Background"]:hover{opacity:1!important}
 button[aria-label="Custom Background"].e-10310-legacy-button{background-color:transparent!important;border-radius:4px!important;color:var(--spice-subtext)!important}
 button[aria-label="Custom Background"].e-10310-legacy-button:hover{background-color:var(--spice-highlight)!important}
 button[aria-label="Custom Background"].e-10310-legacy-button:active{background-color:var(--spice-active)!important}
