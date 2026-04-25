@@ -13,6 +13,10 @@ function random(min, max) {
 
 const STORAGE_KEY = 'customnight-bg-url';
 
+function escapeForCssUrl(url) {
+  return url.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\)/g, '\\)');
+}
+
 function getCustomBackgroundUrl() {
   try {
     return localStorage.getItem(STORAGE_KEY);
@@ -34,56 +38,61 @@ function setCustomBackgroundUrl(url) {
 }
 
 function customBackgroundInit() {
-  if (!Spicetify || !Spicetify.Topbar || !Spicetify.Topbar.Button) {
-    setTimeout(customBackgroundInit, 1000);
-    return;
-  }
+  const maxAttempts = 30;
+  let attempts = 0;
   
-  const icon = `<svg data-encore-id="icon" role="img" aria-hidden="true" class="e-10180-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>`;
-
-  new Spicetify.Topbar.Button('Custom Background', icon, () => {
-    const currentBg = getCustomBackgroundUrl();
-    
-    const content = document.createElement('div');
-    content.style.cssText = 'display:flex;flex-direction:column;gap:12px;padding:10px;min-width:280px;font-family:sans-serif;';
-    content.innerHTML = `
-      <div style="font-size:16px;font-weight:bold;color:#fff;margin-bottom:8px;">Custom Background</div>
-      <input type="text" id="customnight-url-input" placeholder="Enter image URL..." 
-        style="width:100%;padding:10px;border:1px solid #444;border-radius:4px;background:#222;color:#fff;font-size:13px;box-sizing:border-box;" />
-      <div style="display:flex;gap:8px;">
-        <button id="customnight-apply" style="flex:1;padding:10px;background:#1db954;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Apply</button>
-        <button id="customnight-reset" style="flex:1;padding:10px;background:#444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Reset</button>
-      </div>
-      <div id="customnight-preview" style="width:100%;height:100px;border-radius:4px;background-size:cover;background-position:center;border:1px solid #333;"></div>
-      <div id="customnight-current" style="font-size:11px;color:#888;word-break:break-all;"></div>
-    `;
-    
-    if (currentBg) {
-      const preview = content.querySelector('#customnight-preview');
-      const currentEl = content.querySelector('#customnight-current');
-      if (preview) preview.style.backgroundImage = `url("${currentBg}")`;
-      if (currentEl) currentEl.textContent = `Current: ${currentBg}`;
+  function init() {
+    if (!Spicetify || !Spicetify.Topbar || !Spicetify.Topbar.Button) {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        console.error('[CustomNight] customBackgroundInit: Spicetify.Topbar.Button not available after 30 attempts');
+        Spicetify?.showNotification?.('[CustomNight] Failed to initialize: Spicetify.Topbar.Button API unavailable', true);
+        return;
+      }
+      setTimeout(init, 1000);
+      return;
     }
     
-    Spicetify.PopupModal.display({
-      title: 'Custom Background',
-      content: content,
-    });
-    
-    setTimeout(() => {
-      const urlInput = document.getElementById('customnight-url-input');
-      const applyBtn = document.getElementById('customnight-apply');
-      const resetBtn = document.getElementById('customnight-reset');
-      const preview = document.getElementById('customnight-preview');
+    const icon = `<svg data-encore-id="icon" role="img" aria-hidden="true" class="e-10180-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>`;
+
+    new Spicetify.Topbar.Button('Custom Background', icon, () => {
+      const currentBg = getCustomBackgroundUrl();
+      const escapedBg = currentBg ? escapeForCssUrl(currentBg) : '';
+      
+      const content = document.createElement('div');
+      content.style.cssText = 'display:flex;flex-direction:column;gap:12px;padding:10px;min-width:280px;font-family:sans-serif;';
+      content.innerHTML = `
+        <div style="font-size:16px;font-weight:bold;color:#fff;margin-bottom:8px;">Custom Background</div>
+        <input type="text" id="customnight-url-input" placeholder="Enter image URL..." 
+          style="width:100%;padding:10px;border:1px solid #444;border-radius:4px;background:#222;color:#fff;font-size:13px;box-sizing:border-box;" />
+        <div style="display:flex;gap:8px;">
+          <button id="customnight-apply" style="flex:1;padding:10px;background:#1db954;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Apply</button>
+          <button id="customnight-reset" style="flex:1;padding:10px;background:#444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Reset</button>
+        </div>
+        <div id="customnight-preview" style="width:100%;height:100px;border-radius:4px;background-size:cover;background-position:center;border:1px solid #333;"></div>
+        <div id="customnight-current" style="font-size:11px;color:#888;word-break:break-all;"></div>
+      `;
+      
+      const preview = content.querySelector('#customnight-preview');
+      const currentEl = content.querySelector('#customnight-current');
+      if (currentBg && preview) {
+        preview.style.backgroundImage = `url("${escapedBg}")`;
+        if (currentEl) currentEl.textContent = `Current: ${currentBg}`;
+      }
+      
+      const urlInput = content.querySelector('#customnight-url-input');
+      const applyBtn = content.querySelector('#customnight-apply');
+      const resetBtn = content.querySelector('#customnight-reset');
       
       if (urlInput) {
         urlInput.addEventListener('input', () => {
           const url = urlInput.value.trim();
           if (preview) {
-            preview.style.backgroundImage = url ? `url("${url}")` : 'none';
+            const escaped = url ? escapeForCssUrl(url) : '';
+            preview.style.backgroundImage = url ? `url("${escaped}")` : 'none';
           }
         });
-        urlInput.addEventListener('keypress', (e) => {
+        urlInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && urlInput.value.trim()) {
             setCustomBackgroundUrl(urlInput.value.trim());
             window.location.reload();
@@ -106,8 +115,15 @@ function customBackgroundInit() {
           window.location.reload();
         });
       }
-    }, 100);
-  });
+      
+      Spicetify.PopupModal.display({
+        title: 'Custom Background',
+        content: content,
+      });
+    });
+  }
+  
+  init();
 }
 
 waitForElement(['.Root__top-container'], ([topContainer]) => {
@@ -121,7 +137,8 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
   const customBgUrl = getCustomBackgroundUrl();
 
   if (customBgUrl) {
-    backgroundContainer.style.backgroundImage = `url("${customBgUrl}")`;
+    const escaped = escapeForCssUrl(customBgUrl);
+    backgroundContainer.style.backgroundImage = `url("${escaped}")`;
     backgroundContainer.style.backgroundSize = 'cover';
     backgroundContainer.style.backgroundPosition = 'center';
     backgroundContainer.style.backgroundRepeat = 'no-repeat';
