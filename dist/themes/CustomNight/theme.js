@@ -10,6 +10,7 @@ function random(min, max) {
   return Math.random() * (max - min) + min;
 }
 const STORAGE_KEY = 'customnight-bg-url';
+const SETTINGS_KEY = 'customnight-bg-settings';
 function escapeForCssUrl(url) {
   return url.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\)/g, '\\)');
 }
@@ -31,6 +32,28 @@ function setCustomBackgroundUrl(url) {
     console.error('Failed to save custom background:', e);
   }
 }
+function getBackgroundSettings() {
+  try {
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    return saved ? JSON.parse(saved) : { size: 100, x: 50, y: 50 };
+  } catch (e) {
+    return { size: 100, x: 50, y: 50 };
+  }
+}
+function setBackgroundSettings(size, x, y) {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ size, x, y }));
+  } catch (e) {
+    console.error('Failed to save background settings:', e);
+  }
+}
+function clearBackgroundSettings() {
+  try {
+    localStorage.removeItem(SETTINGS_KEY);
+  } catch (e) {
+    console.error('Failed to clear background settings:', e);
+  }
+}
 function customBackgroundInit() {
   const maxAttempts = 30;
   let attempts = 0;
@@ -49,8 +72,9 @@ function customBackgroundInit() {
     new Spicetify.Topbar.Button('Custom Background', icon, () => {
       const currentBg = getCustomBackgroundUrl();
       const escapedBg = currentBg ? escapeForCssUrl(currentBg) : '';
+      const savedSettings = getBackgroundSettings();
       const content = document.createElement('div');
-      content.style.cssText = 'display:flex;flex-direction:column;gap:12px;padding:10px;min-width:280px;font-family:sans-serif;';
+      content.style.cssText = 'display:flex;flex-direction:column;gap:12px;padding:10px;min-width:350px;font-family:sans-serif;';
       content.innerHTML = `
         <div style="font-size:16px;font-weight:bold;color:#fff;margin-bottom:8px;">Custom Background</div>
         <input type="text" id="customnight-url-input" placeholder="Enter image URL..." 
@@ -59,19 +83,89 @@ function customBackgroundInit() {
           <button id="customnight-apply" style="flex:1;padding:10px;background:#1db954;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Apply</button>
           <button id="customnight-reset" style="flex:1;padding:10px;background:#444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Reset</button>
         </div>
-        <div style="text-align:center;color:#888;font-size:12px;margin:4px 0;">or</div>
+        <div style="text-align:center;color:#888;font-size:12px;margin:4px 0;">or upload from computer</div>
         <input type="file" id="customnight-file-input" accept="image/*" style="color:#fff;font-size:12px;" />
-        <div id="customnight-preview" style="width:100%;height:100px;border-radius:4px;background-size:cover;background-position:center;border:1px solid #333;"></div>
-        <div id="customnight-current" style="font-size:11px;color:#888;word-break:break-all;"></div>
+        <div style="font-size:11px;color:#666;margin-top:4px;">Recommended: 1920x1080 or 2560x1440</div>
+        <div style="font-size:11px;color:#666;margin-bottom:4px;">Scroll to zoom • drag to move</div>
+        <div id="customnight-preview" style="width:100%;height:200px;border-radius:4px;background-size:100%;background-position:center;background-repeat:no-repeat;background-color:#000;border:1px solid #333;overflow:hidden;cursor:grab;position:relative;"></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:11px;color:#666;">Zoom:</span>
+          <input type="range" id="customnight-size" min="30" max="300" value="100" style="flex:1;" />
+          <span id="customnight-size-val" style="font-size:11px;color:#888;min-width:40px;">100%</span>
+        </div>
+        <div id="customnight-current" style="font-size:11px;color:#888;word-break:break-all;max-height:40px;overflow:hidden;"></div>
       `;
+      let bgPositionX = savedSettings.x;
+      let bgPositionY = savedSettings.y;
+      let bgSize = savedSettings.size || 100;
+      let currentUrl = currentBg || '';
+      let isDragging = false;
+      let dragStartX, dragStartY, startPosX, startPosY;
       const preview = content.querySelector('#customnight-preview');
       const currentEl = content.querySelector('#customnight-current');
-      if (currentBg && preview) {
-        preview.style.backgroundImage = `url("${escapedBg}")`;
+      const sizeSlider = content.querySelector('#customnight-size');
+      const sizeVal = content.querySelector('#customnight-size-val');
+      function updatePreview() {
+        if (preview && currentUrl) {
+          const escaped = escapeForCssUrl(currentUrl);
+          preview.style.backgroundImage = `url("${escaped}")`;
+          preview.style.backgroundSize = bgSize + '%';
+          preview.style.backgroundPosition = bgPositionX + '% ' + bgPositionY + '%';
+          preview.style.backgroundRepeat = 'no-repeat';
+        }
+      }
+      if (currentUrl && preview) {
+        bgPositionX = savedSettings.x !== undefined ? savedSettings.x : 50;
+        bgPositionY = savedSettings.y !== undefined ? savedSettings.y : 50;
+        bgSize = savedSettings.size || 100;
         if (currentEl) {
-          const displayUrl = currentBg.startsWith('data:') ? `Local file (base64)` : currentBg;
+          const displayUrl = currentUrl.startsWith('data:') ? `Local file (base64)` : currentUrl;
           currentEl.textContent = `Current: ${displayUrl}`;
         }
+      }
+      if (sizeSlider) sizeSlider.value = bgSize;
+      if (sizeVal) sizeVal.textContent = bgSize + '%';
+      updatePreview();
+      if (sizeSlider && sizeVal) {
+        sizeSlider.addEventListener('input', () => {
+          bgSize = parseInt(sizeSlider.value);
+          sizeVal.textContent = bgSize + '%';
+          preview.style.backgroundSize = bgSize + '%';
+        });
+      }
+      if (preview) {
+        preview.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          startPosX = bgPositionX;
+          startPosY = bgPositionY;
+          preview.style.cursor = 'grabbing';
+          e.preventDefault();
+        });
+        document.addEventListener('mousemove', (e) => {
+          if (isDragging) {
+            const dx = (e.clientX - dragStartX) * 0.15;
+            const dy = (e.clientY - dragStartY) * 0.15;
+            bgPositionX = Math.max(0, Math.min(100, startPosX - dx));
+            bgPositionY = Math.max(0, Math.min(100, startPosY - dy));
+            preview.style.backgroundPosition = bgPositionX + '% ' + bgPositionY + '%';
+          }
+        });
+        document.addEventListener('mouseup', () => {
+          if (isDragging) {
+            isDragging = false;
+            preview.style.cursor = 'grab';
+          }
+        });
+        preview.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const delta = e.deltaY > 0 ? -10 : 10;
+          bgSize = Math.max(30, Math.min(300, bgSize + delta));
+          if (sizeSlider) sizeSlider.value = bgSize;
+          if (sizeVal) sizeVal.textContent = bgSize + '%';
+          preview.style.backgroundSize = bgSize + '%';
+        });
       }
       const urlInput = content.querySelector('#customnight-url-input');
       const applyBtn = content.querySelector('#customnight-apply');
@@ -85,8 +179,14 @@ function customBackgroundInit() {
             reader.onload = (ev) => {
               const dataUrl = ev.target?.result;
               if (typeof dataUrl === 'string') {
-                setCustomBackgroundUrl(dataUrl);
-                window.location.reload();
+                currentUrl = dataUrl;
+                bgPositionX = 50;
+                bgPositionY = 50;
+                bgSize = 100;
+                if (sizeSlider) sizeSlider.value = 100;
+                if (sizeVal) sizeVal.textContent = '100%';
+                if (currentEl) currentEl.textContent = 'Current: Local file (base64)';
+                updatePreview();
               }
             };
             reader.readAsDataURL(file);
@@ -96,22 +196,26 @@ function customBackgroundInit() {
       if (urlInput) {
         urlInput.addEventListener('input', () => {
           const url = urlInput.value.trim();
-          if (preview) {
-            const escaped = url ? escapeForCssUrl(url) : '';
-            preview.style.backgroundImage = url ? `url("${escaped}")` : 'none';
+          if (url) {
+            currentUrl = url;
+            const escaped = escapeForCssUrl(url);
+            preview.style.backgroundImage = `url("${escaped}")`;
+          } else {
+            preview.style.backgroundImage = 'none';
           }
         });
         urlInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && urlInput.value.trim()) {
-            setCustomBackgroundUrl(urlInput.value.trim());
-            window.location.reload();
+            currentUrl = urlInput.value.trim();
           }
         });
       }
       if (applyBtn) {
         applyBtn.addEventListener('click', () => {
-          if (urlInput && urlInput.value.trim()) {
-            setCustomBackgroundUrl(urlInput.value.trim());
+          const url = urlInput?.value.trim() || currentUrl;
+          if (url) {
+            setCustomBackgroundUrl(url);
+            setBackgroundSettings(bgSize, bgPositionX, bgPositionY);
             window.location.reload();
           }
         });
@@ -119,6 +223,7 @@ function customBackgroundInit() {
       if (resetBtn) {
         resetBtn.addEventListener('click', () => {
           setCustomBackgroundUrl(null);
+          clearBackgroundSettings();
           window.location.reload();
         });
       }
@@ -137,12 +242,14 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
   const rootElement = document.querySelector('.Root__top-container');
   rootElement.style.zIndex = '0';
   const customBgUrl = getCustomBackgroundUrl();
+  const settings = getBackgroundSettings();
   if (customBgUrl) {
     const escaped = escapeForCssUrl(customBgUrl);
     backgroundContainer.style.backgroundImage = `url("${escaped}")`;
-    backgroundContainer.style.backgroundSize = 'cover';
-    backgroundContainer.style.backgroundPosition = 'center';
+    backgroundContainer.style.backgroundSize = settings.size + '%';
+    backgroundContainer.style.backgroundPosition = settings.x + '% ' + settings.y + '%';
     backgroundContainer.style.backgroundRepeat = 'no-repeat';
+    backgroundContainer.style.backgroundColor = '#000';
   } else {
     const moonImg = document.createElement('img');
     moonImg.src = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/moon2.png';
