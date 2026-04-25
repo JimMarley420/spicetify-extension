@@ -69,6 +69,8 @@ function customBackgroundInit() {
           <button id="customnight-apply" style="flex:1;padding:10px;background:#1db954;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Apply</button>
           <button id="customnight-reset" style="flex:1;padding:10px;background:#444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Reset</button>
         </div>
+        <div style="text-align:center;color:#888;font-size:12px;margin:4px 0;">or</div>
+        <input type="file" id="customnight-file-input" accept="image/*" style="color:#fff;font-size:12px;" />
         <div id="customnight-preview" style="width:100%;height:100px;border-radius:4px;background-size:cover;background-position:center;border:1px solid #333;"></div>
         <div id="customnight-current" style="font-size:11px;color:#888;word-break:break-all;"></div>
       `;
@@ -77,12 +79,33 @@ function customBackgroundInit() {
       const currentEl = content.querySelector('#customnight-current');
       if (currentBg && preview) {
         preview.style.backgroundImage = `url("${escapedBg}")`;
-        if (currentEl) currentEl.textContent = `Current: ${currentBg}`;
+        if (currentEl) {
+          const displayUrl = currentBg.startsWith('data:') ? `Local file (base64)` : currentBg;
+          currentEl.textContent = `Current: ${displayUrl}`;
+        }
       }
       
       const urlInput = content.querySelector('#customnight-url-input');
       const applyBtn = content.querySelector('#customnight-apply');
       const resetBtn = content.querySelector('#customnight-reset');
+      const fileInput = content.querySelector('#customnight-file-input');
+      
+      if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              const dataUrl = ev.target?.result;
+              if (typeof dataUrl === 'string') {
+                setCustomBackgroundUrl(dataUrl);
+                window.location.reload();
+              }
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
       
       if (urlInput) {
         urlInput.addEventListener('input', () => {
