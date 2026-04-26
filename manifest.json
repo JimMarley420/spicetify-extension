@@ -7,7 +7,7 @@
     "schemes": "themes/CustomNight/color.ini",
     "readme": "themes/CustomNight/README.md",
     "include": [
-      "dist/themes/CustomNight/theme.js"
+      "https://jimmarley420.github.io/spicetify-extension/dist/customBackground.mjs"
     ],
     "authors": [
       {

@@ -6,18 +6,14 @@ function waitForElement(els, func, timeout = 100) {
     setTimeout(waitForElement, 300, els, func, --timeout);
   }
 }
-
 function random(min, max) {
   return Math.random() * (max - min) + min;
 }
-
 const STORAGE_KEY = 'customnight-bg-url';
 const SETTINGS_KEY = 'customnight-bg-settings';
-
 function escapeForCssUrl(url) {
   return url.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\)/g, '\\)');
 }
-
 function getCustomBackgroundUrl() {
   try {
     return localStorage.getItem(STORAGE_KEY);
@@ -25,7 +21,6 @@ function getCustomBackgroundUrl() {
     return null;
   }
 }
-
 function setCustomBackgroundUrl(url) {
   try {
     if (url) {
@@ -37,7 +32,6 @@ function setCustomBackgroundUrl(url) {
     console.error('Failed to save custom background:', e);
   }
 }
-
 function getBackgroundSettings() {
   try {
     const saved = localStorage.getItem(SETTINGS_KEY);
@@ -46,7 +40,6 @@ function getBackgroundSettings() {
     return { size: 100, x: 50, y: 50 };
   }
 }
-
 function setBackgroundSettings(size, x, y) {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({ size, x, y }));
@@ -54,7 +47,6 @@ function setBackgroundSettings(size, x, y) {
     console.error('Failed to save background settings:', e);
   }
 }
-
 function clearBackgroundSettings() {
   try {
     localStorage.removeItem(SETTINGS_KEY);
@@ -62,11 +54,9 @@ function clearBackgroundSettings() {
     console.error('Failed to clear background settings:', e);
   }
 }
-
 function customBackgroundInit() {
   const maxAttempts = 30;
   let attempts = 0;
-  
   function init() {
     if (!Spicetify || !Spicetify.Topbar || !Spicetify.Topbar.Button) {
       attempts++;
@@ -78,14 +68,11 @@ function customBackgroundInit() {
       setTimeout(init, 1000);
       return;
     }
-    
     const icon = `<svg data-encore-id="icon" role="img" aria-hidden="true" class="e-10180-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>`;
-
     new Spicetify.Topbar.Button('Custom Background', icon, () => {
       const currentBg = getCustomBackgroundUrl();
       const escapedBg = currentBg ? escapeForCssUrl(currentBg) : '';
       const savedSettings = getBackgroundSettings();
-      
       const content = document.createElement('div');
       content.style.cssText = 'display:flex;flex-direction:column;gap:12px;padding:10px;min-width:350px;font-family:sans-serif;';
       content.innerHTML = `
@@ -108,19 +95,16 @@ function customBackgroundInit() {
         </div>
         <div id="customnight-current" style="font-size:11px;color:#888;word-break:break-all;max-height:40px;overflow:hidden;"></div>
       `;
-      
       let bgPositionX = savedSettings.x;
       let bgPositionY = savedSettings.y;
       let bgSize = savedSettings.size || 100;
       let currentUrl = currentBg || '';
       let isDragging = false;
       let dragStartX, dragStartY, startPosX, startPosY;
-      
       const preview = content.querySelector('#customnight-preview');
       const currentEl = content.querySelector('#customnight-current');
       const sizeSlider = content.querySelector('#customnight-size');
       const sizeVal = content.querySelector('#customnight-size-val');
-      
       function updatePreview() {
         if (preview && currentUrl) {
           const escaped = escapeForCssUrl(currentUrl);
@@ -130,7 +114,6 @@ function customBackgroundInit() {
           preview.style.backgroundRepeat = 'no-repeat';
         }
       }
-      
       if (currentUrl && preview) {
         bgPositionX = savedSettings.x !== undefined ? savedSettings.x : 50;
         bgPositionY = savedSettings.y !== undefined ? savedSettings.y : 50;
@@ -140,12 +123,9 @@ function customBackgroundInit() {
           currentEl.textContent = `Current: ${displayUrl}`;
         }
       }
-      
       if (sizeSlider) sizeSlider.value = bgSize;
       if (sizeVal) sizeVal.textContent = bgSize + '%';
-      
       updatePreview();
-      
       if (sizeSlider && sizeVal) {
         sizeSlider.addEventListener('input', () => {
           bgSize = parseInt(sizeSlider.value);
@@ -153,7 +133,6 @@ function customBackgroundInit() {
           preview.style.backgroundSize = bgSize + '%';
         });
       }
-      
       if (preview) {
         preview.addEventListener('mousedown', (e) => {
           isDragging = true;
@@ -164,7 +143,6 @@ function customBackgroundInit() {
           preview.style.cursor = 'grabbing';
           e.preventDefault();
         });
-        
         document.addEventListener('mousemove', (e) => {
           if (isDragging) {
             const dx = (e.clientX - dragStartX) * 0.15;
@@ -174,14 +152,12 @@ function customBackgroundInit() {
             preview.style.backgroundPosition = bgPositionX + '% ' + bgPositionY + '%';
           }
         });
-        
         document.addEventListener('mouseup', () => {
           if (isDragging) {
             isDragging = false;
             preview.style.cursor = 'grab';
           }
         });
-        
         preview.addEventListener('wheel', (e) => {
           e.preventDefault();
           const delta = e.deltaY > 0 ? -10 : 10;
@@ -191,12 +167,10 @@ function customBackgroundInit() {
           preview.style.backgroundSize = bgSize + '%';
         });
       }
-      
       const urlInput = content.querySelector('#customnight-url-input');
       const applyBtn = content.querySelector('#customnight-apply');
       const resetBtn = content.querySelector('#customnight-reset');
       const fileInput = content.querySelector('#customnight-file-input');
-      
       if (fileInput) {
         fileInput.addEventListener('change', (e) => {
           const file = e.target.files?.[0];
@@ -219,7 +193,6 @@ function customBackgroundInit() {
           }
         });
       }
-      
       if (urlInput) {
         urlInput.addEventListener('input', () => {
           const url = urlInput.value.trim();
@@ -237,7 +210,6 @@ function customBackgroundInit() {
           }
         });
       }
-      
       if (applyBtn) {
         applyBtn.addEventListener('click', () => {
           const url = urlInput?.value.trim() || currentUrl;
@@ -248,7 +220,6 @@ function customBackgroundInit() {
           }
         });
       }
-      
       if (resetBtn) {
         resetBtn.addEventListener('click', () => {
           setCustomBackgroundUrl(null);
@@ -256,28 +227,22 @@ function customBackgroundInit() {
           window.location.reload();
         });
       }
-      
       Spicetify.PopupModal.display({
         title: 'Custom Background',
         content: content,
       });
     });
   }
-  
   init();
 }
-
 waitForElement(['.Root__top-container'], ([topContainer]) => {
   const backgroundContainer = document.createElement('div');
   backgroundContainer.className = 'customnight-bg-container';
   topContainer.appendChild(backgroundContainer);
-
   const rootElement = document.querySelector('.Root__top-container');
   rootElement.style.zIndex = '0';
-
   const customBgUrl = getCustomBackgroundUrl();
   const settings = getBackgroundSettings();
-  
   if (customBgUrl) {
     const escaped = escapeForCssUrl(customBgUrl);
     backgroundContainer.style.backgroundImage = `url("${escaped}")`;
@@ -290,34 +255,27 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
     moonImg.src = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/moon2.png';
     moonImg.alt = 'Moon';
     backgroundContainer.appendChild(moonImg);
-
     const stars = document.createElement('div');
     stars.className = 'stars';
     backgroundContainer.appendChild(stars);
-
     const twinkling = document.createElement('div');
     twinkling.className = 'twinkling';
     backgroundContainer.appendChild(twinkling);
-
     const clouds = document.createElement('div');
     clouds.className = 'clouds';
     backgroundContainer.appendChild(clouds);
   }
-
   function handleLabelChange() {
     const playButton = document.querySelector('[data-encore-id="buttonPrimary"]');
     if (!playButton) return;
-    
     const img = document.querySelector('.main-nowPlayingWidget-coverArt .cover-art img');
     if (!img) return;
-    
     if (playButton.getAttribute('aria-label') == 'Pause') {
       img.classList.add('running-animation');
     } else {
       img.classList.remove('running-animation');
     }
   }
-
   waitForElement(['.Root__now-playing-bar'], ([playbar]) => {
     waitForElement(['.Root__right-sidebar'], ([rightbar]) => {
       const resizeObserver = new ResizeObserver((entries) => {
@@ -339,16 +297,12 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
           }
         }
       });
-
       resizeObserver.observe(rightbar);
     });
   });
-
   waitForElement(['[data-encore-id="buttonPrimary"]'], ([targetElement]) => {
     if (!targetElement) return;
-    
     handleLabelChange();
-    
     const playObserver = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (
@@ -359,10 +313,8 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
         }
       }
     });
-
     const playConfig = { attributes: true, attributeFilter: ['aria-label'] };
     playObserver.observe(targetElement, playConfig);
   });
-
   customBackgroundInit();
 });

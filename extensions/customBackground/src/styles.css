@@ -1,0 +1,25 @@
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes clouds {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.customnight-bg-container {
+  pointer-events: none;
+}
+
+.customnight-bg-container img,
+.customnight-bg-container .stars,
+.customnight-bg-container .twinkling,
+.customnight-bg-container .clouds {
+  pointer-events: none;
+}
