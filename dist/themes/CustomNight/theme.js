@@ -276,30 +276,6 @@ waitForElement(['.Root__top-container'], ([topContainer]) => {
       img.classList.remove('running-animation');
     }
   }
-  waitForElement(['.Root__now-playing-bar'], ([playbar]) => {
-    waitForElement(['.Root__right-sidebar'], ([rightbar]) => {
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.target === rightbar) {
-            let newWidth = entry.contentRect.width;
-            if (newWidth === 0) {
-              const localStorageWidth = localStorage.getItem(
-                '223ni6f2epqcidhx5etjafeai:panel-width-saved'
-              );
-              if (localStorageWidth) {
-                newWidth = localStorageWidth;
-              } else {
-                newWidth = 420;
-              }
-            }
-            playbar.style.width = `${newWidth}px`;
-            break;
-          }
-        }
-      });
-      resizeObserver.observe(rightbar);
-    });
-  });
   waitForElement(['[data-encore-id="buttonPrimary"]'], ([targetElement]) => {
     if (!targetElement) return;
     handleLabelChange();
