@@ -15,6 +15,7 @@ const STORAGE_KEY = 'customnight-bg-url';
 const SETTINGS_KEY = 'customnight-bg-settings';
 const ACCENT_KEY = 'customnight-accent-colors';
 const IDB_FLAG_KEY = 'customnight-bg-idb';
+const SPICY_KEY = 'customnight-spicy-mode';
 
 const DEFAULT_ACCENT = {
   'main-elevated': '#152238',
@@ -189,6 +190,27 @@ function clearAccentColors() {
   }
 }
 
+function getSpicyMode() {
+  try {
+    return localStorage.getItem(SPICY_KEY) === 'spicy' ? 'spicy' : 'customnight';
+  } catch (e) {
+    return 'customnight';
+  }
+}
+
+function setSpicyMode(mode) {
+  try {
+    localStorage.setItem(SPICY_KEY, mode);
+  } catch (e) {
+    console.error('Failed to save Spicy Lyrics mode:', e);
+  }
+}
+
+function applySpicyMode() {
+  if (!document.body) return;
+  document.body.classList.toggle('cn-hide-spicy', getSpicyMode() === 'customnight');
+}
+
 function applyAccentColors(colors) {
   if (!colors) return;
   const root = document.documentElement;
@@ -282,7 +304,7 @@ function customBackgroundInit() {
       return;
     }
     
-    const icon = `<svg data-encore-id="icon" role="img" aria-hidden="true" class="e-10180-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>`;
+    const icon = `<svg role="img" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 
     new Spicetify.Topbar.Button('Custom Background', icon, async () => {
       const savedSettings = getBackgroundSettings();
@@ -303,43 +325,69 @@ function customBackgroundInit() {
       }
       
       const content = document.createElement('div');
-      content.style.cssText = 'display:flex;flex-direction:column;gap:12px;padding:10px;min-width:350px;font-family:sans-serif;';
+      content.style.cssText = 'min-width:340px;box-sizing:border-box;';
       const pickerRows = Object.entries(DEFAULT_ACCENT).map(([key, value]) => `
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="flex:1;font-size:12px;color:#ccc;">${LABEL_MAP[key] || key}</span>
-            <input type="color" id="customnight-color-${key}" value="${value}" style="width:36px;height:28px;padding:0;border:1px solid #555;border-radius:3px;background:transparent;cursor:pointer;" />
+          <div class="cn-color">
+            <span class="cn-color-label">${LABEL_MAP[key] || key}</span>
+            <input type="color" id="customnight-color-${key}" value="${value}" />
           </div>`).join('');
       content.innerHTML = `
-        <div style="font-size:16px;font-weight:bold;color:#fff;margin-bottom:8px;">Custom Night</div>
-        <div style="display:flex;gap:0;margin-bottom:12px;border-bottom:2px solid #333;">
-          <button id="customnight-tab-bg" style="flex:1;padding:8px 12px;background:#1db954;color:#fff;border:none;border-radius:4px 4px 0 0;cursor:pointer;font-size:13px;font-weight:bold;">Background</button>
-          <button id="customnight-tab-colors" style="flex:1;padding:8px 12px;background:#222;color:#888;border:none;border-radius:4px 4px 0 0;cursor:pointer;font-size:13px;">Accent Colors</button>
-        </div>
-        <div id="customnight-bg-section">
-          <input type="text" id="customnight-url-input" placeholder="Enter image URL..." 
-            style="width:100%;padding:10px;border:1px solid #444;border-radius:4px;background:#222;color:#fff;font-size:13px;box-sizing:border-box;" />
-          <div style="text-align:center;color:#888;font-size:12px;margin:8px 0 4px;">or upload from computer</div>
-          <input type="file" id="customnight-file-input" accept="image/*" style="color:#fff;font-size:12px;" />
-          <div style="font-size:11px;color:#666;margin-top:4px;">Recommended: 1920x1080 or 2560x1440</div>
-          <div style="font-size:11px;color:#666;margin-bottom:4px;">Scroll to zoom • drag to move</div>
-          <div id="customnight-preview" style="width:100%;height:200px;border-radius:4px;background-size:100%;background-position:center;background-repeat:no-repeat;background-color:#000;border:1px solid #333;overflow:hidden;cursor:grab;position:relative;"></div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span style="font-size:11px;color:#666;">Zoom:</span>
-            <input type="range" id="customnight-size" min="30" max="300" value="100" style="flex:1;" />
-            <span id="customnight-size-val" style="font-size:11px;color:#888;min-width:40px;">100%</span>
+        <div class="cn">
+          <div class="cn-tabs">
+            <button id="customnight-tab-bg" class="cn-tab cn-tab-active" type="button">Background</button>
+            <button id="customnight-tab-colors" class="cn-tab" type="button">Accent Colors</button>
+            <button id="customnight-tab-spicy" class="cn-tab" type="button">Spicy Lyrics</button>
           </div>
-          <div id="customnight-current" style="font-size:11px;color:#888;word-break:break-all;max-height:40px;overflow:hidden;"></div>
-        </div>
-        <div id="customnight-colors-section" style="display:none;">
-          <div style="font-size:13px;font-weight:bold;color:#fff;margin-bottom:6px;">Accent Colors</div>
-          <div style="font-size:11px;color:#888;margin-bottom:8px;">Customize sidebar, cards, highlights and notification colors</div>
-          ${pickerRows}
-          <button id="customnight-suggest-colors" style="width:100%;padding:8px;background:#1db954;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;margin-bottom:6px;">Suggest from Background</button>
-          <button id="customnight-reset-colors" style="width:100%;padding:8px;background:#333;color:#ccc;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:12px;margin-top:6px;">Reset Colors to Default</button>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button id="customnight-apply" style="flex:1;padding:10px;background:#1db954;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Apply</button>
-          <button id="customnight-reset" style="flex:1;padding:10px;background:#444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;">Reset</button>
+
+          <div id="customnight-bg-section" class="cn-panel cn-panel-active">
+            <input id="customnight-url-input" class="cn-input" type="text" placeholder="Paste an image URL…" autocomplete="off" />
+            <div class="cn-divider"><span>or</span></div>
+            <label class="cn-upload">
+              <input id="customnight-file-input" type="file" accept="image/*" hidden />
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Upload from your computer
+            </label>
+            <div class="cn-hint">Recommended: 1920&#215;1080 or 2560&#215;1440 &#183; scroll to zoom, drag to move</div>
+            <div id="customnight-preview" class="cn-preview"></div>
+            <div class="cn-row">
+              <span class="cn-label">Zoom</span>
+              <input id="customnight-size" class="cn-slider" type="range" min="30" max="300" value="100" />
+              <span id="customnight-size-val" class="cn-value">100%</span>
+            </div>
+            <div id="customnight-current" class="cn-current"></div>
+          </div>
+
+          <div id="customnight-colors-section" class="cn-panel">
+            <div class="cn-subtitle">Accent colors</div>
+            <div class="cn-hint">Tint the sidebar, cards, highlights and notifications.</div>
+            ${pickerRows}
+            <div class="cn-row-btns">
+              <button id="customnight-suggest-colors" class="cn-btn cn-btn-secondary" type="button">Suggest from background</button>
+              <button id="customnight-reset-colors" class="cn-btn cn-btn-ghost" type="button">Reset colors</button>
+            </div>
+          </div>
+
+          <div id="customnight-spicy-section" class="cn-panel">
+            <div class="cn-notice">
+              <strong>Notice to Spicy Lyrics users:</strong>
+              <span>When Spicy Lyrics is open, it paints its own album-art background that can cover this theme&#8217;s night sky. Choose which background shows behind the lyrics.</span>
+            </div>
+            <div class="cn-switch-row">
+              <div>
+                <div class="cn-label">Background behind lyrics</div>
+                <div id="customnight-spicy-desc" class="cn-hint"></div>
+              </div>
+              <label class="cn-switch">
+                <input id="customnight-spicy" type="checkbox" />
+                <span class="cn-switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="cn-actions">
+            <button id="customnight-reset" class="cn-btn cn-btn-ghost" type="button">Reset</button>
+            <button id="customnight-apply" class="cn-btn cn-btn-primary" type="button">Apply</button>
+          </div>
         </div>
       `;
       
@@ -568,6 +616,8 @@ function customBackgroundInit() {
               container.appendChild(clouds);
             }
           }
+          setSpicyMode('customnight');
+          applySpicyMode();
           const root = document.documentElement;
           for (const key of Object.keys(DEFAULT_ACCENT)) {
             root.style.removeProperty(`--spice-${key}`);
@@ -630,34 +680,50 @@ function customBackgroundInit() {
       
       const tabBg = content.querySelector('#customnight-tab-bg');
       const tabColors = content.querySelector('#customnight-tab-colors');
+      const tabSpicy = content.querySelector('#customnight-tab-spicy');
       const bgSection = content.querySelector('#customnight-bg-section');
       const colorsSection = content.querySelector('#customnight-colors-section');
-      
+      const spicySection = content.querySelector('#customnight-spicy-section');
+
       function switchTab(tab) {
-        if (tab === 'bg') {
-          tabBg.style.background = '#1db954';
-          tabBg.style.color = '#fff';
-          tabBg.style.fontWeight = 'bold';
-          tabColors.style.background = '#222';
-          tabColors.style.color = '#888';
-          tabColors.style.fontWeight = 'normal';
-          bgSection.style.display = 'block';
-          colorsSection.style.display = 'none';
-        } else {
-          tabColors.style.background = '#1db954';
-          tabColors.style.color = '#fff';
-          tabColors.style.fontWeight = 'bold';
-          tabBg.style.background = '#222';
-          tabBg.style.color = '#888';
-          tabBg.style.fontWeight = 'normal';
-          bgSection.style.display = 'none';
-          colorsSection.style.display = 'block';
-        }
+        tabBg.classList.toggle('cn-tab-active', tab === 'bg');
+        tabColors.classList.toggle('cn-tab-active', tab === 'colors');
+        tabSpicy.classList.toggle('cn-tab-active', tab === 'spicy');
+        bgSection.classList.toggle('cn-panel-active', tab === 'bg');
+        colorsSection.classList.toggle('cn-panel-active', tab === 'colors');
+        spicySection.classList.toggle('cn-panel-active', tab === 'spicy');
       }
-      
+
       tabBg.addEventListener('click', () => switchTab('bg'));
       tabColors.addEventListener('click', () => switchTab('colors'));
-      
+      tabSpicy.addEventListener('click', () => switchTab('spicy'));
+
+      const spicyToggle = content.querySelector('#customnight-spicy');
+      const spicyDesc = content.querySelector('#customnight-spicy-desc');
+
+      function updateSpicyUI() {
+        const mode = getSpicyMode();
+        spicyToggle.checked = mode === 'customnight';
+        if (spicyDesc) {
+          spicyDesc.textContent = mode === 'customnight'
+            ? 'Custom Night (this theme)'
+            : 'Spicy Lyrics (default)';
+        }
+      }
+      updateSpicyUI();
+
+      spicyToggle.addEventListener('change', () => {
+        const mode = spicyToggle.checked ? 'customnight' : 'spicy';
+        setSpicyMode(mode);
+        applySpicyMode();
+        updateSpicyUI();
+        Spicetify?.showNotification?.(
+          mode === 'customnight'
+            ? 'Custom Night background enabled behind the lyrics.'
+            : 'Spicy Lyrics keeps its own background behind the lyrics.'
+        );
+      });
+
       Spicetify.PopupModal.display({
         title: 'Custom Night',
         content: content,
@@ -668,7 +734,10 @@ function customBackgroundInit() {
   init();
 }
 
+applySpicyMode();
+
 waitForElement(['.Root__top-container'], ([topContainer]) => {
+  applySpicyMode();
   const backgroundContainer = document.createElement('div');
   backgroundContainer.className = 'customnight-bg-container';
   topContainer.appendChild(backgroundContainer);
