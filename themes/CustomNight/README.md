@@ -16,6 +16,8 @@ A customizable Spicetify theme with a beautiful animated night sky background. U
 - Tabbed settings panel for easy navigation
 - Transparent UI elements
 - Animated play button on album cover
+- Rotating now-playing cover art
+- **Spicy Lyrics compatibility** - choose which background shows behind Spicy Lyrics
 
 ## Installation
 
@@ -31,7 +33,7 @@ A customizable Spicetify theme with a beautiful animated night sky background. U
 
 ## Customization Panel
 
-Click the gradient button in the navigation bar to open the settings panel.
+Click the moon button in the navigation bar to open the settings panel.
 
 ### Background Tab
 
@@ -46,6 +48,11 @@ Click the gradient button in the navigation bar to open the settings panel.
 - **Color Pickers**: Customize sidebar, cards, elevated background, highlights, and notification colors independently
 - **Suggest from Background**: Click to automatically extract the 5 most dominant colors from your current background image and fill the color pickers
 - **Reset Colors to Default**: Restore the original blue accent colors
+
+### Spicy Lyrics Tab
+
+- **Spicy Lyrics integration**: control which background appears behind the Spicy Lyrics page — the CustomNight night sky (default) or the Spicy Lyrics floating album-art background
+- The setting applies instantly and is remembered between sessions
 
 ### Recommended Image Sizes
 
