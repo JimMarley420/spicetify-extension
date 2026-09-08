@@ -92,7 +92,7 @@ jobs:
           name: Validate CircleCI config syntax
           command: |
             for f in .circleci/config.yml .circleci/release.yml .circleci/deps.yml; do
-              deno run -A --quiet -e "import { parse } from 'jsr:@std/yaml'; parse(await Deno.readTextFile('$f')); console.log('OK  $f');"
+              deno eval "import { parse } from 'jsr:@std/yaml'; parse(await Deno.readTextFile('$f')); console.log('OK  $f');"
             done
 
       # Check deno tasks used by CI exist in deno.json
