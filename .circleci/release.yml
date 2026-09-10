@@ -44,11 +44,14 @@ jobs:
               BUMP="minor"
             fi
 
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+            MAJOR=${LATEST_VERSION%%.*}
+            REST=${LATEST_VERSION#*.}
+            MINOR=${REST%%.*}
+            PATCH=${REST#*.}
             case "$BUMP" in
-              major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
-              minor) MINOR=$((MINOR+1)); PATCH=0 ;;
-              patch) PATCH=$((PATCH+1)) ;;
+              major) MAJOR=$(expr "$MAJOR" + 1); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$(expr "$MINOR" + 1); PATCH=0 ;;
+              patch) PATCH=$(expr "$PATCH" + 1) ;;
             esac
 
             NEW_VERSION="$MAJOR.$MINOR.$PATCH"
