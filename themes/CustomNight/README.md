@@ -41,6 +41,7 @@ Click the moon button in the navigation bar to open the settings panel.
 - **Upload**: Click "Choose File" to upload an image from your computer
 - **Adjust**: Use the slider to zoom in/out, or scroll with your mouse
 - **Move**: Click and drag the preview to reposition
+- **Spotify gradients**: Toggle Spotify's gradient overlays (the colored bars drawn from album art on the home page and playlist pages). Disabled by default so your background image shows fully
 - **Reset**: Click Reset to remove custom background and restore night sky
 
 ### Accent Colors Tab
