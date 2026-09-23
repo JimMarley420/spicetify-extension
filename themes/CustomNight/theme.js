@@ -16,6 +16,7 @@ const SETTINGS_KEY = 'customnight-bg-settings';
 const ACCENT_KEY = 'customnight-accent-colors';
 const IDB_FLAG_KEY = 'customnight-bg-idb';
 const SPICY_KEY = 'customnight-spicy-mode';
+const GRADIENT_KEY = 'customnight-spotify-gradient';
 
 const DEFAULT_ACCENT = {
   'main-elevated': '#152238',
@@ -211,6 +212,27 @@ function applySpicyMode() {
   document.body.classList.toggle('cn-hide-spicy', getSpicyMode() === 'customnight');
 }
 
+function getSpotifyGradient() {
+  try {
+    return localStorage.getItem(GRADIENT_KEY) === 'shown' ? 'shown' : 'hidden';
+  } catch (e) {
+    return 'hidden';
+  }
+}
+
+function setSpotifyGradient(mode) {
+  try {
+    localStorage.setItem(GRADIENT_KEY, mode);
+  } catch (e) {
+    console.error('Failed to save Spotify gradient setting:', e);
+  }
+}
+
+function applySpotifyGradient() {
+  if (!document.body) return;
+  document.body.classList.toggle('cn-hide-spotify-gradient', getSpotifyGradient() === 'hidden');
+}
+
 function applyAccentColors(colors) {
   if (!colors) return;
   const root = document.documentElement;
@@ -355,6 +377,16 @@ function customBackgroundInit() {
               <span id="customnight-size-val" class="cn-value">100%</span>
             </div>
             <div id="customnight-current" class="cn-current"></div>
+            <div class="cn-switch-row">
+              <div>
+                <div class="cn-label">Spotify gradients</div>
+                <div id="customnight-gradient-desc" class="cn-hint"></div>
+              </div>
+              <label class="cn-switch">
+                <input id="customnight-spotify-gradient" type="checkbox" />
+                <span class="cn-switch-slider"></span>
+              </label>
+            </div>
           </div>
 
           <div id="customnight-colors-section" class="cn-panel">
@@ -618,6 +650,8 @@ function customBackgroundInit() {
           }
           setSpicyMode('customnight');
           applySpicyMode();
+          setSpotifyGradient('hidden');
+          applySpotifyGradient();
           const root = document.documentElement;
           for (const key of Object.keys(DEFAULT_ACCENT)) {
             root.style.removeProperty(`--spice-${key}`);
@@ -724,6 +758,32 @@ function customBackgroundInit() {
         );
       });
 
+      const gradientToggle = content.querySelector('#customnight-spotify-gradient');
+      const gradientDesc = content.querySelector('#customnight-gradient-desc');
+
+      function updateGradientUI() {
+        const mode = getSpotifyGradient();
+        gradientToggle.checked = mode === 'shown';
+        if (gradientDesc) {
+          gradientDesc.textContent = mode === 'shown'
+            ? 'Spotify\u2019s gradient overlays are shown.'
+            : 'Hidden so your background image shows fully.';
+        }
+      }
+      updateGradientUI();
+
+      gradientToggle.addEventListener('change', () => {
+        const mode = gradientToggle.checked ? 'shown' : 'hidden';
+        setSpotifyGradient(mode);
+        applySpotifyGradient();
+        updateGradientUI();
+        Spicetify?.showNotification?.(
+          mode === 'shown'
+            ? 'Spotify gradients enabled.'
+            : 'Spotify gradients hidden.'
+        );
+      });
+
       Spicetify.PopupModal.display({
         title: 'Custom Night',
         content: content,
@@ -735,9 +795,11 @@ function customBackgroundInit() {
 }
 
 applySpicyMode();
+applySpotifyGradient();
 
 waitForElement(['.Root__top-container'], ([topContainer]) => {
   applySpicyMode();
+  applySpotifyGradient();
   const backgroundContainer = document.createElement('div');
   backgroundContainer.className = 'customnight-bg-container';
   topContainer.appendChild(backgroundContainer);
