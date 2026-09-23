@@ -16,7 +16,12 @@ body.cn-hide-spotify-gradient .dqwQhIudKoD98eWJzj5E,
 body.cn-hide-spotify-gradient .kMUtWcOMOZmCWTMAc_gu,
 body.cn-hide-spotify-gradient .M7ECcaA17LC8UqL2GKVD,
 body.cn-hide-spotify-gradient .playlist-playlist-actionBarBackground-background,
-body.cn-hide-spotify-gradient .main-entityHeader-backgroundColor {
+body.cn-hide-spotify-gradient .main-entityHeader-backgroundColor,
+body.cn-hide-spotify-gradient .main-entityHeader-container,
+body.cn-hide-spotify-gradient .main-entityHeader-background,
+body.cn-hide-spotify-gradient .EzT2R8fsinsYdA6beFW9,
+body.cn-hide-spotify-gradient .VU5ZQbfeO88Oa6y_bw7I,
+body.cn-hide-spotify-gradient .sjOhtfkMWJucO1Xr7LPm {
   background-color: transparent !important;
   background-image: none !important;
   --background-base: #00000000 !important;
