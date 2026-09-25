@@ -80,6 +80,7 @@
   {
     "name": "Play Without Context",
     "description": "Play a track from Spotify's context menu without retaining playlist or album context.",
+    "preview": "extensions/playWithoutContext/assets/preview.png",
     "main": "dist/playWithoutContext.mjs",
     "readme": "extensions/playWithoutContext/README.md",
     "branch": "master",
