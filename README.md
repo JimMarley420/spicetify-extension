@@ -47,6 +47,7 @@ A curated collection of **Spicetify** extensions and themes for Spotify by Jimmy
 | [Add to Multiple Playlists](extensions/addToPlaylistMulti/README.md) | Extension | Add tracks to multiple playlists at once | [docs](extensions/addToPlaylistMulti/README.md) | ✓ Active |
 | [Bulk Delete Tracks](extensions/bulkDeleteTracks/README.md) | Extension | Delete multiple tracks from a playlist at once | [docs](extensions/bulkDeleteTracks/README.md) | ✓ Active |
 | [Copy YouTube Link](extensions/copyYoutube/README.md) | Extension | Copy the YouTube link of any track from the context menu | [docs](extensions/copyYoutube/README.md) | ✓ Active |
+| [Play Without Context](extensions/playWithoutContext/README.md) | Extension | Play a track without playlist or album context from the context menu | [docs](extensions/playWithoutContext/README.md) | ✓ Active |
 
 ---
 

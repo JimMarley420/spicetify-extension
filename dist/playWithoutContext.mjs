@@ -1,0 +1,2 @@
+await new Promise((resolve) => Spicetify.Events.webpackLoaded.on(resolve));
+function e(t){let i=Spicetify.URI.from(t);return!!(i&&i.type==="track")}async function c(t){let i=t.find(e);if(!i){Spicetify.showNotification("No track selected",!0);return}try{await Spicetify.Player.playUri(i,{})}catch{Spicetify.showNotification("Unable to play track without context",!0)}}var n=new Spicetify.ContextMenu.Item("Play Without Context",c,t=>t.some(e),"play");n.register();
