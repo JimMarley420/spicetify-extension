@@ -7,6 +7,8 @@ Play a Spotify track independently of the playlist or album you opened it from. 
 
 **Available on Spicetify Marketplace:** [spicetify-extension](https://github.com/JimMarley420/spicetify-extension)
 
+![Preview](assets/preview.png)
+
 ## Features
 
 - **Context menu integration** - Adds a **Play Without Context** action to track menus
