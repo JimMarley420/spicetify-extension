@@ -80,6 +80,9 @@
 - name: "component: Copy YouTube Link"
   color: f9d0c4
   description: Issues related to the Copy YouTube Link extension
+- name: "component: Play Without Context"
+  color: 1db954
+  description: Issues related to the Play Without Context extension
 
 # ---------------------------------------------------------------------------
 # 5. Community
