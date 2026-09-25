@@ -23,6 +23,7 @@ assignees: ""
 - [ ] Add to Multiple Playlists
 - [ ] Bulk Delete Tracks
 - [ ] Copy YouTube Link
+- [ ] Play Without Context
 - [ ] Build / CI / Tooling
 - [ ] Docs / Other
 
