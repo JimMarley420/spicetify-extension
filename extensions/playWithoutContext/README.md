@@ -1,5 +1,8 @@
 # Play Without Context
 
+<img width="1734" height="907" alt="logo" src="https://github.com/user-attachments/assets/615a0e6f-6a5a-473f-bbff-95e0913ce2a0" />
+
+
 Play a Spotify track independently of the playlist or album you opened it from. Use the context menu to start a track without retaining the current collection context, allowing Spotify to choose its own follow-up playback recommendations.
 
 **Available on Spicetify Marketplace:** [spicetify-extension](https://github.com/JimMarley420/spicetify-extension)
