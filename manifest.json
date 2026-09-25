@@ -76,5 +76,19 @@
       }
     ],
     "tags": ["context-menu", "youtube", "link", "copy", "utility"]
+  },
+  {
+    "name": "Play Without Context",
+    "description": "Play a track from Spotify's context menu without retaining playlist or album context.",
+    "main": "dist/playWithoutContext.mjs",
+    "readme": "extensions/playWithoutContext/README.md",
+    "branch": "master",
+    "authors": [
+      {
+        "name": "JimMarley420",
+        "url": "https://github.com/JimMarley420/spicetify-extension"
+      }
+    ],
+    "tags": ["context-menu", "playback", "autoplay", "track", "utility"]
   }
 ]
