@@ -9,6 +9,7 @@ export const strings = {
   modal: {
     title: "Playlist Duplicate Finder",
     close: "Close",
+    github: "Open GitHub repository",
   },
   badges: {
     editable: "Editable",
