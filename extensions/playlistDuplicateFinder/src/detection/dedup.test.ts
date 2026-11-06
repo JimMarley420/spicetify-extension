@@ -476,3 +476,36 @@ Deno.test("isrc level refuses a shared ISRC whose durations disagree", () => {
   assertEquals(results.isrc.length, 0);
   assertEquals(results.exact.length, 0);
 });
+
+Deno.test("maybe level never claims the same occurrence twice", () => {
+  // Three titles sorted by fuzzy key: the first and the second do not match
+  // each other, but both match the third. Without the consumed-candidate guard
+  // the third entry would be listed in two groups (rendered and selected twice).
+  const results = detectDuplicates(
+    [
+      entry({ name: "Silver Sunset Dance", uri: "spotify:track:a1", uid: "u1", position: 0 }),
+      entry({ name: "Spring Sunset Dance", uri: "spotify:track:b2", uid: "u2", position: 1 }),
+      entry({ name: "Sunset Dance", uri: "spotify:track:c3", uid: "u3", position: 2 }),
+    ],
+    OPTS,
+  );
+
+  assertEquals(results.maybe.length, 1);
+  assertEquals(
+    results.maybe[0].members.map((m) => m.position),
+    [0, 2],
+  );
+
+  // Nothing anywhere lists an occurrence twice, and the unmatched middle
+  // entry ends up in no group at all.
+  const claimed = [
+    ...results.exact,
+    ...results.isrc,
+    ...results.probable,
+    ...results.likely,
+    ...results.possible,
+    ...results.maybe,
+  ].flatMap((group) => group.members.map((m) => m.position));
+  assertEquals(claimed.length, new Set(claimed).size);
+  assertEquals(claimed.includes(1), false);
+});
