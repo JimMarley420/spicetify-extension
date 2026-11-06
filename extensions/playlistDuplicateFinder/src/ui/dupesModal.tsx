@@ -25,12 +25,14 @@ import { strings } from "../strings.ts";
 
 /* ------------------------------------------------------------- formaters */
 
+/** `m:ss` for a duration, or `--:--` when Spotify gave us nothing usable. */
 function formatDuration(ms: number | null): string {
   if (ms == null || ms <= 0) return "--:--";
   const s = Math.floor(ms / 1000);
   return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 }
 
+/** Human-readable "added" date; the raw string when it is not parseable. */
 function formatAddedDate(iso: string): string {
   if (!iso) return "";
   const date = new Date(iso);
@@ -82,7 +84,7 @@ type Phase = "loading" | "ready" | "error" | "empty";
 interface TrackRowProps {
   track: PlaylistEntry;
   checked: boolean;
-  disabled: boolean;
+  canEdit: boolean;
   nowPlaying: NowPlaying;
   onToggle: (position: number) => void;
 }
@@ -94,6 +96,7 @@ interface NowPlaying {
   isPaused: boolean;
 }
 
+/** Extract just what the rows care about from a player state (or nothing). */
 function readNowPlaying(state: Spicetify.PlayerState | undefined): NowPlaying {
   return { uri: state?.item?.uri ?? null, isPaused: state?.isPaused ?? true };
 }
@@ -108,6 +111,7 @@ function useNowPlaying(): NowPlaying {
   );
 
   useEffect(() => {
+    /** Update the shared state for one player "update" event. */
     const onChange = (event: { data: Spicetify.PlayerState }) => {
       const next = readNowPlaying(event.data);
       // Position ticks also emit "update": keep the same object while neither
@@ -129,6 +133,7 @@ function RowPlayButton({ uri, nowPlaying }: { uri: string; nowPlaying: NowPlayin
   const isPlayingThis = isThisTrack && !nowPlaying.isPaused;
   const label = isPlayingThis ? strings.row.pause : strings.row.play;
 
+  /** Toggle this track: play it, pause it, or resume it in place. */
   const onClick = (event: MouseEvent) => {
     event.stopPropagation();
     if (isThisTrack) {
@@ -152,8 +157,13 @@ function RowPlayButton({ uri, nowPlaying }: { uri: string; nowPlaying: NowPlayin
   );
 }
 
-function TrackRow({ track, checked, disabled, nowPlaying, onToggle }: TrackRowProps) {
+/** One playlist row: checkbox, artwork, metadata and the audition button. */
+function TrackRow({ track, checked, canEdit, nowPlaying, onToggle }: TrackRowProps) {
   const canPlay = track.uri.startsWith("spotify:track:");
+  // Removal targets an occurrence id, so rows without one stay visible for
+  // review but are locked — and the hover text names the actual reason.
+  const disabled = !canEdit || !track.uid;
+  const disabledTitle = !canEdit ? strings.states.readOnlyNotice : strings.states.noUidNotice;
 
   return (
     <div
@@ -168,7 +178,7 @@ function TrackRow({ track, checked, disabled, nowPlaying, onToggle }: TrackRowPr
         disabled={disabled}
         onChange={() => onToggle(track.position)}
         onClick={(event) => event.stopPropagation()}
-        title={disabled ? strings.states.readOnlyNotice : undefined}
+        title={disabled ? disabledTitle : undefined}
         type="checkbox"
       />
       <img
@@ -200,6 +210,7 @@ function TrackRow({ track, checked, disabled, nowPlaying, onToggle }: TrackRowPr
   );
 }
 
+/** Card holding every occurrence of one duplicate group. */
 function GroupCard({
   group,
   selected,
@@ -219,8 +230,8 @@ function GroupCard({
       {group.members.map((member) => (
         <div className="dupfind-group__row" key={member.position}>
           <TrackRow
+            canEdit={canEdit}
             checked={selected.has(member.position)}
-            disabled={!canEdit}
             nowPlaying={nowPlaying}
             onToggle={onToggle}
             track={member}
@@ -231,6 +242,7 @@ function GroupCard({
   );
 }
 
+/** Confidence meter: `value` of `GROUP_ORDER.length` segments lit up. */
 function Gauge({ value }: { value: number }) {
   const total = GROUP_ORDER.length;
   const color = RELIABILITY_COLORS[value] ?? RELIABILITY_COLORS[1];
@@ -247,6 +259,7 @@ function Gauge({ value }: { value: number }) {
   );
 }
 
+/** The whole finder: scan lifecycle, selection state, review and removal. */
 function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [progressText, setProgressText] = useState<string>(strings.states.loadingTracks);
@@ -272,6 +285,7 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
   }, []);
 
   useEffect(() => {
+    /** Escape closes the window — never while a removal is in flight. */
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       // Never drop the window while a deletion is running.
@@ -283,6 +297,7 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [removalProgress]);
 
+  /** Load the playlist, show it, then hydrate ISRCs in the background. */
   const scan = useCallback(async () => {
     abortRef.current?.abort();
     const abort = new AbortController();
@@ -322,8 +337,10 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
       }).then(
         () => {
           if (abort.signal.aborted) return;
-          // New array identity so the memoized detection reruns with ISRCs.
-          setEntries([...loaded]);
+          // Re-copy whatever is current — a removal may have replaced the list
+          // while hydration ran — so detection reruns with the ISRCs but
+          // resurrected entries never come back. New identity ⇒ memo reruns.
+          setEntries((prev) => [...prev]);
         },
         (error) => {
           if (abort.signal.aborted) return;
@@ -363,6 +380,7 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
     }
   }, [phase, groupCounts, activeLevel]);
 
+  /** Add or remove one playlist position from the selection. */
   const toggleRow = useCallback((position: number) => {
     setSummary(null);
     setSelected((prev) => {
@@ -375,7 +393,8 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
 
   /** Select/deselect the duplicate entries of the level currently displayed.
    *  "Select all" only checks duplicates: the first member of each group (its
-   *  earliest occurrence) is left out so the group does not lose every copy. */
+   *  earliest occurrence) is left out so the group does not lose every copy,
+   *  and rows without an occurrence id are never selected. */
   const setLevelSelection = (mode: "all" | "none") => {
     setSummary(null);
     setSelected((prev) => {
@@ -383,16 +402,20 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
       for (const group of results[activeLevel]) {
         group.members.forEach((member, index) => {
           if (mode === "none") next.delete(member.position);
-          else if (index > 0) next.add(member.position);
+          else if (index > 0 && member.uid) next.add(member.position);
         });
       }
       return next;
     });
   };
 
+  /** Run the confirmed removal in batches; failed rows stay selectable. */
   const startRemoval = async () => {
-    if (!canEdit || selected.size === 0) return;
-    const snapshot = entries.filter((e) => selected.has(e.position));
+    if (!canEdit) return;
+    // Defensive: only rows with an occurrence id can be targeted precisely,
+    // whatever managed to reach the selection set.
+    const snapshot = entries.filter((e) => selected.has(e.position) && e.uid);
+    if (snapshot.length === 0) return;
     setConfirmOpen(false);
     setRemovalProgress({ done: 0, total: snapshot.length });
 
@@ -447,6 +470,9 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
   const activeGroups = results[activeLevel];
   const selectionCount = selected.size;
   const busy = removalProgress != null;
+  // The name lookup can fail on some clients: fall back to the URI so the
+  // header and the confirmation sentence never disagree (or say `""`).
+  const playlistLabel = playlist.name || playlist.uri;
 
   return (
     <div className="dupfind-overlay">
@@ -461,7 +487,7 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
           <div className="dupfind-header__titles">
             <h1 className="dupfind-header__title">{strings.modal.title}</h1>
             <div className="dupfind-header__playlist">
-              <span className="dupfind-header__playlist-name">{playlist.name || playlist.uri}</span>
+              <span className="dupfind-header__playlist-name">{playlistLabel}</span>
               <span
                 className={`dupfind-badge${canEdit ? " dupfind-badge--editable" : " dupfind-badge--readonly"}`}
                 title={canEdit ? strings.badges.editableHint : strings.badges.readOnlyHint}
@@ -622,7 +648,7 @@ function DuplicateFinderModal({ playlist }: { playlist: PlaylistIdentity }) {
                 {!busy && confirmOpen && (
                   <div className="dupfind-footer__row">
                     <span className="dupfind-footer__confirm">
-                      {strings.footer.confirmBody(selectionCount, playlist.name)}
+                      {strings.footer.confirmBody(selectionCount, playlistLabel)}
                     </span>
                     <div className="dupfind-footer__buttons">
                       <button

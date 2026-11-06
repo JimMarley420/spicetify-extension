@@ -43,6 +43,7 @@ const DEFAULT_DURATION_TOLERANCE_MS = DURATION_TOLERANCE_MS;
 const DEFAULT_MAYBE_SIMILARITY_THRESHOLD = MAYBE_SIMILARITY_THRESHOLD;
 const DEFAULT_MAYBE_NEIGHBOR_WINDOW = 20;
 
+/** True for Spotify *track* URIs — the only kind the ISRC query can answer. */
 const isTrackUri = (uri: string): boolean => uri.startsWith("spotify:track:");
 
 /** Unknown durations never disagree; known ones must stay within tolerance. */
@@ -69,12 +70,14 @@ function splitBy<T>(items: readonly T[], agrees: (a: T, b: T) => boolean): T[][]
   return groups;
 }
 
+/** Fresh results object with an empty group list for every level. */
 function createEmptyResults(): Record<GroupId, DuplicateGroup[]> {
   const results = {} as Record<GroupId, DuplicateGroup[]>;
   for (const id of GROUP_ORDER) results[id] = [];
   return results;
 }
 
+/** Bucket items by key; items whose key is `null` are skipped. */
 function groupBy<T>(items: readonly T[], key: (item: T) => string | null): Map<string, T[]> {
   const map = new Map<string, T[]>();
   for (const item of items) {
@@ -110,6 +113,7 @@ export function detectDuplicates(
   }));
 
   const consumed = new Set<number>();
+  /** Record a group at a level and consume its members (skipping singles). */
   const membersAt = (id: GroupId, candidates: ScannedTrack[]) => {
     const members = [...candidates].sort((a, b) => a.position - b.position);
     if (members.length < 2) return;
@@ -145,16 +149,19 @@ export function detectDuplicates(
   }
 
   // --- probable / likely: identical normalized titles, refined by a predicate.
+  /** At least one artist in common, and neither side may have an empty list. */
   const artistOverlap = (a: ScannedTrack, b: ScannedTrack): boolean => {
     if (a.artistKeys.length === 0 || b.artistKeys.length === 0) return false;
     const other = new Set(b.artistKeys);
     return a.artistKeys.some((name) => other.has(name));
   };
+  /** Both durations known and within the level's tolerance of each other. */
   const closeDurations = (a: ScannedTrack, b: ScannedTrack): boolean =>
     a.durationMs != null &&
     b.durationMs != null &&
     Math.abs(a.durationMs - b.durationMs) <= toleranceMs;
 
+  /** Titles of the entries still available, clustered by strict title key. */
   const titleClusters = () =>
     groupBy(
       pool.filter((t) => !consumed.has(t.position) && isTrackUri(t.uri) && t.titleKey),
@@ -218,6 +225,9 @@ export function detectDuplicates(
       const limit = Math.min(i + neighborWindow, bucket.length);
       for (let j = i + 1; j < limit; j++) {
         const candidate = bucket[j];
+        // A candidate may already sit in an earlier group: re-using it would
+        // render (and select) the same occurrence twice.
+        if (consumed.has(candidate.position)) continue;
         if (lengthMismatch(base, candidate)) continue;
         if (bigramSimilarity(base.fuzzyKey, candidate.fuzzyKey) < maybeThreshold) continue;
         matches.push(candidate);

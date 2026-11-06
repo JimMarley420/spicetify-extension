@@ -28,6 +28,7 @@ export interface PlaylistEditability {
 
 /* ---------------------------------------------------------------- helpers */
 
+/** Waits `ms` before resolving — used between ISRC retry attempts. */
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Minimal shape of the internal playlist API surface used by this adapter. */
@@ -40,10 +41,12 @@ interface PlaylistApiLike {
   remove?: (uri: string, items: { uri: string; uid: string }[]) => Promise<unknown>;
 }
 
+/** The internal playlist API, or `undefined` on clients that hide it. */
 function playlistApi(): PlaylistApiLike | undefined {
   return Spicetify?.Platform?.PlaylistAPI as PlaylistApiLike | undefined;
 }
 
+/** Toast through Spicetify; silent no-op when the host is unavailable. */
 function showNotification(message: string, isError = false): void {
   Spicetify?.showNotification?.(message, isError);
 }
@@ -113,6 +116,7 @@ export async function resolvePlaylistName(uri: string): Promise<string> {
 
 /* ------------------------------------------------------ playlist contents */
 
+/** Read the track duration from the several shapes Spotify uses (`ms` units). */
 function readDuration(item: Record<string, unknown>): number | null {
   if (typeof item.durationMs === "number") return item.durationMs;
   if (typeof item.duration === "number") return item.duration;
@@ -124,6 +128,7 @@ function readDuration(item: Record<string, unknown>): number | null {
   return null;
 }
 
+/** Album artwork URL, tolerating both `images` and `coverArt.sources`. */
 function readImageUrl(item: Record<string, unknown>): string {
   const album = item.album as Record<string, unknown> | undefined;
   const images = album?.images as Array<{ url?: unknown }> | undefined;
@@ -134,6 +139,7 @@ function readImageUrl(item: Record<string, unknown>): string {
   return typeof cover === "string" ? cover : "";
 }
 
+/** ISO `addedAt` string, whether the payload stores it flat or wrapped. */
 function readAddedAt(item: Record<string, unknown>): string {
   const addedAt = item.addedAt ?? item.added_at;
   if (typeof addedAt === "string") return addedAt;
@@ -146,14 +152,19 @@ function readAddedAt(item: Record<string, unknown>): string {
   return "";
 }
 
+/** Content URIs: anything a playlist row can actually play. */
+const CONTENT_URI = /^spotify:(?:track|local|episode|audio|file|video):.+/;
+
+/** Only Spotify tracks are answered by the ISRC metadata query. */
+const isTrackUri = (uri: string): boolean => uri.startsWith("spotify:track:");
+
 /**
  * URI of the playable entry itself. Playlists, albums and artists have URIs
  * too — and a bare `spotify:local:` with no components identifies nothing —
  * while payloads can hand such values to unrelated entries. Only a URI that
  * actually names a trackable item is accepted, the item's own field first.
+ * Returns "" when nothing identifies the entry.
  */
-const CONTENT_URI = /^spotify:(?:track|local|episode|audio|file|video):.+/;
-
 function readTrackUri(item: Record<string, unknown>, metadata: Record<string, unknown>): string {
   for (const candidate of [item.uri, metadata.link]) {
     if (typeof candidate === "string" && CONTENT_URI.test(candidate)) return candidate;
@@ -161,6 +172,11 @@ function readTrackUri(item: Record<string, unknown>, metadata: Record<string, un
   return "";
 }
 
+/**
+ * Turn one raw playlist row into a `PlaylistEntry`, or `null` when no URI can
+ * identify it. Field names differ between client versions, so every read
+ * tolerates the known shapes: `item.*` first, `trackMetadata.*` as fallback.
+ */
 export function parsePlaylistItem(
   item: Record<string, unknown>,
   position: number,
@@ -238,6 +254,7 @@ interface MetadataLike {
   external_id?: Array<{ type?: string; id?: string } | undefined>;
 }
 
+/** Pull the ISRC out of a metadata record, or `null` when there is none. */
 function isrcFromMetadata(metadata: unknown): string | null {
   const ids = (metadata as MetadataLike | null | undefined)?.external_id;
   if (!Array.isArray(ids)) return null;
@@ -256,7 +273,16 @@ export async function hydrateIsrcs(
   options: { onProgress?: (done: number, total: number) => void; signal?: AbortSignal } = {},
 ): Promise<void> {
   const missing = entries.filter((e) => e.isrc == null);
-  const pendingUris = [...new Set(missing.map((e) => e.uri).filter((uri) => !isrcCache.has(uri)))];
+  // Only track URIs go to the TRACK_V4 query: local files and episodes cannot
+  // be answered by it and would only drag the whole batch down with them.
+  const pendingUris = [
+    ...new Set(
+      missing
+        .filter((e) => isTrackUri(e.uri))
+        .map((e) => e.uri)
+        .filter((uri) => !isrcCache.has(uri)),
+    ),
+  ];
   const total = pendingUris.length;
   if (total === 0) {
     for (const entry of missing) entry.isrc = isrcCache.get(entry.uri) ?? null;
@@ -281,9 +307,13 @@ export async function hydrateIsrcs(
       }
     }
 
-    for (const uri of batch) {
-      const isrc = fetched ? isrcFromMetadata(fetched.get(uri)) : null;
-      isrcCache.set(uri, isrc);
+    // Only a response that actually carries the URI is final. A failed request
+    // (or a partial answer) stays uncached so the next scan retries it — a
+    // single network error must not hide "Same Recording" matches forever.
+    if (fetched) {
+      for (const uri of batch) {
+        if (fetched.has(uri)) isrcCache.set(uri, isrcFromMetadata(fetched.get(uri)));
+      }
     }
     for (const entry of missing) {
       if (isrcCache.has(entry.uri) && entry.isrc == null)
@@ -347,10 +377,12 @@ export async function removeEntries(
 
 /* --------------------------------------------------------------- notices */
 
+/** Success toast for the caller's own message (removal summaries, …). */
 export function notifySuccess(message: string): void {
   showNotification(message);
 }
 
+/** Error toast for the caller's own message. */
 export function notifyFailure(message: string): void {
   showNotification(message, true);
 }

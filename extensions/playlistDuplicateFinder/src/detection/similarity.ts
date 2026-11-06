@@ -15,6 +15,7 @@ export const MAYBE_SIMILARITY_THRESHOLD = 0.65;
  */
 export const MAYBE_LENGTH_RATIO_GUARD = 3;
 
+/** Dice coefficient over character bigrams: 1.0 = identical, 0.0 = disjoint. */
 export function bigramSimilarity(a: string, b: string): number {
   const s1 = a.replace(/\s+/g, "");
   const s2 = b.replace(/\s+/g, "");
