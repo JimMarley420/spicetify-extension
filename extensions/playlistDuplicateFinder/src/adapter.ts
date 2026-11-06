@@ -28,8 +28,24 @@ export interface PlaylistEditability {
 
 /* ---------------------------------------------------------------- helpers */
 
-/** Waits `ms` before resolving — used between ISRC retry attempts. */
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+/** Waits `ms` before resolving — used between ISRC retry attempts.
+ *  Rejects as soon as `signal` aborts so a cancelled scan stops promptly. */
+const delay = (ms: number, signal?: AbortSignal): Promise<void> =>
+  new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal?.reason ?? new DOMException("Aborted", "AbortError"));
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
 
 /** Minimal shape of the internal playlist API surface used by this adapter. */
 interface PlaylistApiLike {
@@ -300,12 +316,18 @@ export async function hydrateIsrcs(
         fetched = await fetchMetadataForTracks(batch);
       } catch (e) {
         if (attempt < ISRC_RETRY_ATTEMPTS - 1) {
-          await delay(RETRY_BASE_DELAY_MS * 2 ** attempt * (1 + Math.random() * 0.5));
+          await delay(
+            RETRY_BASE_DELAY_MS * 2 ** attempt * (1 + Math.random() * 0.5),
+            options.signal,
+          );
           continue;
         }
         console.warn(`[playlistDuplicateFinder] ISRC batch failed after retries:`, e);
       }
     }
+    // An abort during the fetch or the backoff delay stops the scan here:
+    // no cache, entry or progress update may follow a cancelled hydration.
+    options.signal?.throwIfAborted();
 
     // Only a response that actually carries the URI is final. A failed request
     // (or a partial answer) stays uncached so the next scan retries it — a
@@ -347,7 +369,14 @@ export async function removeEntries(
 ): Promise<RemovalSummary> {
   const api = playlistApi();
   if (!api?.remove || targets.length === 0) {
-    return { removed: 0, failed: targets.length, batchResults: [] };
+    // Nothing ran: report one failed batch per expected batch so the caller
+    // keeps every row selected instead of clearing the view as if removed.
+    const batches = Math.ceil(targets.length / REMOVAL_BATCH_SIZE);
+    return {
+      removed: 0,
+      failed: targets.length,
+      batchResults: Array.from({ length: batches }, () => false),
+    };
   }
 
   let removed = 0;
