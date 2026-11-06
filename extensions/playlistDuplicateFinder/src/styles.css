@@ -1,0 +1,519 @@
+/* Playlist Duplicate Finder — dark modal integrated with the Spotify theme. */
+
+.dupfind-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dupfind-window {
+  display: flex;
+  flex-direction: column;
+  width: clamp(680px, 62vw, 880px);
+  max-height: 86vh;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #181818;
+  color: #fff;
+  font-family: var(--font-family, spotify), sans-serif;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.dupfind-window--busy {
+  cursor: progress;
+}
+
+/* ------------------------------------------------------------- header */
+
+.dupfind-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid #282828;
+}
+
+.dupfind-header__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dupfind-header__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.dupfind-header__playlist {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dupfind-header__playlist-name {
+  overflow: hidden;
+  color: #b3b3b3;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dupfind-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.dupfind-badge--editable {
+  background: rgba(29, 185, 84, 0.18);
+  color: #1db954;
+}
+
+.dupfind-badge--readonly {
+  background: rgba(224, 116, 92, 0.16);
+  color: #e0745c;
+}
+
+.dupfind-header__close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #b3b3b3;
+  cursor: pointer;
+}
+
+.dupfind-header__close:hover {
+  background: #282828;
+  color: #fff;
+}
+
+.dupfind-header__close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------- body */
+
+.dupfind-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* states ------------------------------------------------------------ */
+
+.dupfind-state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  color: #b3b3b3;
+  font-size: 14px;
+  text-align: center;
+}
+
+.dupfind-state__title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dupfind-muted {
+  color: #7f7f7f;
+  font-size: 12px;
+}
+
+.dupfind-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #282828;
+  border-top-color: #1db954;
+  border-radius: 50%;
+  animation: dupfind-spin 0.9s linear infinite;
+}
+
+@keyframes dupfind-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* left rail --------------------------------------------------------- */
+
+.dupfind-rail {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 6px;
+  width: 240px;
+  min-height: 0;
+  padding: 14px 12px;
+  overflow-y: auto;
+  border-right: 1px solid #282828;
+  background: #141414;
+}
+
+.dupfind-rail__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #ddd;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dupfind-rail__item:hover {
+  background: #1f1f1f;
+}
+
+.dupfind-rail__item--active {
+  border-color: #333;
+  background: #242424;
+}
+
+.dupfind-rail__label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dupfind-rail__count {
+  color: #8a8a8a;
+  font-size: 11px;
+}
+
+/* reliability gauge -------------------------------------------------- */
+
+.dupfind-gauge {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+}
+
+.dupfind-gauge__seg {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: #2e2e2e;
+}
+
+/* right panel -------------------------------------------------------- */
+
+.dupfind-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+
+.dupfind-panel__head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dupfind-panel__level {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dupfind-panel__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.dupfind-panel > .dupfind-state {
+  padding: 28px;
+}
+
+/* "overflow: hidden" makes the min-content height 0 inside the flex panel,
+   so without an explicit shrink guard the browser squashes every card. */
+.dupfind-group {
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid #282828;
+  border-radius: 10px;
+  background: #1c1c1c;
+}
+
+.dupfind-group__row + .dupfind-group__row {
+  border-top: 1px dashed #2e2e2e;
+}
+
+/* track rows ---------------------------------------------------------- */
+
+.dupfind-row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.dupfind-row:hover:not(.dupfind-row--disabled) {
+  background: #242424;
+}
+
+.dupfind-row--checked {
+  background: rgba(224, 116, 92, 0.12);
+}
+
+.dupfind-row--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dupfind-row__play {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #b3b3b3;
+  cursor: pointer;
+}
+
+.dupfind-row__play:hover {
+  background: #282828;
+  color: #fff;
+}
+
+.dupfind-row__play--on,
+.dupfind-row__play--on:hover {
+  color: #1db954;
+}
+
+.dupfind-row__checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: #e0745c;
+  cursor: pointer;
+}
+
+.dupfind-row__checkbox:disabled {
+  cursor: not-allowed;
+}
+
+.dupfind-row__art {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #282828;
+}
+
+.dupfind-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dupfind-row__titleline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dupfind-row__title {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dupfind-row__duration {
+  flex-shrink: 0;
+  color: #b3b3b3;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dupfind-row__meta {
+  overflow: hidden;
+  color: #b3b3b3;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dupfind-row__where {
+  color: #7f7f7f;
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------- footer */
+
+.dupfind-footer {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border-top: 1px solid #282828;
+  background: #141414;
+}
+
+.dupfind-footer__readonly {
+  color: #b3b3b3;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dupfind-footer__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dupfind-footer__count {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dupfind-footer__warning {
+  flex: 1;
+  color: #8a8a8a;
+  font-size: 11px;
+  text-align: right;
+}
+
+.dupfind-footer__confirm {
+  flex: 1;
+  color: #e0b05c;
+  font-size: 13px;
+}
+
+.dupfind-footer__summary {
+  margin-bottom: 8px;
+  color: #e0745c;
+  font-size: 12px;
+}
+
+.dupfind-footer__buttons {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.dupfind-footer__busy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.dupfind-progress {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #282828;
+}
+
+.dupfind-progress__bar {
+  height: 100%;
+  border-radius: 3px;
+  background: #1db954;
+  transition: width 0.2s ease;
+}
+
+/* ------------------------------------------------------------- buttons */
+
+.dupfind-button {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dupfind-button--small {
+  padding: 5px 12px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.dupfind-button--ghost {
+  background: transparent;
+  color: #b3b3b3;
+}
+
+.dupfind-button--ghost:hover {
+  color: #fff;
+}
+
+.dupfind-button--danger {
+  background: #e0745c;
+  color: #161616;
+}
+
+.dupfind-button--danger:hover {
+  background: #ea8873;
+}
+
+.dupfind-button--danger:disabled {
+  background: #3d3d3d;
+  color: #8a8a8a;
+  cursor: not-allowed;
+}
+
+.dupfind-button--ghost:disabled {
+  color: #555;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------ scrollbar */
+
+.dupfind-panel::-webkit-scrollbar,
+.dupfind-rail::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dupfind-panel::-webkit-scrollbar-thumb,
+.dupfind-rail::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: #3d3d3d;
+}
