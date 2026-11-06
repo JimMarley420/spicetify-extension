@@ -86,6 +86,48 @@
   color: #e0745c;
 }
 
+.dupfind-header__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
+
+.dupfind-header__github {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #b3b3b3;
+}
+
+.dupfind-header__github:hover {
+  background: #282828;
+  color: #fff;
+}
+
+.dupfind-header__github svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  transition: fill 0.15s;
+}
+
+/* Text kept for assistive technology only, never painted. */
+.dupfind-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .dupfind-header__close {
   display: flex;
   flex-shrink: 0;
