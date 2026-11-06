@@ -63,6 +63,21 @@
     "tags": ["context-menu", "playlist", "bulk-delete", "utility"]
   },
   {
+    "name": "Playlist Duplicate Finder",
+    "description": "Find duplicate tracks in your playlists, grouped by confidence level, then review and remove the ones you choose.",
+    "preview": "extensions/playlistDuplicateFinder/assets/preview.png",
+    "main": "dist/playlistDuplicateFinder.mjs",
+    "readme": "extensions/playlistDuplicateFinder/README.md",
+    "branch": "master",
+    "authors": [
+      {
+        "name": "JimMarley420",
+        "url": "https://github.com/JimMarley420/spicetify-extension"
+      }
+    ],
+    "tags": ["context-menu", "playlist", "duplicates", "cleanup", "utility"]
+  },
+  {
     "name": "Copy YouTube Link",
     "description": "Copy the YouTube link of any track directly from Spotify's context menu",
     "preview": "extensions/copyYoutube/assets/preview.png",

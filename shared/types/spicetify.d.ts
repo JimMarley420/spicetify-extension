@@ -1,31 +1,102 @@
 declare namespace Spicetify {
   type Icon =
-    | "album" | "artist" | "block" | "check" | "chevron-left" | "chevron-right"
-    | "clock" | "copy" | "download" | "edit" | "external-link" | "follow"
-    | "fullscreen" | "grid-view" | "heart" | "heart-active" | "library"
-    | "list-view" | "lock" | "locked" | "locked-active" | "lyrics" | "menu"
-    | "minimize" | "minus" | "more" | "pause" | "play" | "playlist"
-    | "playlist-folder" | "plus-alt" | "plus2px" | "queue" | "repeat"
-    | "repeat-once" | "search" | "search-active" | "shuffle" | "skip-back"
-    | "skip-back15" | "skip-forward" | "skip-forward15" | "speaker" | "spotify"
-    | "subtitles" | "trash" | "trashbin" | "volume" | "volume-off" | "volume-one-wave" | "volume-two-wave"
+    | "album"
+    | "artist"
+    | "block"
+    | "check"
+    | "chevron-left"
+    | "chevron-right"
+    | "clock"
+    | "copy"
+    | "download"
+    | "edit"
+    | "external-link"
+    | "follow"
+    | "fullscreen"
+    | "grid-view"
+    | "heart"
+    | "heart-active"
+    | "library"
+    | "list-view"
+    | "lock"
+    | "locked"
+    | "locked-active"
+    | "lyrics"
+    | "menu"
+    | "minimize"
+    | "minus"
+    | "more"
+    | "pause"
+    | "play"
+    | "playlist"
+    | "playlist-folder"
+    | "plus-alt"
+    | "plus2px"
+    | "queue"
+    | "repeat"
+    | "repeat-once"
+    | "search"
+    | "search-active"
+    | "shuffle"
+    | "skip-back"
+    | "skip-back15"
+    | "skip-forward"
+    | "skip-forward15"
+    | "speaker"
+    | "spotify"
+    | "subtitles"
+    | "trash"
+    | "trashbin"
+    | "volume"
+    | "volume-off"
+    | "volume-one-wave"
+    | "volume-two-wave"
     | "x";
 
   const SVGIcons: Record<Icon, string>;
 
   type Variant =
-    | "viola" | "violaBold" | "alto" | "altoBrio" | "brio" | "canon"
-    | "cello" | "celloCanon" | "bass" | "forte" | "mesto" | "mestoBold"
-    | "metronome" | "ballad" | "balladBold" | "finale" | "finaleBold"
-    | "minuet" | "minuetBold";
+    | "viola"
+    | "violaBold"
+    | "alto"
+    | "altoBrio"
+    | "brio"
+    | "canon"
+    | "cello"
+    | "celloCanon"
+    | "bass"
+    | "forte"
+    | "mesto"
+    | "mestoBold"
+    | "metronome"
+    | "ballad"
+    | "balladBold"
+    | "finale"
+    | "finaleBold"
+    | "minuet"
+    | "minuetBold";
 
   type SemanticColor =
-    | "textBase" | "textSubdued" | "textBrightAccent" | "textNegative"
-    | "textWarning" | "textPositive" | "essentialBase" | "essentialSubdued"
-    | "essentialBrightAccent" | "essentialNegative" | "essentialWarning"
-    | "essentialPositive" | "backgroundBase" | "backgroundHighlight"
-    | "backgroundPress" | "backgroundElevatedBase" | "backgroundElevatedHighlight"
-    | "backgroundElevatedPress" | "backgroundTintedBase" | "backgroundTintedHighlight"
+    | "textBase"
+    | "textSubdued"
+    | "textBrightAccent"
+    | "textNegative"
+    | "textWarning"
+    | "textPositive"
+    | "essentialBase"
+    | "essentialSubdued"
+    | "essentialBrightAccent"
+    | "essentialNegative"
+    | "essentialWarning"
+    | "essentialPositive"
+    | "backgroundBase"
+    | "backgroundHighlight"
+    | "backgroundPress"
+    | "backgroundElevatedBase"
+    | "backgroundElevatedHighlight"
+    | "backgroundElevatedPress"
+    | "backgroundTintedBase"
+    | "backgroundTintedHighlight"
     | "backgroundTintedPress";
 
   namespace Player {
@@ -108,15 +179,21 @@ declare namespace Spicetify {
   type ArtistsEntity = { type: string; uri: string; name: string };
 
   type Restrictions = {
-    canPause: boolean; canResume: boolean; canSeek: boolean;
-    canSkipPrevious: boolean; canSkipNext: boolean;
-    canToggleRepeatContext: boolean; canToggleRepeatTrack: boolean;
+    canPause: boolean;
+    canResume: boolean;
+    canSeek: boolean;
+    canSkipPrevious: boolean;
+    canSkipNext: boolean;
+    canToggleRepeatContext: boolean;
+    canToggleRepeatTrack: boolean;
     canToggleShuffle: boolean;
   };
 
   type PlaybackQuality = {
-    bitrateLevel: number; strategy: number;
-    targetBitrateLevel: number; targetBitrateAvailable: boolean;
+    bitrateLevel: number;
+    strategy: number;
+    targetBitrateLevel: number;
+    targetBitrateAvailable: boolean;
     hifiStatus: number;
   };
 
@@ -126,7 +203,10 @@ declare namespace Spicetify {
     type Body = Record<string, any>;
 
     interface Response {
-      body: any; headers: Headers; status: number; uri?: string;
+      body: any;
+      headers: Headers;
+      status: number;
+      uri?: string;
     }
 
     function get(url: string, body?: Body, headers?: Headers): Promise<Response["body"]>;
@@ -134,7 +214,12 @@ declare namespace Spicetify {
     function put(url: string, body?: Body, headers?: Headers): Promise<Response["body"]>;
     function del(url: string, body?: Body, headers?: Headers): Promise<Response["body"]>;
     function patch(url: string, body?: Body, headers?: Headers): Promise<Response["body"]>;
-    function request(method: Method, url: string, body?: Body, headers?: Headers): Promise<Response>;
+    function request(
+      method: Method,
+      url: string,
+      body?: Body,
+      headers?: Headers,
+    ): Promise<Response>;
   }
 
   const BridgeAPI: any;
@@ -161,9 +246,36 @@ declare namespace Spicetify {
       function removeTracks(id: string, uris: string[]): Promise<any>;
       function setDetails(id: string, name: string, description?: string): Promise<any>;
       function reorder(id: string, rangeStart: number, insertBefore: number): Promise<any>;
-      function getContents(uri: string, options?: { offset?: number; limit?: number }): Promise<{ items?: any[] }>;
+      function getContents(
+        uri: string,
+        options?: { offset?: number; limit?: number },
+      ): Promise<{ items?: any[] }>;
       function remove(uri: string, tracks: { uri: string; uid: string }[]): Promise<any>;
-      function add(uri: string, trackUris: string[], options?: Record<string, unknown>): Promise<any>;
+      function add(
+        uri: string,
+        trackUris: string[],
+        options?: Record<string, unknown>,
+      ): Promise<any>;
+    }
+    namespace PlayerAPI {
+      const _state: PlayerState;
+      const _events: {
+        addListener(
+          type: string,
+          callback: (event: { data: PlayerState }) => void,
+          opts?: any,
+        ): void;
+        removeListener(
+          type: string,
+          callback: (event: { data: PlayerState }) => void,
+          opts?: any,
+        ): void;
+        emit(type: string, data: PlayerState): void;
+      };
+      function play(options: { uri: string }, context?: any, flags?: any): Promise<any>;
+      function pause(options?: any): Promise<any>;
+      function resume(options?: any): Promise<any>;
+      function seekTo(position: number): Promise<any>;
     }
   }
 
@@ -175,7 +287,7 @@ declare namespace Spicetify {
     class Item {
       constructor(options: {
         name?: string;
-        children?: React.ReactNode;
+        children?: unknown;
         leadingIcon?: Icon | string;
         onClick: (context: any, item: any, event: any) => void;
         shouldAdd?: (props: any) => boolean;
@@ -225,8 +337,14 @@ declare namespace Spicetify {
 
   namespace Menu {
     class Item {
-      constructor(name: string, isEnabled: boolean, onClick: (self: Item) => void, icon?: Icon | string);
-      name: string; isEnabled: boolean;
+      constructor(
+        name: string,
+        isEnabled: boolean,
+        onClick: (self: Item) => void,
+        icon?: Icon | string,
+      );
+      name: string;
+      isEnabled: boolean;
       setName(name: string): void;
       setState(isEnabled: boolean): void;
       setIcon(icon: Icon | string): void;
@@ -249,15 +367,32 @@ declare namespace Spicetify {
 
     class Item {
       static readonly iconList: Icon[];
-      constructor(name: string, onClick: OnClickCallback, shouldAdd?: ShouldAddCallback, icon?: Icon, disabled?: boolean);
-      name: string; icon: Icon | string; disabled: boolean; shouldAdd: ShouldAddCallback; onClick: OnClickCallback;
+      constructor(
+        name: string,
+        onClick: OnClickCallback,
+        shouldAdd?: ShouldAddCallback,
+        icon?: Icon,
+        disabled?: boolean,
+      );
+      name: string;
+      icon: Icon | string;
+      disabled: boolean;
+      shouldAdd: ShouldAddCallback;
+      onClick: OnClickCallback;
       register: () => void;
       deregister: () => void;
     }
 
     class SubMenu {
-      constructor(name: string, subItems: Iterable<Item>, shouldAdd?: ShouldAddCallback, disabled?: boolean);
-      name: string; disabled: boolean; shouldAdd: ShouldAddCallback;
+      constructor(
+        name: string,
+        subItems: Iterable<Item>,
+        shouldAdd?: ShouldAddCallback,
+        disabled?: boolean,
+      );
+      name: string;
+      disabled: boolean;
+      shouldAdd: ShouldAddCallback;
       addItem(item: Item): void;
       removeItem(item: Item): void;
       register: () => void;
@@ -277,11 +412,19 @@ declare namespace Spicetify {
 
   namespace Keyboard {
     type ValidKey = string;
-    type KeysDefine = string | { key: string; ctrl?: boolean; shift?: boolean; alt?: boolean; meta?: boolean };
+    type KeysDefine =
+      | string
+      | { key: string; ctrl?: boolean; shift?: boolean; alt?: boolean; meta?: boolean };
     const KEYS: Record<ValidKey, string>;
     function registerShortcut(keys: KeysDefine, callback: (event: KeyboardEvent) => void): void;
-    function registerIsolatedShortcut(keys: KeysDefine, callback: (event: KeyboardEvent) => void): void;
-    function registerImportantShortcut(keys: KeysDefine, callback: (event: KeyboardEvent) => void): void;
+    function registerIsolatedShortcut(
+      keys: KeysDefine,
+      callback: (event: KeyboardEvent) => void,
+    ): void;
+    function registerImportantShortcut(
+      keys: KeysDefine,
+      callback: (event: KeyboardEvent) => void,
+    ): void;
     function deregisterShortcut(keys: KeysDefine): void;
     function deregisterImportantShortcut(keys: KeysDefine): void;
     function changeShortcut(keys: KeysDefine, newKeys: KeysDefine): void;
