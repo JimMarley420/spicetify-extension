@@ -44,6 +44,7 @@ export function normalizeTitleStrict(name: string): string {
   return name.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+/** Escape a literal for use inside a `RegExp` source. */
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -30,6 +30,8 @@ export const strings = {
     retry: "Retry",
     readOnlyNotice:
       "This playlist is read-only: you don't have edit permission on it (you are neither its owner nor a collaborator), so removing tracks is disabled. You can still review every group.",
+    noUidNotice:
+      "Spotify did not return an occurrence id for this row, so it cannot be removed precisely. It stays visible for review but cannot be selected.",
   },
   levels: {
     exact: {
