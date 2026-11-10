@@ -138,7 +138,7 @@ deno task theme:lint
 deno task manifest:check
 ```
 
-`deno task check` does not run tests or build extensions. The current TypeScript check covers shared code, build tooling, and selected Playlist Duplicate Finder files; it does not yet typecheck every extension source file.
+`deno task check` does not run tests or build extensions. Its TypeScript check covers shared code, build tooling, and every `.ts` and `.tsx` file under `extensions/`, including extension tests.
 
 ### Improving The Documentation
 
@@ -202,7 +202,7 @@ Maintainers come from the community. If you consistently contribute high-quality
 
 ## Testing and CI
 
-CircleCI runs lint, the configured typecheck, tests, theme checks, manifest validation, and a release build on pull requests. Pull requests that change `.circleci/`, `tasks/`, or `deno.json` also run the focused `ci-cd-check` job automatically; no label is needed.
+CircleCI runs lint, typechecks all extension TypeScript and TSX files plus shared code and build tooling, runs tests, checks themes and the manifest, and builds extensions on pull requests. Pull requests that change `.circleci/`, `tasks/`, or `deno.json` also run the focused `ci-cd-check` job automatically; no label is needed.
 
 The test job uploads JUnit results to the CircleCI Tests tab and stores an LCOV coverage report as an artifact. CI enforces a minimum of 20% line, branch, and function coverage. To reproduce that check locally, run `deno task test`, then the `deno coverage` and `deno task coverage:check` commands shown above.
 

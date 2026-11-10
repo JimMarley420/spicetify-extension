@@ -130,7 +130,7 @@ deno task coverage:check
 
 ### Continuous Integration
 
-CircleCI runs lint, the configured TypeScript checks, tests, theme checks, manifest validation, and an extension build for pull requests. Test results appear in CircleCI's Tests tab; the LCOV coverage report is available as a job artifact. CI requires at least 20% line, branch, and function coverage.
+CircleCI runs lint, typechecks all extension TypeScript and TSX files plus shared code and build tooling, runs tests, checks themes and the manifest, and builds extensions for pull requests. Test results appear in CircleCI's Tests tab; the LCOV coverage report is available as a job artifact. CI requires at least 20% line, branch, and function coverage.
 
 When extension build inputs change in a same-repository pull request, CircleCI rebuilds `dist/` and commits the update to the pull request branch. Fork pull requests receive a build artifact but are not updated automatically. See [CONTRIBUTING.md](CONTRIBUTING.md#testing-and-ci) for local checks and CI behavior.
 
