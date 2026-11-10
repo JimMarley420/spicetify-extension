@@ -26,9 +26,9 @@
 
     "@std/bytes": "jsr:@std/bytes@^1.0.6",
     "@std/assert": "jsr:@std/assert@^1.0.19",
-    "@std/path": "jsr:@std/path@^1.1.4",
-    "@std/streams": "jsr:@std/streams@^1.0.17",
-    "@std/fs": "jsr:@std/fs@^1.0.17",
+    "@std/path": "jsr:@std/path@^1.1.6",
+    "@std/streams": "jsr:@std/streams@^1.2.0",
+    "@std/fs": "jsr:@std/fs@^1.0.24",
 
     "esbuild-plugin-babel": "npm:esbuild-plugin-babel@^0.2.3",
     "react": "https://esm.sh/react@19.2.3",
