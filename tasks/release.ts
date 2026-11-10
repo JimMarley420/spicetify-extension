@@ -162,3 +162,4 @@ const runBuilds = async (): Promise<void> => {
 };
 
 await runBuilds();
+Deno.exit(0);
