@@ -235,39 +235,62 @@ workflows:
     when: pipeline.parameters.run_ci and not pipeline.parameters.run_deps_update
     max_auto_reruns: 2
     jobs:
+      # Stage 1 - Quality checks. Every job runs in parallel; the always-on
+      # subset below is required by the later stages, while theme-check and
+      # theme-lint are optional heavy jobs.
       - lint
       - typecheck
       - lockfile-check
-      - test:
-          filters: pipeline.parameters.skip_heavy == false
+      - manifest-check
+      - config-validate
+      - commit-lint
+      - ci-cd-check
       - theme-check:
           filters: pipeline.parameters.skip_heavy == false
       - theme-lint:
           filters: pipeline.parameters.skip_heavy == false
-      - manifest-check
-      - ci-cd-check
-      - commit-lint:
-          filters:
-            branches:
-              ignore: master
-      - security-audit
-      - secret-scan
-      - config-validate
-      - build:
+
+      # Stage 2 - Tests and security, gated on the always-on quality checks.
+      - test:
           filters: pipeline.parameters.skip_heavy == false
           requires:
             - lint
             - typecheck
             - lockfile-check
-            - test
+            - manifest-check
+            - config-validate
+            - commit-lint
+            - ci-cd-check
+      - security-audit:
+          requires:
+            - lint
+            - typecheck
+            - lockfile-check
+            - manifest-check
+            - config-validate
+            - commit-lint
+            - ci-cd-check
+      - secret-scan:
+          requires:
+            - lint
+            - typecheck
+            - lockfile-check
+            - manifest-check
+            - config-validate
+            - commit-lint
+            - ci-cd-check
+
+      # Stage 3 - Build and artifacts, gated on tests and security.
+      - build:
+          filters: pipeline.parameters.skip_heavy == false
+          requires:
             - theme-check
             - theme-lint
-            - manifest-check
-            - ci-cd-check
-            - commit-lint
+            - test
             - security-audit
             - secret-scan
-            - config-validate
+
+      # Stage 4 - Deploy and distribution.
       - update-dist:
           requires:
             - build
