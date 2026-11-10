@@ -34,7 +34,7 @@ jobs:
   lint:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -44,7 +44,7 @@ jobs:
   typecheck:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -54,7 +54,7 @@ jobs:
   test:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -74,7 +74,7 @@ jobs:
   theme-check:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -84,7 +84,7 @@ jobs:
   theme-lint:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -94,7 +94,7 @@ jobs:
   manifest-check:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -104,7 +104,7 @@ jobs:
   ci-cd-check:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -156,7 +156,7 @@ jobs:
   build:
     resource_class: medium
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -172,7 +172,7 @@ jobs:
   update-dist:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -291,7 +291,7 @@ jobs:
   release:
     resource_class: medium
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - restore-deps
@@ -384,7 +384,7 @@ jobs:
   notify-workflow:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - run:
@@ -394,7 +394,7 @@ jobs:
   update-deno-deps:
     resource_class: small
     docker:
-      - image: denoland/deno:2.7.11
+      - image: denoland/deno:2.9.8
     steps:
       - checkout
       - run:

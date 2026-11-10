@@ -19,9 +19,7 @@ if (extensionFiles.length === 0) {
   Deno.exit(0);
 }
 
-console.log(
-  `Typechecking ${extensionFiles.length} extension TypeScript files.`,
-);
+console.log(`Typechecking ${extensionFiles.length} extension TypeScript files.`);
 const command = new Deno.Command("deno", {
   args: [
     "check",
