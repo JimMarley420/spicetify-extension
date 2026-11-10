@@ -5,12 +5,13 @@
     "jsr:@oazmi/esbuild-types@0.27.0": "0.27.0",
     "jsr:@oazmi/kitchensink@0.9.15": "0.9.15",
     "jsr:@std/assert@^1.0.19": "1.0.19",
-    "jsr:@std/bytes@*": "1.0.6",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
-    "jsr:@std/fs@^1.0.17": "1.0.23",
-    "jsr:@std/internal@^1.0.12": "1.0.12",
-    "jsr:@std/path@^1.1.4": "1.1.4",
-    "jsr:@std/streams@^1.0.17": "1.0.17",
+    "jsr:@std/fs@^1.0.24": "1.0.24",
+    "jsr:@std/internal@^1.0.12": "1.0.14",
+    "jsr:@std/internal@^1.0.14": "1.0.14",
+    "jsr:@std/path@^1.1.5": "1.1.6",
+    "jsr:@std/path@^1.1.6": "1.1.6",
+    "jsr:@std/streams@^1.2.0": "1.2.0",
     "jsr:@std/yaml@*": "1.2.0",
     "npm:@babel/core@7.29.0": "7.29.0",
     "npm:@babel/preset-react@7.28.5": "7.28.5_@babel+core@7.29.0",
@@ -38,32 +39,32 @@
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
       "dependencies": [
-        "jsr:@std/internal"
+        "jsr:@std/internal@^1.0.12"
       ]
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
-    "@std/fs@1.0.23": {
-      "integrity": "3ecbae4ce4fee03b180fa710caff36bb5adb66631c46a6460aaad49515565a37",
+    "@std/fs@1.0.24": {
+      "integrity": "f3061b45b81673a2bece689da041df32d174be064c89eb6397fb5718d3fb7877",
       "dependencies": [
-        "jsr:@std/internal",
-        "jsr:@std/path"
+        "jsr:@std/internal@^1.0.14",
+        "jsr:@std/path@^1.1.5"
       ]
     },
-    "@std/internal@1.0.12": {
-      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
     },
-    "@std/path@1.1.4": {
-      "integrity": "1d2d43f39efb1b42f0b1882a25486647cb851481862dc7313390b2bb044314b5",
+    "@std/path@1.1.6": {
+      "integrity": "c68485c2a4dfbb5ae3cc74fae4e8c4e5d874cf8a8ed12927917235c758b46cbe",
       "dependencies": [
-        "jsr:@std/internal"
+        "jsr:@std/internal@^1.0.14"
       ]
     },
-    "@std/streams@1.0.17": {
-      "integrity": "7859f3d9deed83cf4b41f19223d4a67661b3d3819e9fc117698f493bf5992140",
+    "@std/streams@1.2.0": {
+      "integrity": "256b934254778f2bf45f5713b934209ff29e9b4b7fd4ec095219966813758c5f",
       "dependencies": [
-        "jsr:@std/bytes@^1.0.6"
+        "jsr:@std/bytes"
       ]
     },
     "@std/yaml@1.2.0": {
@@ -394,7 +395,7 @@
     "@csstools/css-tokenizer@2.4.1": {
       "integrity": "sha512-eQ9DIktFJBhGjioABJRtUucoWR2mwllurfnM8LuNGAqX3ViZXaUchqk+1s7jjtkFiT9ySdACsFEA3etErkALUg=="
     },
-    "@csstools/media-query-list-parser@2.1.13_@csstools+css-parser-algorithms@2.7.1__@csstools+css-tokenizer@2.4.1_@csstools+css-tokenizer@2.4.1": {
+    "@csstools/media-query-list-parser@2.1.13_@csstools+css-parser-algorithms@2.7.1_@csstools+css-tokenizer@2.4.1": {
       "integrity": "sha512-XaHr+16KRU9Gf8XLi3q8kDlI18d5vzKSKCY510Vrtc9iNR0NJzbY9hhTmwhzYZj/ZwGL4VmB3TA9hJW0Um2qFA==",
       "dependencies": [
         "@csstools/css-parser-algorithms",
@@ -1070,9 +1071,9 @@
       "jsr:@oazmi/esbuild-plugin-deno@0.4.5",
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/bytes@^1.0.6",
-      "jsr:@std/fs@^1.0.17",
-      "jsr:@std/path@^1.1.4",
-      "jsr:@std/streams@^1.0.17",
+      "jsr:@std/fs@^1.0.24",
+      "jsr:@std/path@^1.1.6",
+      "jsr:@std/streams@^1.2.0",
       "npm:@babel/core@7.29.0",
       "npm:@babel/preset-react@7.28.5",
       "npm:@babel/preset-typescript@7.28.5",
