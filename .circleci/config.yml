@@ -48,7 +48,7 @@ jobs:
       - run: deno task test
       - run:
           name: Generate LCOV coverage report
-          command: deno coverage --lcov --output=coverage.lcov coverage/
+          command: deno coverage --lcov --output=coverage.lcov coverage/ && deno task coverage:check
           when: always
       - store_test_results:
           path: test-results
