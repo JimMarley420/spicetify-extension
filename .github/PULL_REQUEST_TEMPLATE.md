@@ -23,6 +23,7 @@ assignees: ""
 - [ ] Add to Multiple Playlists
 - [ ] Bulk Delete Tracks
 - [ ] Copy YouTube Link
+- [ ] Playlist Duplicate Finder
 - [ ] Play Without Context
 - [ ] Build / CI / Tooling
 - [ ] Docs / Other
@@ -37,7 +38,8 @@ assignees: ""
 ## Checklist
 
 - [ ] I ran `deno task check` and `deno task test` successfully
-- [ ] I ran `deno task release` / `deno task build` and `dist/` is up to date
+- [ ] For theme changes, I ran `deno task theme:check` and `deno task theme:lint`
+- [ ] If extension/build inputs changed, I reviewed the generated `dist/` update from CircleCI (or updated it manually for a fork PR)
 - [ ] I followed [Conventional Commits](https://www.conventionalcommits.org) in my commit messages
 - [ ] I updated the relevant `README.md` / `manifest.json` if user-facing behavior changed
 - [ ] My changes do not reintroduce the restrictions in the project license
