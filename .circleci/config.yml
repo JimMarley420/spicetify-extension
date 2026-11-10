@@ -1,360 +1,336 @@
-﻿version: 2.1
+version: 2.1
 
 jobs:
   lint:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
-      - run:
-          name: Lint
-          command: deno task lint
+      - run: deno task lint
 
   typecheck:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
-      - run:
-          name: Type check
-          command: deno task typecheck
+      - run: deno task typecheck
 
   test:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
-      - run:
-          name: Run tests
-          command: deno task test
+      - run: deno task test
 
   theme-check:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
-      - run:
-          name: Theme check
-          command: deno task theme:check
+      - run: deno task theme:check
 
   theme-lint:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
-      - run:
-          name: Theme lint
-          command: deno task theme:lint
+      - run: deno task theme:lint
 
   manifest-check:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
-      - run:
-          name: Check manifest references
-          command: deno task manifest:check
+      - run: deno task manifest:check
 
   ci-cd-check:
     docker:
-      - image: denoland/deno:latest
-
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
-
-      # Skip unless the PR carries the CI/CD label
       - run:
-          name: Skip unless CI/CD label
+          name: Check CI/CD files and referenced tasks
           command: |
-            apt-get update && apt-get install -y jq curl
+            deno eval '
+              const owner = Deno.env.get("CIRCLE_PROJECT_USERNAME")!;
+              const repo = Deno.env.get("CIRCLE_PROJECT_REPONAME")!;
+              const pullRequest = Deno.env.get("CIRCLE_PULL_REQUEST");
+              const baseUrl = `https://api.github.com/repos/${owner}/${repo}`;
+              const headers = { Accept: "application/vnd.github+json", "User-Agent": "artist-search-circleci" };
+              const files: string[] = [];
 
-            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
-              echo "Not a PR, skipping CI/CD check"
-              circleci step halt
-            fi
+              if (pullRequest) {
+                const number = pullRequest.split("/").pop();
+                for (let page = 1; ; page++) {
+                  const response = await fetch(`${baseUrl}/pulls/${number}/files?per_page=100&page=${page}`, { headers });
+                  if (!response.ok) throw new Error(`GitHub PR files API returned ${response.status}: ${await response.text()}`);
+                  const pageFiles = await response.json();
+                  files.push(...pageFiles.map((file: { filename: string }) => file.filename));
+                  if (pageFiles.length < 100) break;
+                }
+              } else {
+                const sha = Deno.env.get("CIRCLE_SHA1")!;
+                const response = await fetch(`${baseUrl}/commits/${sha}`, { headers });
+                if (!response.ok) throw new Error(`GitHub commit API returned ${response.status}: ${await response.text()}`);
+                const commit = await response.json();
+                files.push(...commit.files.map((file: { filename: string }) => file.filename));
+              }
 
-            PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
+              const relevant = files.some((path) => /^\.circleci\//.test(path) || /^tasks\//.test(path) || path === "deno.json");
+              if (!relevant) {
+                console.log("No CI/CD files changed; skipping focused checks.");
+                Deno.exit(0);
+              }
+              const config = JSON.parse(await Deno.readTextFile("deno.json"));
+              const required = ["lint", "typecheck", "test", "theme:check", "theme:lint", "manifest:check", "build", "release"];
+              const missing = required.filter((task) => !config.tasks?.[task]);
+              if (missing.length) throw new Error(`Missing Deno tasks: ${missing.join(", ")}`);
+              console.log("CI/CD files changed; all referenced tasks exist.");
 
-            LABELS=$(curl -s \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels)
-
-            if ! echo "$LABELS" | jq -e 'any(.[]; .name == "CI/CD")' > /dev/null 2>&1; then
-              echo "PR #$PR_NUMBER has no CI/CD label, skipping CI/CD checks"
-              circleci step halt
-            fi
-
-            echo "CI/CD label present on PR #$PR_NUMBER, running CI/CD checks"
-
-      # Validate CircleCI configs
-      - run:
-          name: Validate CircleCI config syntax
-          command: |
-            for f in .circleci/config.yml .circleci/release.yml .circleci/deps.yml; do
-              deno eval "import { parse } from 'jsr:@std/yaml'; parse(await Deno.readTextFile('$f')); console.log('OK  $f');"
-            done
-
-      # Check deno tasks used by CI exist in deno.json
-      - run:
-          name: Validate deno tasks referenced by CI
-          command: |
-            MISSING=0
-            for t in lint typecheck test theme:check theme:lint manifest:check build release; do
-              if ! deno eval "import { parse } from 'jsr:@std/yaml'; const cfg = await Deno.readTextFile('deno.json'); const j = JSON.parse(cfg); if (!j.tasks || !(j.tasks['$t'])) { Deno.exit(1) }" 2>/dev/null; then
-                echo "MISSING task: $t"
-                MISSING=1
-              fi
-            done
-            if [ "$MISSING" -ne 0 ]; then
-              echo "ERROR: CI references tasks missing from deno.json"
-              exit 1
-            fi
-            echo "All CI tasks resolved"
-
-      # Lint + typecheck the CI-relevant tooling
-      - run:
-          name: Typecheck CI tooling
-          command: deno task typecheck
+              const child = new Deno.Command("deno", { args: ["task", "typecheck"], stdout: "inherit", stderr: "inherit" }).spawn();
+              const result = await child.status;
+              if (!result.success) throw new Error(`Deno typecheck failed with exit code ${result.code}`);
+            '
 
   build:
     docker:
-      - image: denoland/deno:latest
+      - image: denoland/deno:2.7.11
     steps:
       - checkout
       - run:
           name: Build extension
-          command: deno task build
+          command: deno task release --skip-check
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
 
-  release:
+  update-dist:
     docker:
-      - image: denoland/deno:latest
-
+      - image: denoland/deno:2.7.11
     steps:
-      # SSH key (CRUCIAL)
-      - add_ssh_keys:
-          fingerprints:
-            - "zhvhgYmcZBO8Dfn8P32ETQ+agImCNXFQCu5UfPoYtRc"
-
       - checkout
-
-      # Install tools + SSH config
+      - attach_workspace:
+          at: .
       - run:
-          name: Install dependencies and configure git (SSH)
+          name: Update dist on same-repository pull requests
           command: |
-            apt-get update && apt-get install -y git curl
+            deno eval '
+              const owner = Deno.env.get("CIRCLE_PROJECT_USERNAME")!;
+              const repo = Deno.env.get("CIRCLE_PROJECT_REPONAME")!;
+              const token = Deno.env.get("GITHUB_TOKEN");
+              const pullRequest = Deno.env.get("CIRCLE_PULL_REQUEST");
+              if (!pullRequest) {
+                console.log("Not a pull request; dist is available as a build artifact.");
+                Deno.exit(0);
+              }
+              if (!token) {
+                console.log("GITHUB_TOKEN unavailable; keeping dist as an artifact only.");
+                Deno.exit(0);
+              }
 
-            mkdir -p ~/.ssh
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
+              const api = `https://api.github.com/repos/${owner}/${repo}`;
+              const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" };
+              const request = async (path: string, init?: RequestInit) => {
+                const response = await fetch(`${api}${path}`, { ...init, headers: { ...headers, ...init?.headers } });
+                const text = await response.text();
+                if (!response.ok) throw new Error(`GitHub API ${path} returned ${response.status}: ${text}`);
+                return text ? JSON.parse(text) : null;
+              };
 
-            git config user.email "ci@circleci.com"
-            git config user.name "circleci-bot"
+              const number = pullRequest.split("/").pop();
+              const pr = await request(`/pulls/${number}`);
+              if (pr.head.repo?.full_name !== `${owner}/${repo}`) {
+                console.log("Pull request comes from a fork; dist is available as an artifact only.");
+                Deno.exit(0);
+              }
 
-            git remote set-url origin git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
+              const changedPaths: string[] = [];
+              for (let page = 1; ; page++) {
+                const response = await fetch(`${api}/pulls/${number}/files?per_page=100&page=${page}`, { headers });
+                if (!response.ok) throw new Error(`GitHub PR files API returned ${response.status}: ${await response.text()}`);
+                const pageFiles = await response.json();
+                changedPaths.push(...pageFiles.map((file: { filename: string }) => file.filename));
+                if (pageFiles.length < 100) break;
+              }
+              const buildInputsChanged = changedPaths.some((path) =>
+                path.startsWith("extensions/") ||
+                path.startsWith("shared/") ||
+                ["tasks/pluginInlineCSS.ts", "tasks/reactCompilerPlugin.ts", "tasks/spicetifyShimsPlugin.ts", "deno.lock"].includes(path)
+              );
+              if (!buildInputsChanged) {
+                console.log("No extension or build inputs changed; dist remains untouched.");
+                Deno.exit(0);
+              }
+              if (pr.head.sha !== Deno.env.get("CIRCLE_SHA1")) {
+                console.log("Pull request changed during this build; dist is available as an artifact only.");
+                Deno.exit(0);
+              }
 
-      # Skip if not PR
-      - run:
-          name: Skip if not a PR
-          command: |
-            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
-              echo "Not a PR, skipping release"
-              circleci step halt
-            fi
+              const branch = pr.head.ref as string;
+              const ref = await request(`/git/ref/heads/${branch}`);
+              if (ref.object.sha !== pr.head.sha) {
+                console.log("Pull request branch moved during this build; dist is available as an artifact only.");
+                Deno.exit(0);
+              }
 
-      # Build
-      - run:
-          name: Clean and run release
-          command: |
-            rm -rf dist
-            deno task release
+              const commit = await request(`/git/commits/${pr.head.sha}`);
+              const tree = await request(`/git/trees/${commit.tree.sha}?recursive=1`);
+              if (tree.truncated) throw new Error("Repository tree is too large to safely update dist.");
 
-      # Commit changes
-      - run:
-          name: Commit dist if changed
-          command: |
-            git add dist/
+              const files: { path: string; bytes: Uint8Array }[] = [];
+              const walk = async (directory: string, prefix: string) => {
+                for await (const entry of Deno.readDir(directory)) {
+                  const localPath = `${directory}/${entry.name}`;
+                  const repoPath = `${prefix}/${entry.name}`;
+                  if (entry.isDirectory) await walk(localPath, repoPath);
+                  else if (entry.isFile) files.push({ path: repoPath, bytes: await Deno.readFile(localPath) });
+                }
+              };
+              await walk("dist", "dist");
+              const desiredPaths = new Set(files.map((file) => file.path));
+              const entries: Record<string, unknown>[] = [];
+              const encodeBase64 = (bytes: Uint8Array) => {
+                let binary = "";
+                for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+                  binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+                }
+                return btoa(binary);
+              };
 
-            if git diff --cached --quiet; then
-              echo "No changes to commit"
-              exit 0
-            fi
+              for (const file of files) {
+                const blob = await request("/git/blobs", { method: "POST", body: JSON.stringify({ content: encodeBase64(file.bytes), encoding: "base64" }) });
+                entries.push({ path: file.path, mode: "100644", type: "blob", sha: blob.sha });
+              }
+              for (const item of tree.tree) {
+                if (item.type === "blob" && item.path.startsWith("dist/") && !desiredPaths.has(item.path)) {
+                  entries.push({ path: item.path, mode: item.mode, type: "blob", sha: null });
+                }
+              }
 
-            git commit -m "chore: update dist [ci skip]"
-
-      # Push (SSH)
-      - run:
-          name: Push changes
-          command: |
-            git push origin HEAD:${CIRCLE_BRANCH}
-
-      # Add label to PR
-      - run:
-          name: Add ready-for-review label
-          command: |
-            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
-              echo "Not a PR, skipping label"
-              exit 0
-            fi
-
-            PR_NUMBER=$(echo $CIRCLE_PULL_REQUEST | sed 's#.*/pull/##')
-
-            RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/labels \
-              -d '{"labels":["ready-for-review"]}')
-
-            if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
-              echo "Label added successfully"
-            else
-              echo "Warning: failed to add label (HTTP $RESPONSE) - continuing"
-              cat response.json
-            fi
-
-      # Artifact
+              const newTree = await request("/git/trees", { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries }) });
+              if (newTree.sha === commit.tree.sha) {
+                console.log("dist is already up to date.");
+                Deno.exit(0);
+              }
+              const newCommit = await request("/git/commits", { method: "POST", body: JSON.stringify({ message: "chore: update dist", tree: newTree.sha, parents: [pr.head.sha] }) });
+              await request(`/git/refs/heads/${branch}`, { method: "PATCH", body: JSON.stringify({ sha: newCommit.sha, force: false }) });
+              console.log(`Updated dist on ${branch}; CircleCI will check the generated commit.`);
+            '
       - store_artifacts:
           path: dist
           destination: dist
 
-  update-deno-deps:
+  release:
     docker:
-      - image: denoland/deno:latest
-
+      - image: denoland/deno:2.7.11
     steps:
-      # SSH
-      - add_ssh_keys:
-          fingerprints:
-            - "zhvhgYmcZBO8Dfn8P32ETQ+agImCNXFQCu5UfPoYtRc"
-
       - checkout
-
-      # tools
+      - attach_workspace:
+          at: .
       - run:
-          name: Install dependencies
+          name: Publish GitHub Release
           command: |
-            apt-get update && apt-get install -y git curl jq
+            deno eval '
+              const owner = Deno.env.get("CIRCLE_PROJECT_USERNAME")!;
+              const repo = Deno.env.get("CIRCLE_PROJECT_REPONAME")!;
+              const token = Deno.env.get("GITHUB_TOKEN");
+              if (!token) throw new Error("GITHUB_TOKEN is required to publish a GitHub Release.");
+              const sha = Deno.env.get("CIRCLE_SHA1")!;
+              const api = `https://api.github.com/repos/${owner}/${repo}`;
+              const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" };
+              const request = async (path: string, init?: RequestInit) => {
+                const response = await fetch(`${api}${path}`, { ...init, headers: { ...headers, ...init?.headers } });
+                const text = await response.text();
+                return { response, data: text ? JSON.parse(text) : null };
+              };
 
-      # git SSH
-      - run:
-          name: Configure git (SSH)
-          command: |
-            mkdir -p ~/.ssh
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
+              const tags: string[] = [];
+              for (let page = 1; ; page++) {
+                const { response, data } = await request(`/tags?per_page=100&page=${page}`);
+                if (!response.ok) throw new Error(`GitHub tags API returned ${response.status}: ${JSON.stringify(data)}`);
+                tags.push(...data.map((item: { name: string }) => item.name));
+                if (data.length < 100) break;
+              }
+              const semanticTags = tags.filter((tag) => /^v\d+\.\d+\.\d+$/.test(tag)).sort((left, right) => {
+                const a = left.slice(1).split(".").map(Number);
+                const b = right.slice(1).split(".").map(Number);
+                return b[0] - a[0] || b[1] - a[1] || b[2] - a[2];
+              });
+              const latestTag = semanticTags[0] ?? "";
 
-            git config user.email "ci@circleci.com"
-            git config user.name "circleci-bot"
+              let commits: { message: string }[];
+              if (latestTag) {
+                const comparison = await request(`/compare/${latestTag}...${sha}`);
+                if (!comparison.response.ok) throw new Error(`GitHub compare API returned ${comparison.response.status}: ${JSON.stringify(comparison.data)}`);
+                commits = comparison.data.commits.map((item: { commit: { message: string } }) => ({ message: item.commit.message }));
+              } else {
+                const current = await request(`/commits/${sha}`);
+                if (!current.response.ok) throw new Error(`GitHub commit API returned ${current.response.status}: ${JSON.stringify(current.data)}`);
+                commits = [{ message: current.data.commit.message }];
+              }
 
-            git remote set-url origin git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
+              const breaking = commits.some(({ message }) => {
+                const [subject = "", ...body] = message.split("\n");
+                return /^[a-z]+(?:\([^)]*\))?!:/.test(subject) || body.some((line) => /^BREAKING CHANGE:/.test(line.trim()));
+              });
+              const feature = commits.some(({ message }) => /^feat(?:\([^)]*\))?:/.test(message.split("\n")[0]));
+              const bump = breaking ? "major" : feature ? "minor" : "patch";
+              let [major, minor, patch] = latestTag ? latestTag.slice(1).split(".").map(Number) : [0, 0, 0];
+              if (bump === "major") [major, minor, patch] = [major + 1, 0, 0];
+              else if (bump === "minor") [major, minor, patch] = [major, minor + 1, 0];
+              else patch++;
+              const tag = `v${major}.${minor}.${patch}`;
 
-      # outdated deps
-      - run:
-          name: Check outdated dependencies
-          command: |
-            deno outdated > outdated.txt || true
-            cat outdated.txt
+              const existing = await request(`/releases/tags/${tag}`);
+              if (existing.response.ok) {
+                console.log(`Release ${tag} already exists.`);
+                Deno.exit(0);
+              }
+              if (existing.response.status !== 404) throw new Error(`GitHub release lookup returned ${existing.response.status}: ${JSON.stringify(existing.data)}`);
 
-      # stop if nothing
-      - run:
-          name: Stop if no updates
-          command: |
-            if [ ! -s outdated.txt ]; then
-              echo "No dependency updates"
-              circleci step halt
-            fi
+              const tagRef = await request(`/git/ref/tags/${tag}`);
+              if (tagRef.response.status === 404) {
+                const createdRef = await request("/git/refs", { method: "POST", body: JSON.stringify({ ref: `refs/tags/${tag}`, sha }) });
+                if (!createdRef.response.ok && createdRef.response.status !== 422) throw new Error(`GitHub tag creation failed (${createdRef.response.status}): ${JSON.stringify(createdRef.data)}`);
+              } else if (!tagRef.response.ok) {
+                throw new Error(`GitHub tag lookup returned ${tagRef.response.status}: ${JSON.stringify(tagRef.data)}`);
+              }
 
-      # branch
-      - run:
-          name: Create update branch
-          command: |
-            BRANCH="deps/auto-update-$(date +%Y%m%d%H%M%S)"
-            echo "export UPDATE_BRANCH=$BRANCH" >> $BASH_ENV
-            git checkout -b $BRANCH
-
-      # update
-      - run:
-          name: Update dependencies
-          command: |
-            deno outdated --update
-
-      # commit
-      - run:
-          name: Commit changes
-          command: |
-            git add deno.json deno.lock || true
-
-            if git diff --cached --quiet; then
-              echo "No changes"
-              exit 0
-            fi
-
-            git commit -m "chore(deps): update deno dependencies [ci skip]"
-
-      # push
-      - run:
-          name: Push branch
-          command: |
-            git push origin $UPDATE_BRANCH
-
-      # PR
-      - run:
-          name: Create Pull Request
-          command: |
-            BASE_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
-
-            RESPONSE=$(curl -s -w "%{http_code}" -o pr.json -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls \
-              -d "{
-                \"title\": \"chore(deps): update deno dependencies\",
-                \"head\": \"$UPDATE_BRANCH\",
-                \"base\": \"$BASE_BRANCH\",
-                \"body\": \"Automated dependency update via CircleCI.\"
-              }")
-
-            if [ "$RESPONSE" -ge 400 ]; then
-              echo "PR creation failed"
-              cat pr.json
-              exit 1
-            fi
-
-      # Issue
-      - run:
-          name: Create Issue
-          command: |
-            BODY=$(cat outdated.txt)
-
-            JSON=$(jq -n \
-              --arg title "Deno dependencies update available" \
-              --arg body "$BODY" \
-              '{title: $title, body: ("```\n" + $body + "\n```")}')
-
-            curl -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues \
-              -d "$JSON"
+              const body = commits.slice(0, 80).map(({ message }) => `* ${message.split("\n")[0]}`).join("\n");
+              const published = await request("/releases", { method: "POST", body: JSON.stringify({ tag_name: tag, name: tag, body, draft: false, prerelease: false }) });
+              if (!published.response.ok) throw new Error(`GitHub release creation failed (${published.response.status}): ${JSON.stringify(published.data)}`);
+              console.log(`Published ${tag} (${bump} bump).`);
+            '
+      - store_artifacts:
+          path: dist
+          destination: dist
 
 workflows:
   ci:
     jobs:
       - lint
-      - typecheck:
-          requires:
-            - lint
-      - test:
-          requires:
-            - typecheck
+      - typecheck
+      - test
       - theme-check
       - theme-lint
       - manifest-check
       - ci-cd-check
       - build:
           requires:
+            - lint
+            - typecheck
             - test
             - theme-check
             - theme-lint
             - manifest-check
+            - ci-cd-check
+      - update-dist:
+          requires:
+            - build
       - release:
           requires:
             - build
+          filters:
+            branches:
+              only: master
