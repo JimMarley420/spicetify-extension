@@ -20,6 +20,7 @@ And if you like the project, but just don't have time to contribute, that's fine
   - [Your First Code Contribution](#your-first-code-contribution)
   - [Improving The Documentation](#improving-the-documentation)
   - [Bringing a new Extension or Theme](#bringing-a-new-extension-or-theme)
+- [Testing and CI](#testing-and-ci)
 - [Styleguides](#styleguides)
   - [Commit Messages](#commit-messages)
   - [Code Style](#code-style)
@@ -120,10 +121,24 @@ You can open the project in any editor with Deno support (VS Code + the official
 # Build all extensions
 deno task build
 
-# Run the whole CI-like pipeline (lint + typecheck + build + tests)
+# Run Biome lint and the configured TypeScript checks
 deno task check
+
+# Run tests and create JUnit XML plus raw coverage profiles
+deno eval -A "await Deno.mkdir('test-results', { recursive: true })"
 deno task test
+
+# Generate an LCOV report and enforce the CI coverage floor
+deno coverage --lcov --output=coverage.lcov coverage/
+deno task coverage:check
+
+# Validate theme files and the extension manifest
+deno task theme:check
+deno task theme:lint
+deno task manifest:check
 ```
+
+`deno task check` does not run tests or build extensions. The current TypeScript check covers shared code, build tooling, and selected Playlist Duplicate Finder files; it does not yet typecheck every extension source file.
 
 ### Improving The Documentation
 
@@ -133,7 +148,7 @@ Documentation improvements and typo fixes are one of the best ways to get starte
 - Each extension's own `README.md` folder
 - The `themes/CustomNight/README.md`
 
-Docs PRs follow the same process, and the `fix:` commit prefix is enough to get them merged.
+Docs PRs follow the same review process as code changes. Use the `docs:` commit prefix for documentation-only commits.
 
 ### Bringing a new Extension or Theme
 
@@ -143,7 +158,8 @@ Want to add a whole new extension or theme? Great! Some guidelines:
 - Themes live in `themes/<ThemeName>/` with `user.css`, `color.ini`, `preview.png` and a `README.md`.
 - A proper `README.md` per extension/theme is mandatory (features, usage, preview images).
 - Extensions and themes must be listed in [manifest.json](manifest.json) with tags and authors.
-- Run `deno task check`, `deno task test` and `deno task release` before submitting.
+- Run `deno task check` and `deno task test` before submitting. For theme changes, also run `deno task theme:check` and `deno task theme:lint`.
+- CircleCI builds extensions and updates `dist/` automatically when build inputs change in a same-repository pull request. Wait for that generated commit and its checks before merging. Fork pull requests cannot receive the repository write token, so the build remains an artifact; include updated `dist/` yourself when contributing from a fork.
 
 ## Styleguides
 
@@ -161,7 +177,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/). Each com
 | `perf:` | A performance improvement | patch |
 | `chore:` | Maintenance, tooling, CI/CD | patch |
 | `build:` | Build system / external dependencies | patch |
-| `feat!:`, `fix!:`, … | Breaking change (add `!` or `BREAKING CHANGE`) | **major** |
+| `feat!:`, `fix!:`, etc. | Breaking change (add `!` or a `BREAKING CHANGE:` footer) | **major** |
 
 Example:
 
@@ -175,18 +191,30 @@ chore: bump stylelint
 
 ### Code Style
 
-- **TypeScript** with strict mode, follow the existing code patterns in the repo.
-- **Biome** is used for linting & formatting — run `deno task format` before committing.
-- **Stylelint** is used for themes' CSS — run `deno task theme:lint` for changes under `themes/`.
-- No semicolons; single quotes; trailing commas (Biome defaults, or whatever the config sets).
+- **TypeScript** uses strict mode; follow the existing code patterns in the repo.
+- **Biome** handles linting and formatting. Run `deno task format` to format files and `deno task check` to lint and typecheck the configured scope.
+- **Stylelint** checks theme CSS; run `deno task theme:lint` when changing files under `themes/`.
+- Follow the checked-in [Biome configuration](./biome.json) for quotes, indentation, and formatting.
 
 ## Join The Project Team
 
 Maintainers come from the community. If you consistently contribute high-quality PRs, help triage issues and participate in discussions, we'll be happy to invite you to the team.
 
-## CI/CD checks
+## Testing and CI
 
-Pull requests that change files under `.circleci/`, `tasks/`, or `deno.json` automatically run the focused `ci-cd-check` job. No label is required.
+CircleCI runs lint, the configured typecheck, tests, theme checks, manifest validation, and a release build on pull requests. Pull requests that change `.circleci/`, `tasks/`, or `deno.json` also run the focused `ci-cd-check` job automatically; no label is needed.
+
+The test job uploads JUnit results to the CircleCI Tests tab and stores an LCOV coverage report as an artifact. CI enforces a minimum of 20% line, branch, and function coverage. To reproduce that check locally, run `deno task test`, then the `deno coverage` and `deno task coverage:check` commands shown above.
+
+On same-repository pull requests, CircleCI updates `dist/` when extension or build inputs change. Fork pull requests receive the build artifact but cannot be updated by CircleCI.
+
+Dependency updates run only when a CircleCI schedule or manual pipeline trigger sets `run_deps_update=true` on `master`. The updater opens at most one PR at a time on `deps/deno-update`; that PR then receives the normal CI checks. To run a release manually from CircleCI, trigger a pipeline on `master` with `run_release=true`. Normal pushes to `master` continue to run the release job automatically.
+
+The dependency updater and release automation use the CircleCI project variable `GITHUB_TOKEN` to write repository branches, pull requests, tags, and releases.
+
+The optional `skip_heavy=true` pipeline parameter skips tests, theme checks, and the build in the normal CI workflow. Do not use it when full validation is required.
+
+The final workflow notification uses `DISCORD_WEBHOOK_URL` and `CIRCLECI_API_TOKEN` project environment variables. If no Discord webhook is configured, notification delivery is skipped without affecting CI.
 
 ## Attribution
 
