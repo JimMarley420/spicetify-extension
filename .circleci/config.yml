@@ -28,17 +28,21 @@ executors:
       - image: denoland/deno:2.9.8
 
 commands:
+  # A single cache shared by every job. The Deno cache is content-addressed,
+  # so jobs can safely restore the same archive and download only what is
+  # missing. Keying by the lockfile checksum invalidates it on dependency
+  # changes, and dropping the branch/job components avoids keeping one
+  # duplicate cache per job.
   restore-deps:
     steps:
       - restore_cache:
           keys:
-            - v1-deps-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "deno.lock" }}
-            - v1-deps-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-
-            - v1-deps-
+            - v2-deno-2.9.8-{{ checksum "deno.lock" }}
+            - v2-deno-2.9.8-
   save-deps:
     steps:
       - save_cache:
-          key: v1-deps-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "deno.lock" }}
+          key: v2-deno-2.9.8-{{ checksum "deno.lock" }}
           paths:
             - ~/.cache/deno
             - node_modules
@@ -78,12 +82,10 @@ jobs:
       - run: mkdir -p test-results
       - run:
           name: Run tests
-          command: |
-            if [ -n "$CIRCLE_PULL_REQUEST" ] && git rev-parse --verify --quiet origin/master > /dev/null; then
-              deno task test:affected
-            else
-              deno task test
-            fi
+          # The Deno image does not ship git, so the checkout has no history
+          # to diff against. The full suite is small and fast; run it
+          # everywhere rather than silently falling back to it.
+          command: deno task test
       - run:
           name: Generate LCOV coverage report
           command: deno coverage --lcov --output=coverage.lcov coverage/ && deno task coverage:check

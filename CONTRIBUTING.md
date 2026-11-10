@@ -222,7 +222,9 @@ The `ci` workflow is split into four stages, each gated on the previous one with
 
 A failure in an earlier stage prevents the later stages from running, so broken quality or security checks no longer consume build minutes.
 
-The test job uploads JUnit results to the CircleCI Tests tab and stores an LCOV coverage report as an artifact. CI enforces a minimum of 20% line, branch, and function coverage. Pull requests run only the tests affected by their changes (`deno task test:affected`); `master` runs the full suite. To reproduce the check locally, run `deno task test`, then the `deno coverage` and `deno task coverage:check` commands shown above.
+The test job uploads JUnit results to the CircleCI Tests tab and stores an LCOV coverage report as an artifact. CI enforces a minimum of 20% line, branch, and function coverage. CI runs the full suite (it is small and fast); use `deno task test:affected` locally, after fetching `origin/master`, to run only the tests affected by your changes. To reproduce the CI check locally, run `deno task test`, then the `deno coverage` and `deno task coverage:check` commands shown above.
+
+All jobs share a single Deno dependency cache keyed by the `deno.lock` checksum, so a dependency change invalidates it once instead of duplicating a cache per job and branch.
 
 On same-repository pull requests, CircleCI updates `dist/` when extension or build inputs change. Fork pull requests receive the build artifact but cannot be updated by CircleCI.
 
