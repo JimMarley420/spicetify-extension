@@ -231,8 +231,23 @@ declare namespace Spicetify {
   const React: any;
   const ReactDOM: any;
   const ReactDOMServer: any;
+  const LocalStorage: {
+    get(key: string): string | null;
+    set(key: string, value: string): void;
+  };
+
+  namespace ReactComponent {
+    const TooltipWrapper: any;
+  }
 
   namespace Platform {
+    function GraphQLLoader(
+      definition: unknown,
+      variables?: Record<string, unknown>,
+    ): Promise<any>;
+    namespace History {
+      function push(path: string): void;
+    }
     namespace LibraryAPI {
       function isFollowed(uri: string): Promise<boolean>;
       function follow(uri: string): Promise<boolean>;
@@ -276,10 +291,12 @@ declare namespace Spicetify {
       function pause(options?: any): Promise<any>;
       function resume(options?: any): Promise<any>;
       function seekTo(position: number): Promise<any>;
+      function addToQueue(tracks: { uri: string }[]): Promise<any>;
     }
   }
 
   namespace GraphQL {
+    const Definitions: Record<string, unknown>;
     function query<T = any>(operationName: string, variables?: Record<string, any>): Promise<T>;
   }
 
