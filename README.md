@@ -146,7 +146,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`vMAJOR.MINOR.P
 | `feat:` | New feature | minor (`v1.1.0 → v1.2.0`) |
 | `feat!:`, `BREAKING CHANGE:` | Breaking change | major (`v1.x → v2.0.0`) |
 
-CircleCI publishes a semantic version release for eligible pushes to `master`. A release is skipped when there are no commits since the latest tag. To run the release workflow manually, trigger a pipeline on `master` with `run_release=true`.
+CircleCI publishes a semantic version release for eligible pushes to `master` and attaches every built extension in `dist/` as a downloadable release asset. If a release is missing assets and its `dist/` tree still matches the current build, the release job fills them in without replacing existing files. If the latest tag has the same source tree, it skips creating another version and fills in any missing assets on that release. To run the release workflow manually, trigger a pipeline on `master` with `run_release=true`.
 
 No label is required for CI/CD changes; the focused `ci-cd-check` runs automatically when relevant files change.
 
