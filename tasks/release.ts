@@ -147,8 +147,12 @@ const runBuilds = async (): Promise<void> => {
   console.log("Building extensions...");
   await buildFolders();
 
-  console.log("Running biome...");
-  await runBiome();
+  if (Deno.args.includes("--skip-check")) {
+    console.log("Skipping lint and typecheck; CircleCI runs those in separate jobs.");
+  } else {
+    console.log("Running biome...");
+    await runBiome();
+  }
 
   const endTime = performance.now();
   const elapsed = ((endTime - startTime) / 1000).toFixed(2);
