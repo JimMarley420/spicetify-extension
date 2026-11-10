@@ -1,5 +1,6 @@
-// Lightweight secret scan over tracked files. It catches high-signal
-// provider credentials without needing an external binary.
+// Lightweight secret scan over the checked-out working tree. It catches
+// high-signal provider credentials without needing an external binary or a git
+// checkout, so it runs in the minimal Deno image.
 const patterns: { name: string; pattern: RegExp }[] = [
   {
     name: "GitHub token",
@@ -19,6 +20,13 @@ const patterns: { name: string; pattern: RegExp }[] = [
   { name: "Stripe secret key", pattern: /\bsk_live_[0-9A-Za-z]{24,}\b/ },
 ];
 
+const ignoredDirectories = new Set([
+  ".git",
+  ".opencode",
+  "coverage",
+  "node_modules",
+  "test-results",
+]);
 const ignoredExtensions = new Set([
   ".png",
   ".jpg",
@@ -38,24 +46,24 @@ const ignoredExtensions = new Set([
 ]);
 const maxBytes = 1_000_000;
 
-const listed = await new Deno.Command("git", {
-  args: ["ls-files", "-z"],
-  stdout: "piped",
-  stderr: "piped",
-}).output();
-if (!listed.success) {
-  throw new Error(`git ls-files failed: ${new TextDecoder().decode(listed.stderr)}`);
-}
-
-const tracked = new TextDecoder()
-  .decode(listed.stdout)
-  .split("\0")
-  .filter(Boolean);
+const files: string[] = [];
+const walk = async (directory: string): Promise<void> => {
+  for await (const entry of Deno.readDir(directory)) {
+    const path = directory === "." ? entry.name : `${directory}/${entry.name}`;
+    if (entry.isDirectory) {
+      if (!ignoredDirectories.has(entry.name)) await walk(path);
+    } else if (entry.isFile) {
+      files.push(path);
+    }
+  }
+};
+await walk(".");
+files.sort();
 
 type Finding = { file: string; line: number; name: string; match: string };
 const findings: Finding[] = [];
 
-for (const file of tracked) {
+for (const file of files) {
   const dot = file.lastIndexOf(".");
   if (dot >= 0 && ignoredExtensions.has(file.slice(dot).toLowerCase())) {
     continue;
@@ -81,12 +89,7 @@ for (const file of tracked) {
     for (const { name, pattern } of patterns) {
       const match = line.match(pattern);
       if (match) {
-        findings.push({
-          file,
-          line: index + 1,
-          name,
-          match: match[0],
-        });
+        findings.push({ file, line: index + 1, name, match: match[0] });
       }
     }
   }
@@ -101,4 +104,4 @@ if (findings.length) {
   Deno.exit(1);
 }
 
-console.log(`Scanned ${tracked.length} tracked file(s); no secrets found.`);
+console.log(`Scanned ${files.length} file(s); no secrets found.`);
