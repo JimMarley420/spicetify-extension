@@ -16,6 +16,8 @@ assignees: ""
 - [ ] `component: Add to Multiple Playlists`
 - [ ] `component: Bulk Delete Tracks`
 - [ ] `component: Copy YouTube Link`
+- [ ] `component: Playlist Duplicate Finder`
+- [ ] `component: Play Without Context`
 - [ ] New extension / theme
 - [ ] Other / Multiple
 
