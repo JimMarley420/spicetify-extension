@@ -132,8 +132,10 @@ const runBiome = async (): Promise<void> => {
     args: ["task", "check"],
   });
 
-  const { stdout } = await formatCommand.output();
-  console.log("Biome:", new TextDecoder().decode(stdout));
+  const { stdout, stderr, code } = await formatCommand.output();
+  if (stdout.length) console.log(new TextDecoder().decode(stdout));
+  if (stderr.length) console.error(new TextDecoder().decode(stderr));
+  if (code !== 0) throw new Error(`deno task check failed with exit code ${code}`);
 };
 
 const runBuilds = async (): Promise<void> => {
@@ -145,15 +147,19 @@ const runBuilds = async (): Promise<void> => {
   console.log("Building extensions...");
   await buildFolders();
 
-  console.log("Running biome...");
-  await runBiome();
+  if (Deno.args.includes("--skip-check")) {
+    console.log("Skipping lint and typecheck; CircleCI runs those in separate jobs.");
+  } else {
+    console.log("Running biome...");
+    await runBiome();
+  }
 
   const endTime = performance.now();
   const elapsed = ((endTime - startTime) / 1000).toFixed(2);
 
   console.log(`\x1b[33mBuild completed in ${elapsed} seconds.\x1b[0m`);
 
-  Deno.exit(0);
 };
 
 await runBuilds();
+Deno.exit(0);
