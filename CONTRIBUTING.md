@@ -138,7 +138,7 @@ deno task theme:lint
 deno task manifest:check
 ```
 
-`deno task check` does not run tests or build extensions. The current TypeScript check covers shared code, build tooling, and selected Playlist Duplicate Finder files; it does not yet typecheck every extension source file.
+`deno task check` does not run tests or build extensions. Its TypeScript check covers shared code, build tooling, and every `.ts` and `.tsx` file under `extensions/`, including extension tests.
 
 ### Improving The Documentation
 
@@ -202,15 +202,62 @@ Maintainers come from the community. If you consistently contribute high-quality
 
 ## Testing and CI
 
-CircleCI runs lint, the configured typecheck, tests, theme checks, manifest validation, and a release build on pull requests. Pull requests that change `.circleci/`, `tasks/`, or `deno.json` also run the focused `ci-cd-check` job automatically; no label is needed.
+CircleCI runs lint, typechecks all extension TypeScript and TSX files plus shared code and build tooling, runs tests, checks themes and the manifest, and builds extensions on pull requests. Pull requests that change `.circleci/`, `tasks/`, or `deno.json` also run the focused `ci-cd-check` job automatically; no label is needed.
 
-The test job uploads JUnit results to the CircleCI Tests tab and stores an LCOV coverage report as an artifact. CI enforces a minimum of 20% line, branch, and function coverage. To reproduce that check locally, run `deno task test`, then the `deno coverage` and `deno task coverage:check` commands shown above.
+Additional gates keep the pipeline honest:
+
+- `lockfile-check` runs `deno ci` so a stale `deno.lock` fails before anything is built.
+- `commit-lint` validates pull request commit subjects against Conventional Commits (the same format the release version bump relies on).
+- `secret-scan` scans the checked-out files for high-signal credentials.
+- `security-audit` fails on critical dependency advisories and stores the full `deno audit` report as an artifact.
+- `config-validate` runs `circleci config validate` on the checked-in config.
+- Transient failures are retried automatically up to two times (`max_auto_reruns`).
+
+The `ci` workflow is split into four stages, each gated on the previous one with CircleCI `requires`:
+
+1. **Quality checks** run in parallel: `lint`, `typecheck`, `theme-lint`, `theme-check`, `manifest-check`, `config-validate`, `commit-lint`, `lockfile-check`, and `ci-cd-check`.
+2. **Tests and security** run after the always-on quality checks: `test`, `security-audit`, and `secret-scan`.
+3. **Build** produces the extension artifacts once tests and security pass.
+4. **Deploy and distribution** run after the build: `update-dist` and `notify-workflow`, plus `release` on `master`.
+
+A failure in an earlier stage prevents the later stages from running, so broken quality or security checks no longer consume build minutes.
+
+The test job uploads JUnit results to the CircleCI Tests tab and stores an LCOV coverage report as an artifact. CI enforces a minimum of 20% line, branch, and function coverage. CI runs the full suite (it is small and fast); use `deno task test:affected` locally, after fetching `origin/master`, to run only the tests affected by your changes. To reproduce the CI check locally, run `deno task test`, then the `deno coverage` and `deno task coverage:check` commands shown above.
+
+All jobs share a single Deno dependency cache keyed by the `deno.lock` checksum, so a dependency change invalidates it once instead of duplicating a cache per job and branch.
 
 On same-repository pull requests, CircleCI updates `dist/` when extension or build inputs change. Fork pull requests receive the build artifact but cannot be updated by CircleCI.
 
 Dependency updates run only when a CircleCI schedule or manual pipeline trigger sets `run_deps_update=true` on `master`. The updater opens at most one PR at a time on `deps/deno-update`; that PR then receives the normal CI checks. To run a release manually from CircleCI, trigger a pipeline on `master` with `run_release=true`. Normal pushes to `master` continue to run the release job automatically.
 
 The dependency updater and release automation use the CircleCI project variable `GITHUB_TOKEN` to write repository branches, pull requests, tags, and releases.
+
+### Scheduled workflows and secrets
+
+Schedules are not stored in `.circleci/config.yml`; create them in the CircleCI web app or with the API v2 `POST /v2/project/{project-slug}/schedule` endpoint. Use `attribution-actor: system` so scheduled runs do not consume a paid user seat, and pass the pipeline parameters the workflow expects:
+
+- `run_deps_update=true` on `master` for the weekly dependency update.
+- `run_ci=true` on `master` for the weekly full regression (this is the default parameter value).
+
+For example, the request body for the dependency schedule is:
+
+```json
+{
+  "name": "weekly-deps-update",
+  "description": "Open a Deno dependency update PR when dependencies are outdated",
+  "attribution-actor": "system",
+  "parameters": { "run_deps_update": true, "run_ci": false },
+  "timetable": {
+    "per-hour": 1,
+    "hours-of-day": [6],
+    "days-of-week": ["MON"]
+  }
+}
+```
+
+Prefer storing `GITHUB_TOKEN`, `DISCORD_WEBHOOK_URL`, and `CIRCLECI_API_TOKEN` in a CircleCI **context** instead of project environment variables, and restrict that context to `pipeline.git.branch == "master"`. Contexts are available on the Free plan and keep secrets away from fork pull requests.
+
+Two project settings are worth enabling in the CircleCI UI: **Auto-cancel redundant workflows** and, if you only want branch pipelines on demand, **Only build pull requests**.
 
 Each GitHub Release includes all generated files from `dist/` as downloadable assets. If `dist/` has not changed since the preceding release, the release job also fills in missing assets on that release without replacing existing files.
 
