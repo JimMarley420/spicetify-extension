@@ -1,27 +1,2 @@
 await new Promise((resolve) => Spicetify.Events.webpackLoaded.on(resolve));
-
-// extensions/playWithoutContext/src/app.ts
-function isTrackUri(uri) {
-  const uriObj = Spicetify.URI.from(uri);
-  return !!(uriObj && uriObj.type === "track");
-}
-async function handleMenuClick(uris) {
-  const trackUri = uris.find(isTrackUri);
-  if (!trackUri) {
-    Spicetify.showNotification("No track selected", true);
-    return;
-  }
-  try {
-    await Spicetify.Player.playUri(trackUri, {});
-  } catch {
-    Spicetify.showNotification("Unable to play track without context", true);
-  }
-}
-var playWithoutContextMenuItem = new Spicetify.ContextMenu.Item(
-  "Play Without Context",
-  handleMenuClick,
-  (uris) => uris.some(isTrackUri),
-  "play"
-);
-playWithoutContextMenuItem.register();
-//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiLi4vZXh0ZW5zaW9ucy9wbGF5V2l0aG91dENvbnRleHQvc3JjL2FwcC50cyJdLAogICJzb3VyY2VzQ29udGVudCI6IFsiZnVuY3Rpb24gaXNUcmFja1VyaSh1cmk6IHN0cmluZyk6IGJvb2xlYW4ge1xuICBjb25zdCB1cmlPYmogPSBTcGljZXRpZnkuVVJJLmZyb20odXJpKTtcbiAgcmV0dXJuICEhKHVyaU9iaiAmJiAodXJpT2JqIGFzIHsgdHlwZT86IHN0cmluZyB9KS50eXBlID09PSBcInRyYWNrXCIpO1xufVxuXG5hc3luYyBmdW5jdGlvbiBoYW5kbGVNZW51Q2xpY2sodXJpczogc3RyaW5nW10pIHtcbiAgY29uc3QgdHJhY2tVcmkgPSB1cmlzLmZpbmQoaXNUcmFja1VyaSk7XG4gIGlmICghdHJhY2tVcmkpIHtcbiAgICBTcGljZXRpZnkuc2hvd05vdGlmaWNhdGlvbihcIk5vIHRyYWNrIHNlbGVjdGVkXCIsIHRydWUpO1xuICAgIHJldHVybjtcbiAgfVxuXG4gIHRyeSB7XG4gICAgYXdhaXQgU3BpY2V0aWZ5LlBsYXllci5wbGF5VXJpKHRyYWNrVXJpLCB7fSk7XG4gIH0gY2F0Y2gge1xuICAgIFNwaWNldGlmeS5zaG93Tm90aWZpY2F0aW9uKFwiVW5hYmxlIHRvIHBsYXkgdHJhY2sgd2l0aG91dCBjb250ZXh0XCIsIHRydWUpO1xuICB9XG59XG5cbmNvbnN0IHBsYXlXaXRob3V0Q29udGV4dE1lbnVJdGVtID0gbmV3IFNwaWNldGlmeS5Db250ZXh0TWVudS5JdGVtKFxuICBcIlBsYXkgV2l0aG91dCBDb250ZXh0XCIsXG4gIGhhbmRsZU1lbnVDbGljayxcbiAgKHVyaXM6IHN0cmluZ1tdKSA9PiB1cmlzLnNvbWUoaXNUcmFja1VyaSksXG4gIFwicGxheVwiIGFzIFNwaWNldGlmeS5JY29uLFxuKTtcblxucGxheVdpdGhvdXRDb250ZXh0TWVudUl0ZW0ucmVnaXN0ZXIoKTtcbiJdLAogICJtYXBwaW5ncyI6ICI7OztBQUFBLFNBQVMsV0FBVyxLQUFzQjtBQUN4QyxRQUFNLFNBQVMsVUFBVSxJQUFJLEtBQUssR0FBRztBQUNyQyxTQUFPLENBQUMsRUFBRSxVQUFXLE9BQTZCLFNBQVM7QUFDN0Q7QUFFQSxlQUFlLGdCQUFnQixNQUFnQjtBQUM3QyxRQUFNLFdBQVcsS0FBSyxLQUFLLFVBQVU7QUFDckMsTUFBSSxDQUFDLFVBQVU7QUFDYixjQUFVLGlCQUFpQixxQkFBcUIsSUFBSTtBQUNwRDtBQUFBLEVBQ0Y7QUFFQSxNQUFJO0FBQ0YsVUFBTSxVQUFVLE9BQU8sUUFBUSxVQUFVLENBQUMsQ0FBQztBQUFBLEVBQzdDLFFBQVE7QUFDTixjQUFVLGlCQUFpQix3Q0FBd0MsSUFBSTtBQUFBLEVBQ3pFO0FBQ0Y7QUFFQSxJQUFNLDZCQUE2QixJQUFJLFVBQVUsWUFBWTtBQUFBLEVBQzNEO0FBQUEsRUFDQTtBQUFBLEVBQ0EsQ0FBQyxTQUFtQixLQUFLLEtBQUssVUFBVTtBQUFBLEVBQ3hDO0FBQ0Y7QUFFQSwyQkFBMkIsU0FBUzsiLAogICJuYW1lcyI6IFtdCn0K
+function e(t){let i=Spicetify.URI.from(t);return!!(i&&i.type==="track")}async function c(t){let i=t.find(e);if(!i){Spicetify.showNotification("No track selected",!0);return}try{await Spicetify.Player.playUri(i,{})}catch{Spicetify.showNotification("Unable to play track without context",!0)}}var n=new Spicetify.ContextMenu.Item("Play Without Context",c,t=>t.some(e),"play");n.register();
