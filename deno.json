@@ -8,7 +8,7 @@
     "dev-watch": "deno run -A tasks/watch.ts --dev",
     "watch": "deno run -A tasks/watch.ts",
     "lint": "deno run -A npm:@biomejs/biome@2.4.4 check .",
-    "typecheck": "deno check shared/types/spicetify.d.ts shared/types/css.d.ts tasks/build.ts tasks/pluginInlineCSS.ts tasks/reactCompilerPlugin.ts tasks/release.ts tasks/spicetifyShimsPlugin.ts tasks/checkCoverage.ts tasks/notifyWorkflow.ts tasks/updateDenoDeps.ts shared/api/ shared/utils/ shared/webpack/ extensions/playlistDuplicateFinder/src/detection/ extensions/playlistDuplicateFinder/src/adapter.ts extensions/playlistDuplicateFinder/src/strings.ts extensions/playlistDuplicateFinder/src/ui/dupesModal.tsx",
+    "typecheck": "deno check shared/types/spicetify.d.ts shared/types/css.d.ts tasks/build.ts tasks/pluginInlineCSS.ts tasks/reactCompilerPlugin.ts tasks/release.ts tasks/publishRelease.ts tasks/spicetifyShimsPlugin.ts tasks/checkCoverage.ts tasks/notifyWorkflow.ts tasks/updateDenoDeps.ts shared/api/ shared/utils/ shared/webpack/ extensions/playlistDuplicateFinder/src/detection/ extensions/playlistDuplicateFinder/src/adapter.ts extensions/playlistDuplicateFinder/src/strings.ts extensions/playlistDuplicateFinder/src/ui/dupesModal.tsx",
     "test": "deno test --allow-all --coverage=coverage --junit-path=test-results/junit.xml",
     "coverage:check": "deno run -A tasks/checkCoverage.ts coverage.lcov 20",
     "check": "deno task lint && deno task typecheck",

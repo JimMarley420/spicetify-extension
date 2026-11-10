@@ -212,6 +212,8 @@ Dependency updates run only when a CircleCI schedule or manual pipeline trigger 
 
 The dependency updater and release automation use the CircleCI project variable `GITHUB_TOKEN` to write repository branches, pull requests, tags, and releases.
 
+Each GitHub Release includes all generated files from `dist/` as downloadable assets. If `dist/` has not changed since the preceding release, the release job also fills in missing assets on that release without replacing existing files.
+
 The optional `skip_heavy=true` pipeline parameter skips tests, theme checks, and the build in the normal CI workflow. Do not use it when full validation is required.
 
 The final workflow notification uses `DISCORD_WEBHOOK_URL` and `CIRCLECI_API_TOKEN` project environment variables. If no Discord webhook is configured, notification delivery is skipped without affecting CI.
