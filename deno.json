@@ -9,7 +9,7 @@
     "watch": "deno run -A tasks/watch.ts",
     "lint": "deno run -A npm:@biomejs/biome@2.4.4 check .",
     "typecheck": "deno check shared/types/spicetify.d.ts shared/types/css.d.ts tasks/build.ts tasks/pluginInlineCSS.ts tasks/reactCompilerPlugin.ts tasks/release.ts tasks/spicetifyShimsPlugin.ts shared/api/ shared/utils/ shared/webpack/ extensions/playlistDuplicateFinder/src/detection/ extensions/playlistDuplicateFinder/src/adapter.ts extensions/playlistDuplicateFinder/src/strings.ts extensions/playlistDuplicateFinder/src/ui/dupesModal.tsx",
-    "test": "deno test --allow-all",
+    "test": "deno test --allow-all --coverage=coverage --coverage-threshold=20 --junit-path=test-results/junit.xml",
     "check": "deno task lint && deno task typecheck",
     "format": "deno run -A npm:@biomejs/biome@2.4.4 format --write",
     "manifest:check": "deno run -A tasks/manifestCheck.ts",
