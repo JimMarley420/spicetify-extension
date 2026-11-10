@@ -44,7 +44,17 @@ jobs:
     steps:
       - checkout
       - restore-deps
+      - run: mkdir -p test-results
       - run: deno task test
+      - run:
+          name: Generate LCOV coverage report
+          command: deno coverage --lcov --output=coverage.lcov coverage/
+          when: always
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: coverage.lcov
+          destination: coverage.lcov
       - save-deps
 
   theme-check:
