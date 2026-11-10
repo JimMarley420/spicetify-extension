@@ -1,53 +1,89 @@
 version: 2.1
 
+commands:
+  restore-deps:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-deps-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "deno.lock" }}
+            - v1-deps-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-
+            - v1-deps-
+  save-deps:
+    steps:
+      - save_cache:
+          key: v1-deps-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "deno.lock" }}
+          paths:
+            - ~/.cache/deno
+            - node_modules
+
 jobs:
   lint:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run: deno task lint
+      - save-deps
 
   typecheck:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run: deno task typecheck
+      - save-deps
 
   test:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run: deno task test
+      - save-deps
 
   theme-check:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run: deno task theme:check
+      - save-deps
 
   theme-lint:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run: deno task theme:lint
+      - save-deps
 
   manifest-check:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run: deno task manifest:check
+      - save-deps
 
   ci-cd-check:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run:
           name: Check CI/CD files and referenced tasks
           command: |
@@ -91,25 +127,31 @@ jobs:
               const result = await child.status;
               if (!result.success) throw new Error(`Deno typecheck failed with exit code ${result.code}`);
             '
+      - save-deps
 
   build:
+    resource_class: medium
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - run:
           name: Build extension
           command: deno task release --skip-check
+      - save-deps
       - persist_to_workspace:
           root: .
           paths:
             - dist
 
   update-dist:
+    resource_class: small
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - attach_workspace:
           at: .
       - run:
@@ -217,15 +259,18 @@ jobs:
               await request(`/git/refs/heads/${branch}`, { method: "PATCH", body: JSON.stringify({ sha: newCommit.sha, force: false }) });
               console.log(`Updated dist on ${branch}; CircleCI will check the generated commit.`);
             '
+      - save-deps
       - store_artifacts:
           path: dist
           destination: dist
 
   release:
+    resource_class: medium
     docker:
       - image: denoland/deno:2.7.11
     steps:
       - checkout
+      - restore-deps
       - attach_workspace:
           at: .
       - run:
@@ -302,6 +347,7 @@ jobs:
               if (!published.response.ok) throw new Error(`GitHub release creation failed (${published.response.status}): ${JSON.stringify(published.data)}`);
               console.log(`Published ${tag} (${bump} bump).`);
             '
+      - save-deps
       - store_artifacts:
           path: dist
           destination: dist
