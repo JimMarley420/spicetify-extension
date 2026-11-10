@@ -75,17 +75,36 @@ jobs:
               if (!asset) throw new Error(`Linux amd64 archive not found for CircleCI CLI ${version}`);
               const binary = await fetch(asset.browser_download_url);
               if (!binary.ok) throw new Error(`Could not download CircleCI CLI: ${binary.status}`);
-              await Deno.writeFile("/tmp/circleci-cli.tar.gz", new Uint8Array(await binary.arrayBuffer()));
+              const compressed = new Uint8Array(await binary.arrayBuffer());
+              const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"));
+              const archive = new Uint8Array(await new Response(stream).arrayBuffer());
+              const decoder = new TextDecoder();
+              let circleci: Uint8Array | undefined;
+
+              for (let offset = 0; offset + 512 <= archive.length;) {
+                const header = archive.subarray(offset, offset + 512);
+                if (header.every((byte) => byte === 0)) break;
+                const name = decoder.decode(header.subarray(0, 100)).split("\0")[0];
+                const sizeText = decoder.decode(header.subarray(124, 136)).replace(/\0.*$/, "").trim();
+                const size = Number.parseInt(sizeText, 8);
+                const type = header[156];
+                const contentsStart = offset + 512;
+
+                if (["circleci", "circleci-cli"].includes(name.split("/").pop() ?? "") && (type === 0 || type === 48)) {
+                  circleci = archive.slice(contentsStart, contentsStart + size);
+                  break;
+                }
+                offset = contentsStart + Math.ceil(size / 512) * 512;
+              }
+
+              if (!circleci) throw new Error("CircleCI CLI executable was not found in its release archive");
+              const cliPath = "/tmp/circleci";
+              await Deno.writeFile(cliPath, circleci);
+              await Deno.chmod(cliPath, 0o755);
+              const child = new Deno.Command(cliPath, { args: ["config", "validate", ".circleci/config.yml"], stdout: "inherit", stderr: "inherit" }).spawn();
+              const result = await child.status;
+              if (!result.success) throw new Error(`CircleCI config validation failed with exit code ${result.code}`);
             '
-            mkdir -p /tmp/circleci-cli
-            tar -xzf /tmp/circleci-cli.tar.gz -C /tmp/circleci-cli
-            CIRCLECI_CLI=$(find /tmp/circleci-cli -type f -name circleci -print -quit)
-            if [ -z "$CIRCLECI_CLI" ]; then
-              echo "CircleCI CLI binary was not found in the release archive."
-              exit 1
-            fi
-            chmod +x "$CIRCLECI_CLI"
-            "$CIRCLECI_CLI" config validate .circleci/config.yml
 
             deno eval -A '
               const config = JSON.parse(await Deno.readTextFile("deno.json"));
