@@ -1,5 +1,19 @@
 version: 2.1
 
+parameters:
+  run_ci:
+    type: boolean
+    default: true
+  run_deps_update:
+    type: boolean
+    default: false
+  run_release:
+    type: boolean
+    default: false
+  skip_heavy:
+    type: boolean
+    default: false
+
 commands:
   restore-deps:
     steps:
@@ -325,6 +339,11 @@ jobs:
                 commits = [{ message: current.data.commit.message }];
               }
 
+              if (commits.length === 0) {
+                console.log(`No commits since ${latestTag}; skipping release.`);
+                Deno.exit(0);
+              }
+
               const breaking = commits.some(({ message }) => {
                 const [subject = "", ...body] = message.split("\n");
                 return /^[a-z]+(?:\([^)]*\))?!:/.test(subject) || body.some((line) => /^BREAKING CHANGE:/.test(line.trim()));
@@ -372,17 +391,32 @@ jobs:
           name: Send workflow result to Discord
           command: deno run -A tasks/notifyWorkflow.ts
 
+  update-deno-deps:
+    resource_class: small
+    docker:
+      - image: denoland/deno:2.7.11
+    steps:
+      - checkout
+      - run:
+          name: Open a pull request when Deno dependencies are outdated
+          command: deno run -A tasks/updateDenoDeps.ts
+
 workflows:
   ci:
+    when: pipeline.parameters.run_ci and not pipeline.parameters.run_deps_update
     jobs:
       - lint
       - typecheck
-      - test
-      - theme-check
-      - theme-lint
+      - test:
+          filters: pipeline.parameters.skip_heavy == false
+      - theme-check:
+          filters: pipeline.parameters.skip_heavy == false
+      - theme-lint:
+          filters: pipeline.parameters.skip_heavy == false
       - manifest-check
       - ci-cd-check
       - build:
+          filters: pipeline.parameters.skip_heavy == false
           requires:
             - lint
             - typecheck
@@ -397,9 +431,7 @@ workflows:
       - release:
           requires:
             - build
-          filters:
-            branches:
-              only: master
+          filters: pipeline.git.branch == "master" and (pipeline.event.name == "push" or pipeline.parameters.run_release)
       - notify-workflow:
           requires:
             - lint: terminal
@@ -412,3 +444,11 @@ workflows:
             - build: terminal
             - update-dist: terminal
             - release: terminal
+
+  deps-update:
+    when: pipeline.parameters.run_deps_update and pipeline.git.branch == "master"
+    jobs:
+      - update-deno-deps
+      - notify-workflow:
+          requires:
+            - update-deno-deps: terminal
