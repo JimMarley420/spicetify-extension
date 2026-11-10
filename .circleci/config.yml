@@ -179,36 +179,46 @@ jobs:
       - run:
           name: Calculate semantic version
           command: |
-            set -euo pipefail
-            LATEST_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | head -n 1)
-            if [ -z "$LATEST_TAG" ]; then
-              LATEST_VERSION="0.0.0"
-              RANGE="HEAD"
-            else
-              LATEST_VERSION="${LATEST_TAG#v}"
-              RANGE="$LATEST_TAG..HEAD"
-            fi
+            deno eval -A '
+              const command = async (args: string[]) => {
+                const result = await new Deno.Command("git", { args }).output();
+                if (result.code !== 0) throw new Error(new TextDecoder().decode(result.stderr));
+                return new TextDecoder().decode(result.stdout).trimEnd();
+              };
 
-            COMMITS=$(git log --format='%s%n%b' "$RANGE")
-            BUMP="patch"
-            if printf '%s\n' "$COMMITS" | grep -qE '(^|[[:space:]])BREAKING CHANGE:' || printf '%s\n' "$COMMITS" | grep -qE '^[a-z]+(\([^)]*\))?!:'; then
-              BUMP="major"
-            elif printf '%s\n' "$COMMITS" | grep -qE '^feat(\([^)]*\))?:'; then
-              BUMP="minor"
-            fi
+              const tags = (await command(["tag", "--list", "v[0-9]*"]))
+                .split("\n")
+                .filter((tag) => /^v\d+\.\d+\.\d+$/.test(tag))
+                .sort((left, right) => {
+                  const a = left.slice(1).split(".").map(Number);
+                  const b = right.slice(1).split(".").map(Number);
+                  return b[0] - a[0] || b[1] - a[1] || b[2] - a[2];
+                });
+              const latestTag = tags[0] ?? "";
+              const latestVersion = latestTag ? latestTag.slice(1).split(".").map(Number) : [0, 0, 0];
+              const range = latestTag ? `${latestTag}..HEAD` : "HEAD";
+              const log = await command(["log", "-z", "--format=%s%n%b", range]);
+              const commits = log.split("\0").filter(Boolean).map((entry) => {
+                const [subject = "", ...body] = entry.split("\n");
+                return { subject, body };
+              });
 
-            IFS=. read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
-            case "$BUMP" in
-              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
-              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
-              patch) PATCH=$((PATCH + 1)) ;;
-            esac
-            NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-            TAG="v$NEW_VERSION"
+              const breaking = commits.some(({ subject, body }) =>
+                /^[a-z]+(?:\([^)]*\))?!:/.test(subject) || body.some((line) => /^BREAKING CHANGE:/.test(line.trim()))
+              );
+              const feature = commits.some(({ subject }) => /^feat(?:\([^)]*\))?:/.test(subject));
+              const bump = breaking ? "major" : feature ? "minor" : "patch";
+              let [major, minor, patch] = latestVersion;
+              if (bump === "major") [major, minor, patch] = [major + 1, 0, 0];
+              else if (bump === "minor") [major, minor, patch] = [major, minor + 1, 0];
+              else patch++;
 
-            echo "export NEW_VERSION=$NEW_VERSION" >> "$BASH_ENV"
-            echo "export TAG=$TAG" >> "$BASH_ENV"
-            echo "export LATEST_TAG=$LATEST_TAG" >> "$BASH_ENV"
+              const version = `${major}.${minor}.${patch}`;
+              const tag = `v${version}`;
+              const bashEnv = Deno.env.get("BASH_ENV")!;
+              await Deno.writeTextFile(bashEnv, `export NEW_VERSION=${version}\nexport TAG=${tag}\nexport LATEST_TAG=${latestTag}\n`, { append: true });
+              console.log(`Latest tag: ${latestTag || "none"}; bump: ${bump}; next tag: ${tag}`);
+            '
       - run:
           name: Publish GitHub Release
           command: |
