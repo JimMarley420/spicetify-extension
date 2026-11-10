@@ -99,7 +99,7 @@ jobs:
       - checkout
       - run:
           name: Build extension
-          command: deno task build
+          command: deno task release
       - persist_to_workspace:
           root: .
           paths:
@@ -142,6 +142,24 @@ jobs:
               const pr = await request(`/pulls/${number}`);
               if (pr.head.repo?.full_name !== `${owner}/${repo}`) {
                 console.log("Pull request comes from a fork; dist is available as an artifact only.");
+                Deno.exit(0);
+              }
+
+              const changedPaths: string[] = [];
+              for (let page = 1; ; page++) {
+                const response = await fetch(`${api}/pulls/${number}/files?per_page=100&page=${page}`, { headers });
+                if (!response.ok) throw new Error(`GitHub PR files API returned ${response.status}: ${await response.text()}`);
+                const pageFiles = await response.json();
+                changedPaths.push(...pageFiles.map((file: { filename: string }) => file.filename));
+                if (pageFiles.length < 100) break;
+              }
+              const buildInputsChanged = changedPaths.some((path) =>
+                path.startsWith("extensions/") ||
+                path.startsWith("shared/") ||
+                ["tasks/release.ts", "tasks/pluginInlineCSS.ts", "tasks/reactCompilerPlugin.ts", "tasks/spicetifyShimsPlugin.ts", "deno.lock"].includes(path)
+              );
+              if (!buildInputsChanged) {
+                console.log("No extension or build inputs changed; dist remains untouched.");
                 Deno.exit(0);
               }
               if (pr.head.sha !== Deno.env.get("CIRCLE_SHA1")) {
