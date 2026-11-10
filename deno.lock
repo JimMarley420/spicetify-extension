@@ -1039,9 +1039,14 @@
   "redirects": {
     "https://esm.sh/@types/react-dom@~19.2.3/client.d.ts": "https://esm.sh/@types/react-dom@19.2.3/client.d.ts",
     "https://esm.sh/@types/react-dom@~19.2.3/index.d.ts": "https://esm.sh/@types/react-dom@19.2.3/index.d.ts",
+    "https://esm.sh/@types/react-dom@~19.2.7/client.d.ts": "https://esm.sh/@types/react-dom@19.2.7/client.d.ts",
+    "https://esm.sh/@types/react-dom@~19.2.7/index.d.ts": "https://esm.sh/@types/react-dom@19.2.7/index.d.ts",
+    "https://esm.sh/@types/react@~19.2.18/index.d.ts": "https://esm.sh/@types/react@19.2.18/index.d.ts",
+    "https://esm.sh/@types/react@~19.2.18/jsx-runtime.d.ts": "https://esm.sh/@types/react@19.2.18/jsx-runtime.d.ts",
     "https://esm.sh/@types/react@~19.2.7/index.d.ts": "https://esm.sh/@types/react@19.2.14/index.d.ts",
     "https://esm.sh/@types/react@~19.2.7/jsx-runtime.d.ts": "https://esm.sh/@types/react@19.2.14/jsx-runtime.d.ts",
     "https://esm.sh/@types/scheduler@~0.26.0/index.d.ts": "https://esm.sh/@types/scheduler@0.26.0/index.d.ts",
+    "https://esm.sh/@types/scheduler@~0.28.0/index.d.ts": "https://esm.sh/@types/scheduler@0.28.0/index.d.ts",
     "https://esm.sh/scheduler@^0.27.0?target=denonext": "https://esm.sh/scheduler@0.27.0?target=denonext"
   },
   "remote": {
@@ -1051,13 +1056,13 @@
     "https://deno.land/x/esbuild@v0.27.2/mod.js": "c9acd48c94887809e8690c3cad2865816a000e441e696323d4760ff2c9b15724",
     "https://esm.sh/react-dom@19.2.3": "dccbc3e6f1c607f87c18fda31d0c0e4266667aa78dc339aea4032ffff3d3a9b7",
     "https://esm.sh/react-dom@19.2.3/client": "f2b77cf049cc8c5b42a7849902b30436ebdd212add46fa82b0d5ee0de0e8b45a",
-    "https://esm.sh/react-dom@19.2.3/denonext/client.mjs": "275250bf5f413fb6d20f5e8d4eff624d825b8b81b343da76712d1823097316dc",
-    "https://esm.sh/react-dom@19.2.3/denonext/react-dom.mjs": "508d989e51c30c129f628c8bf95a5c57590bd33225c5cb3a7cdda7d9696b6c6f",
+    "https://esm.sh/react-dom@19.2.3/denonext/client.mjs": "d1facb28841fa251d23c92ea880df2f12c754a2ba4dfa587ef7e18d532188777",
+    "https://esm.sh/react-dom@19.2.3/denonext/react-dom.mjs": "8164558667e9ce8c50b78764b9232ad05413c36fa5bd88091f09e3feb3df813f",
     "https://esm.sh/react@19.2.3": "622c0c887061c69d03591435705145bd4f6246ac0ab5a8bd272e6a727c1091ac",
-    "https://esm.sh/react@19.2.3/denonext/jsx-runtime.mjs": "d985d0dca84e236472b3026a338c6163b1221a6198a4de3bc5b17e49636c8432",
-    "https://esm.sh/react@19.2.3/denonext/react.mjs": "8f4fd01715d7101297f85f0acef35b95bf85ace4f146b98705b408997ced226b",
+    "https://esm.sh/react@19.2.3/denonext/jsx-runtime.mjs": "ebbef3ed66f1d403bf02466132f3fca6c143211dc6137b94adc4dc3f14d48973",
+    "https://esm.sh/react@19.2.3/denonext/react.mjs": "00be9580d7e9a9ded8c41b733d8d387bef28c088c89095e97fdd8ab2f08d7600",
     "https://esm.sh/react@19.2.3/jsx-runtime": "c0039921a5203c9df737ed08a51fa3f22e7e5048e36e97e6f72b2ae83813e64b",
-    "https://esm.sh/scheduler@0.27.0/denonext/scheduler.mjs": "b1ba1723bf253d62b0aa1c3c0603d0d025010642158b0e746ae1fd6f7500deeb",
+    "https://esm.sh/scheduler@0.27.0/denonext/scheduler.mjs": "3f16451c00d2038ec695b4d92f4b9fe224e0909c3a7bda7d2974e755314aee24",
     "https://esm.sh/scheduler@0.27.0?target=denonext": "d5e7a8b3ddf1c77fdd56083413b9ed29648e017b1000b85b3d3059a226627742"
   },
   "workspace": {

@@ -208,7 +208,7 @@ Additional gates keep the pipeline honest:
 
 - `lockfile-check` runs `deno ci` so a stale `deno.lock` fails before anything is built.
 - `commit-lint` validates pull request commit subjects against Conventional Commits (the same format the release version bump relies on).
-- `secret-scan` scans tracked files for high-signal credentials.
+- `secret-scan` scans the checked-out files for high-signal credentials.
 - `security-audit` fails on critical dependency advisories and stores the full `deno audit` report as an artifact.
 - `config-validate` runs `circleci config validate` on the checked-in config.
 - Transient failures are retried automatically up to two times (`max_auto_reruns`).
