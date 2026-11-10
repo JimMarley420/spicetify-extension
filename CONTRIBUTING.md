@@ -213,6 +213,15 @@ Additional gates keep the pipeline honest:
 - `config-validate` runs `circleci config validate` on the checked-in config.
 - Transient failures are retried automatically up to two times (`max_auto_reruns`).
 
+The `ci` workflow is split into four stages, each gated on the previous one with CircleCI `requires`:
+
+1. **Quality checks** run in parallel: `lint`, `typecheck`, `theme-lint`, `theme-check`, `manifest-check`, `config-validate`, `commit-lint`, `lockfile-check`, and `ci-cd-check`.
+2. **Tests and security** run after the always-on quality checks: `test`, `security-audit`, and `secret-scan`.
+3. **Build** produces the extension artifacts once tests and security pass.
+4. **Deploy and distribution** run after the build: `update-dist` and `notify-workflow`, plus `release` on `master`.
+
+A failure in an earlier stage prevents the later stages from running, so broken quality or security checks no longer consume build minutes.
+
 The test job uploads JUnit results to the CircleCI Tests tab and stores an LCOV coverage report as an artifact. CI enforces a minimum of 20% line, branch, and function coverage. Pull requests run only the tests affected by their changes (`deno task test:affected`); `master` runs the full suite. To reproduce the check locally, run `deno task test`, then the `deno coverage` and `deno task coverage:check` commands shown above.
 
 On same-repository pull requests, CircleCI updates `dist/` when extension or build inputs change. Fork pull requests receive the build artifact but cannot be updated by CircleCI.
