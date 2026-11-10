@@ -362,6 +362,16 @@ jobs:
           path: dist
           destination: dist
 
+  notify-workflow:
+    resource_class: small
+    docker:
+      - image: denoland/deno:2.7.11
+    steps:
+      - checkout
+      - run:
+          name: Send workflow result to Discord
+          command: deno run -A tasks/notifyWorkflow.ts
+
 workflows:
   ci:
     jobs:
@@ -390,3 +400,15 @@ workflows:
           filters:
             branches:
               only: master
+      - notify-workflow:
+          requires:
+            - lint: terminal
+            - typecheck: terminal
+            - test: terminal
+            - theme-check: terminal
+            - theme-lint: terminal
+            - manifest-check: terminal
+            - ci-cd-check: terminal
+            - build: terminal
+            - update-dist: terminal
+            - release: terminal
