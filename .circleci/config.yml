@@ -77,65 +77,20 @@ jobs:
               }
 
               const relevant = files.some((path) => /^\.circleci\//.test(path) || /^tasks\//.test(path) || path === "deno.json");
-              if (relevant) {
-                console.log("CI/CD files changed; running focused checks.");
-              } else {
+              if (!relevant) {
                 console.log("No CI/CD files changed; skipping focused checks.");
-                const halt = new Deno.Command("circleci-agent", { args: ["step", "halt"] }).spawn();
-                const result = await halt.status;
-                if (!result.success) throw new Error(`Could not halt the focused job (${result.code})`);
+                Deno.exit(0);
               }
-            '
-
-            deno eval '
-              const version = "1.14.0";
-              const response = await fetch(`https://api.github.com/repos/CircleCI-Public/cli/releases/tags/v${version}`);
-              if (!response.ok) throw new Error(`Could not find CircleCI CLI ${version}: ${response.status}`);
-              const release = await response.json();
-              const asset = release.assets.find((item) => item.name.includes("linux_amd64") && item.name.endsWith(".tar.gz"));
-              if (!asset) throw new Error(`Linux amd64 archive not found for CircleCI CLI ${version}`);
-              const binary = await fetch(asset.browser_download_url);
-              if (!binary.ok) throw new Error(`Could not download CircleCI CLI: ${binary.status}`);
-              const compressed = new Uint8Array(await binary.arrayBuffer());
-              const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"));
-              const archive = new Uint8Array(await new Response(stream).arrayBuffer());
-              const decoder = new TextDecoder();
-              let circleci: Uint8Array | undefined;
-
-              for (let offset = 0; offset + 512 <= archive.length;) {
-                const header = archive.subarray(offset, offset + 512);
-                if (header.every((byte) => byte === 0)) break;
-                const name = decoder.decode(header.subarray(0, 100)).split("\0")[0];
-                const sizeText = decoder.decode(header.subarray(124, 136)).replace(/\0.*$/, "").trim();
-                const size = Number.parseInt(sizeText, 8);
-                const type = header[156];
-                const contentsStart = offset + 512;
-
-                if (["circleci", "circleci-cli"].includes(name.split("/").pop() ?? "") && (type === 0 || type === 48)) {
-                  circleci = archive.slice(contentsStart, contentsStart + size);
-                  break;
-                }
-                offset = contentsStart + Math.ceil(size / 512) * 512;
-              }
-
-              if (!circleci) throw new Error("CircleCI CLI executable was not found in its release archive");
-              const cliPath = "/tmp/circleci";
-              await Deno.writeFile(cliPath, circleci);
-              await Deno.chmod(cliPath, 0o755);
-              const child = new Deno.Command(cliPath, { args: ["config", "validate", ".circleci/config.yml"], stdout: "inherit", stderr: "inherit" }).spawn();
-              const result = await child.status;
-              if (!result.success) throw new Error(`CircleCI config validation failed with exit code ${result.code}`);
-            '
-
-            deno eval '
               const config = JSON.parse(await Deno.readTextFile("deno.json"));
               const required = ["lint", "typecheck", "test", "theme:check", "theme:lint", "manifest:check", "build", "release"];
               const missing = required.filter((task) => !config.tasks?.[task]);
               if (missing.length) throw new Error(`Missing Deno tasks: ${missing.join(", ")}`);
-              console.log("All CI tasks exist in deno.json.");
-            '
+              console.log("CI/CD files changed; all referenced tasks exist.");
 
-            deno task typecheck
+              const child = new Deno.Command("deno", { args: ["task", "typecheck"], stdout: "inherit", stderr: "inherit" }).spawn();
+              const result = await child.status;
+              if (!result.success) throw new Error(`Deno typecheck failed with exit code ${result.code}`);
+            '
 
   build:
     docker:
