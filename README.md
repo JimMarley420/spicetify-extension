@@ -19,7 +19,7 @@ A curated collection of **Spicetify** extensions and themes for Spotify by Jimmy
 [![Deno](https://img.shields.io/badge/Built%20With-Deno-black?style=flat-square&logo=deno&logoColor=white)](https://deno.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Biome](https://img.shields.io/badge/Biome-60A5FA?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev)
-[![CI](https://img.shields.io/badge/CI-CircleCI-343434?style=flat-square&logo=circleci&logoColor=white)](https://circleci.com)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/JimMarley420/spicetify-extension/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/JimMarley420/spicetify-extension/tree/master)
 
 </div>
 
@@ -31,6 +31,7 @@ A curated collection of **Spicetify** extensions and themes for Spotify by Jimmy
 - [Installation](#installation)
 - [Install via Marketplace](#install-via-marketplace)
 - [Development](#development)
+- [Continuous Integration](#continuous-integration)
 - [Versioning](#versioning)
 - [Resources](#resources)
 - [Contributing](#contributing)
@@ -112,13 +113,26 @@ deno task dev-watch
 deno task theme:check
 deno task theme:lint
 
-# Lint, typecheck & format
+# Lint and run the configured typechecks
 deno task check
+
+# Format files
 deno task format
 
-# Tests
+# Tests (JUnit results and raw coverage profiles)
+deno eval -A "await Deno.mkdir('test-results', { recursive: true })"
 deno task test
+
+# Generate the coverage report and apply the 20% CI floor
+deno coverage --lcov --output=coverage.lcov coverage/
+deno task coverage:check
 ```
+
+### Continuous Integration
+
+CircleCI runs lint, the configured TypeScript checks, tests, theme checks, manifest validation, and an extension build for pull requests. Test results appear in CircleCI's Tests tab; the LCOV coverage report is available as a job artifact. CI requires at least 20% line, branch, and function coverage.
+
+When extension build inputs change in a same-repository pull request, CircleCI rebuilds `dist/` and commits the update to the pull request branch. Fork pull requests receive a build artifact but are not updated automatically. See [CONTRIBUTING.md](CONTRIBUTING.md#testing-and-ci) for local checks and CI behavior.
 
 ---
 
@@ -130,11 +144,11 @@ This project follows [Semantic Versioning](https://semver.org/) (`vMAJOR.MINOR.P
 |---------------|---------|--------------|
 | `fix:` | Bug fix | patch (`v1.2.0 → v1.2.1`) |
 | `feat:` | New feature | minor (`v1.1.0 → v1.2.0`) |
-| `feat!:`, `BREAKING` | Breaking change | major (`v1.x → v2.0.0`) |
+| `feat!:`, `BREAKING CHANGE:` | Breaking change | major (`v1.x → v2.0.0`) |
 
-Every merge to `master` is tagged automatically by **CircleCI** and published as a [GitHub Release](https://github.com/JimMarley420/spicetify-extension/releases).
+CircleCI publishes a semantic version release for eligible pushes to `master`. A release is skipped when there are no commits since the latest tag. To run the release workflow manually, trigger a pipeline on `master` with `run_release=true`.
 
-Pull requests that touch the build pipeline must carry the `CI/CD` label: it activates the `ci-cd-check` job in the CircleCI workflow (see [CONTRIBUTING.md](CONTRIBUTING.md#cicd-label)).
+No label is required for CI/CD changes; the focused `ci-cd-check` runs automatically when relevant files change.
 
 ---
 
