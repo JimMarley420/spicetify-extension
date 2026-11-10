@@ -1,5 +1,8 @@
 nul
 node_modules/
+coverage/
+coverage.lcov
+test-results/
 dulwich/
 
 .vs/
