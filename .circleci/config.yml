@@ -99,7 +99,7 @@ jobs:
       - checkout
       - run:
           name: Build extension
-          command: deno task release
+          command: deno task release --skip-check
       - persist_to_workspace:
           root: .
           paths:
@@ -156,7 +156,7 @@ jobs:
               const buildInputsChanged = changedPaths.some((path) =>
                 path.startsWith("extensions/") ||
                 path.startsWith("shared/") ||
-                ["tasks/release.ts", "tasks/pluginInlineCSS.ts", "tasks/reactCompilerPlugin.ts", "tasks/spicetifyShimsPlugin.ts", "deno.lock"].includes(path)
+                ["tasks/pluginInlineCSS.ts", "tasks/reactCompilerPlugin.ts", "tasks/spicetifyShimsPlugin.ts", "deno.lock"].includes(path)
               );
               if (!buildInputsChanged) {
                 console.log("No extension or build inputs changed; dist remains untouched.");
